@@ -1,2 +1,2 @@
-# raptor3
+# Raptor 3
 MCP Radioautomation Software
