@@ -18,20 +18,32 @@ msgid "Edición 30 Aniversario"
 msgstr "30th Anniversary Edition"
 
 #: ui/acerca.slint
-msgid "Por Aníbal H. Flores, «el Inyenieri»"
-msgstr "By Aníbal H. Flores, «el Inyenieri»"
+msgid "por Aníbal H. Flores, «El Inyenieri»"
+msgstr "by Aníbal H. Flores, «El Inyenieri»"
+
+#: ui/acerca.slint
+msgid "Software gratuito, sin garantía ni soporte. Se aceptan donaciones y sugerencias."
+msgstr "Free software, with no warranty or support. Donations and suggestions are welcome."
+
+#: ui/acerca.slint
+msgid "Iconos: Tabler Icons (licencia MIT)."
+msgstr "Icons: Tabler Icons (MIT license)."
+
+#: ui/acerca.slint ui/anunciantes.slint
+msgid "Correo"
+msgstr "Email"
 
 #: ui/acerca.slint
 msgid "Escribir a {}"
 msgstr "Write to {}"
 
 #: ui/acerca.slint
-msgid "Software gratuito, sin garantía ni soporte. Úselo bajo su propio riesgo."
-msgstr "Free software, with no warranty or support. Use it at your own risk."
+msgid "Abrir {} en el navegador"
+msgstr "Open {} in the browser"
 
 #: ui/acerca.slint
-msgid "Iconos: Tabler Icons (licencia MIT)."
-msgstr "Icons: Tabler Icons (MIT license)."
+msgid "Donar con PayPal"
+msgstr "Donate with PayPal"
 
 #: ui/acerca.slint ui/actualizacion.slint ui/anunciantes.slint ui/avisos.slint ui/buscador.slint ui/localidad.slint ui/mantenimiento.slint ui/ordenes.slint ui/pauta.slint
 msgid "Cerrar"
@@ -200,10 +212,6 @@ msgstr "Contact person"
 #: ui/anunciantes.slint
 msgid "Teléfono"
 msgstr "Phone"
-
-#: ui/anunciantes.slint
-msgid "Correo"
-msgstr "Email"
 
 #: ui/anunciantes.slint
 msgid "ventas@empresa.com"
@@ -1652,10 +1660,6 @@ msgstr "Inserts the time, temperature and humidity (TTH) announcement in the pla
 #: ui/ventana.slint
 msgid "Elegir la carpeta de las locuciones del anuncio HTH"
 msgstr "Choose the TTH announcement voice clips folder"
-
-#: ui/ventana.slint
-msgid "Clima de Open-Meteo que dice el anuncio HTH. Se consulta cada 10 minutos; si pasa una hora sin una lectura buena, el anuncio dice solo la hora. Clic (o clic derecho en HTH): cambiar la localidad"
-msgstr "Open-Meteo weather that the TTH announcement says. It is checked every 10 minutes; if an hour goes by without a good reading, the announcement only says the time. Click (or right-click on TTH): change the location"
 
 #: src/audio/decodificador.rs
 msgid "mono"

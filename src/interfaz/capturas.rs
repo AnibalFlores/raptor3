@@ -297,6 +297,7 @@ fn capturas_de_las_ventanas() {
     let acerca = AcercaDe::new().expect("acerca de");
     acerca.set_version(texto(env!("CARGO_PKG_VERSION")));
     acerca.set_correo(texto("jxlfybcrk@mozmail.com"));
+    acerca.set_repositorio(texto("github.com/AnibalFlores/raptor3"));
     acerca.show().expect("mostrar acerca de");
     let buscador = BuscadorDelCatalogo::new().expect("buscador");
     llenar_buscador(&buscador);

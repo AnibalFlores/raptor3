@@ -731,8 +731,19 @@ fn cablear_callbacks(ventana: &VentanaPrincipal) -> Result<(), String> {
     acerca.set_version(env!("CARGO_PKG_VERSION").into());
     acerca.set_correo(CORREO_DE_CONTACTO.into());
     acerca.on_escribir_al_autor(|| {
-        if let Err(error) = abrir_con_el_sistema(Path::new(&format!("mailto:{CORREO_DE_CONTACTO}"))) {
+        if let Err(error) = abrir_enlace(&format!("mailto:{CORREO_DE_CONTACTO}")) {
             log::warn!("No se pudo abrir el programa de correo: {error}");
+        }
+    });
+    acerca.set_repositorio(REPOSITORIO.trim_start_matches("https://").into());
+    acerca.on_donar(|| {
+        if let Err(error) = abrir_enlace(DONACIONES) {
+            log::warn!("No se pudo abrir el navegador en {DONACIONES}: {error}");
+        }
+    });
+    acerca.on_abrir_repositorio(|| {
+        if let Err(error) = abrir_enlace(REPOSITORIO) {
+            log::warn!("No se pudo abrir el navegador en {REPOSITORIO}: {error}");
         }
     });
     let acerca_debil = acerca.as_weak();
@@ -1049,6 +1060,12 @@ const MANUAL: &str = "Raptor_Manual_es.pdf";
 /// (relay): no expone la casilla personal.
 const CORREO_DE_CONTACTO: &str = "jxlfybcrk@mozmail.com";
 
+/// Repositorio del proyecto en GitHub (el campo `repository` de Cargo.toml).
+const REPOSITORIO: &str = env!("CARGO_PKG_REPOSITORY");
+
+/// Pagina de donaciones del autor en PayPal (boton Acerca de > Donar).
+const DONACIONES: &str = "https://www.paypal.com/donate/?hosted_button_id=SYCZZFULZ6TKE";
+
 /// Lugares donde se busca el manual: junto al ejecutable, en la carpeta de
 /// trabajo y en la carpeta del proyecto o su docs/manual (versiones de desarrollo).
 fn ubicaciones_del_manual() -> Vec<PathBuf> {
@@ -1095,6 +1112,20 @@ fn abrir_con_el_sistema(archivo: &Path) -> std::io::Result<()> {
     #[cfg(all(unix, not(target_os = "macos")))]
     let mut comando = std::process::Command::new("xdg-open");
     comando.arg(archivo).spawn().map(|_| ())
+}
+
+/// Abre una direccion (https:, mailto:) con el programa predeterminado. En
+/// Windows no se usa explorer: interpreta los "=" y "," de la linea de
+/// comandos y no abre direcciones con parametros (como la de PayPal).
+fn abrir_enlace(direccion: &str) -> std::io::Result<()> {
+    #[cfg(windows)]
+    {
+        std::process::Command::new("rundll32").args(["url.dll,FileProtocolHandler", direccion]).spawn().map(|_| ())
+    }
+    #[cfg(not(windows))]
+    {
+        abrir_con_el_sistema(Path::new(direccion))
+    }
 }
 
 /// Pide confirmacion antes de quitar una hoja que tiene efectos asignados.
