@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=MCP Raptor Player
+Comment=Reproductor con mezcla, efectos en vivo y servidor MCP
+Exec=mcp-raptor-player
+Icon=mcp-raptor-player
+Terminal=false
+Categories=AudioVideo;Audio;Player;
+StartupWMClass=mcp-raptor-player

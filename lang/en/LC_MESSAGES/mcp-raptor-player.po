@@ -1,0 +1,4158 @@
+# Traducciones de MCP Raptor Player. Lo actualiza herramientas/traducciones.py.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ui/acerca.slint ui/ventana.slint
+msgid "Acerca de MCP Raptor Player"
+msgstr "About MCP Raptor Player"
+
+#: ui/acerca.slint
+msgid "Raptor III"
+msgstr "Raptor III"
+
+#: ui/acerca.slint
+msgid "Edición 30 Aniversario"
+msgstr "30th Anniversary Edition"
+
+#: ui/acerca.slint
+msgid "Por Aníbal H. Flores, «el Inyenieri»"
+msgstr "By Aníbal H. Flores, «el Inyenieri»"
+
+#: ui/acerca.slint
+msgid "Escribir a {}"
+msgstr "Write to {}"
+
+#: ui/acerca.slint
+msgid "Software gratuito, sin garantía ni soporte. Úselo bajo su propio riesgo."
+msgstr "Free software, with no warranty or support. Use it at your own risk."
+
+#: ui/acerca.slint
+msgid "Iconos: Tabler Icons (licencia MIT)."
+msgstr "Icons: Tabler Icons (MIT license)."
+
+#: ui/acerca.slint ui/actualizacion.slint ui/anunciantes.slint ui/avisos.slint ui/buscador.slint ui/localidad.slint ui/mantenimiento.slint ui/ordenes.slint ui/pauta.slint
+msgid "Cerrar"
+msgstr "Close"
+
+#: ui/actualizacion.slint
+msgid "Actualizar datos del catálogo - MCP Raptor Player"
+msgstr "Update catalog data - MCP Raptor Player"
+
+#: ui/actualizacion.slint ui/avisos.slint ui/buscador.slint ui/editor.slint ui/ventana.slint
+msgid "Título"
+msgstr "Title"
+
+#: ui/actualizacion.slint ui/buscador.slint ui/editor.slint ui/ventana.slint
+msgid "Artista"
+msgstr "Artist"
+
+#: ui/actualizacion.slint ui/editor.slint
+msgid "Álbum"
+msgstr "Album"
+
+#: ui/actualizacion.slint ui/buscador.slint ui/editor.slint ui/ventana.slint
+msgid "Año"
+msgstr "Year"
+
+#: ui/actualizacion.slint ui/avisos.slint ui/buscador.slint ui/editor.slint ui/ventana.slint
+msgid "Género"
+msgstr "Genre"
+
+#: src/dominio/tipos.rs ui/actualizacion.slint ui/editor.slint ui/iconografia.slint ui/mantenimiento.slint
+msgid "Tema"
+msgstr "Song"
+
+#: ui/actualizacion.slint
+msgid "Dato"
+msgstr "Field"
+
+#: ui/actualizacion.slint
+msgid "Ahora"
+msgstr "Now"
+
+#: ui/actualizacion.slint
+msgid "Lo que dice el catálogo ahora"
+msgstr "What the catalog says now"
+
+#: ui/actualizacion.slint
+msgid "Propuesto"
+msgstr "Proposed"
+
+#: ui/actualizacion.slint
+msgid "Lo que trae la fuente; se aplica si está marcado"
+msgstr "What the source brings; it is applied if checked"
+
+#: ui/actualizacion.slint ui/editor.slint
+msgid "Nota"
+msgstr "Note"
+
+#: ui/actualizacion.slint
+msgid "Los datos que usted corrigió a mano no se marcan solos: revíselos antes de aplicar"
+msgstr "Data you corrected by hand is not checked automatically: review it before applying"
+
+#: ui/actualizacion.slint
+msgid "(vacío)"
+msgstr "(empty)"
+
+#: ui/actualizacion.slint
+msgid "Buscando datos..."
+msgstr "Looking for data..."
+
+#: ui/actualizacion.slint
+msgid "No hay datos distintos para proponer."
+msgstr "There is no different data to propose."
+
+#: ui/actualizacion.slint
+msgid "Clic en una fila para marcarla o desmarcarla. Solo se cambia el catálogo de la emisora: los archivos no se tocan."
+msgstr "Click a row to check or uncheck it. Only the station catalog changes: the files are not touched."
+
+#: ui/actualizacion.slint
+msgid "Aplicar los marcados ({})"
+msgstr "Apply the checked ones ({})"
+
+#: ui/actualizacion.slint ui/ventana.slint
+msgid "Detener"
+msgstr "Stop"
+
+#: ui/anunciantes.slint
+msgid "Anunciantes - MCP Raptor Player"
+msgstr "Advertisers - MCP Raptor Player"
+
+#: ui/anunciantes.slint
+msgid "Buscar por nombre, razon social, CUIT, rubro, contacto o agencia"
+msgstr "Search by name, company name, tax ID, sector, contact or agency"
+
+#: ui/anunciantes.slint ui/ordenes.slint
+msgid "Anunciante"
+msgstr "Advertiser"
+
+#: ui/anunciantes.slint
+msgid "Razón social"
+msgstr "Company name"
+
+#: ui/anunciantes.slint
+msgid "CUIT"
+msgstr "Tax ID"
+
+#: ui/anunciantes.slint ui/ordenes.slint
+msgid "Rubro"
+msgstr "Sector"
+
+#: ui/anunciantes.slint
+msgid "Contacto"
+msgstr "Contact"
+
+#: ui/anunciantes.slint
+msgid "Órdenes"
+msgstr "Orders"
+
+#: ui/anunciantes.slint ui/avisos.slint
+msgid "Estado"
+msgstr "Status"
+
+#: ui/anunciantes.slint
+msgid "No hay anunciantes: use Nuevo anunciante."
+msgstr "There are no advertisers: use New advertiser."
+
+#: ui/anunciantes.slint
+msgid "Ningun anunciante coincide."
+msgstr "No advertiser matches."
+
+#: ui/anunciantes.slint
+msgid "Nuevo anunciante"
+msgstr "New advertiser"
+
+#: src/interfaz/anunciantes.rs ui/anunciantes.slint
+msgid "Quitar anunciante"
+msgstr "Remove advertiser"
+
+#: ui/anunciantes.slint
+msgid "Solo si no tiene ordenes; si tiene, desactivelo"
+msgstr "Only if it has no orders; if it does, deactivate it"
+
+#: ui/anunciantes.slint
+msgid "Nueva orden para el anunciante"
+msgstr "New order for the advertiser"
+
+#: ui/anunciantes.slint
+msgid "Abre las ordenes de publicidad con una orden nueva de este anunciante y su rubro"
+msgstr "Opens the advertising orders with a new order for this advertiser and its sector"
+
+#: ui/anunciantes.slint
+msgid "Nombre comercial: Supermercado Sol"
+msgstr "Trade name: Sun Supermarket"
+
+#: ui/anunciantes.slint ui/ordenes.slint
+msgid "Supermercados"
+msgstr "Supermarkets"
+
+#: ui/anunciantes.slint
+msgid "Sol S.A."
+msgstr "Sun Inc."
+
+#: ui/anunciantes.slint
+msgid "Persona de contacto"
+msgstr "Contact person"
+
+#: ui/anunciantes.slint
+msgid "Teléfono"
+msgstr "Phone"
+
+#: ui/anunciantes.slint
+msgid "Correo"
+msgstr "Email"
+
+#: ui/anunciantes.slint
+msgid "ventas@empresa.com"
+msgstr "sales@company.com"
+
+#: ui/anunciantes.slint
+msgid "Agencia"
+msgstr "Agency"
+
+#: ui/anunciantes.slint
+msgid "Agencia que lo representa"
+msgstr "Agency that represents it"
+
+#: ui/anunciantes.slint
+msgid "Dirección"
+msgstr "Address"
+
+#: ui/anunciantes.slint
+msgid "Calle, número, localidad"
+msgstr "Street, number, town"
+
+#: ui/anunciantes.slint
+msgid "Notas"
+msgstr "Notes"
+
+#: ui/anunciantes.slint
+msgid "Condiciones de pago, observaciones..."
+msgstr "Payment terms, remarks..."
+
+#: ui/anunciantes.slint
+msgid "Activo (inactivo: se conserva la ficha pero no admite ordenes nuevas)"
+msgstr "Active (inactive: the record is kept but takes no new orders)"
+
+#: ui/anunciantes.slint
+msgid "Ordenes del anunciante"
+msgstr "Advertiser's orders"
+
+#: ui/anunciantes.slint
+msgid "Sin ordenes."
+msgstr "No orders."
+
+#: ui/anunciantes.slint
+msgid "Cargar anunciante"
+msgstr "Save advertiser"
+
+#: ui/anunciantes.slint ui/ordenes.slint ui/pauta.slint
+msgid "Guardar cambios"
+msgstr "Save changes"
+
+#: ui/anunciantes.slint ui/ordenes.slint ui/pauta.slint
+msgid "Descartar cambios"
+msgstr "Discard changes"
+
+#: ui/avisos.slint
+msgid "Avisos del catalogo - MCP Raptor Player"
+msgstr "Catalog spots - MCP Raptor Player"
+
+#: ui/avisos.slint
+msgid "Agregar avisos a {}"
+msgstr "Add spots to {}"
+
+#: ui/avisos.slint
+msgid "Titulo, anunciante, tipo, genero, album o archivo"
+msgstr "Title, advertiser, type, genre, album or file"
+
+#: ui/avisos.slint
+msgid "Avisos (tipos de tanda)"
+msgstr "Spots (break types)"
+
+#: ui/avisos.slint
+msgid "Sin tipo"
+msgstr "No type"
+
+#: ui/avisos.slint
+msgid "Todo el catalogo"
+msgstr "Whole catalog"
+
+#: ui/avisos.slint
+msgid "Anunciante (artista)"
+msgstr "Advertiser (artist)"
+
+#: ui/avisos.slint ui/buscador.slint ui/editor.slint ui/ventana.slint
+msgid "Tipo"
+msgstr "Type"
+
+#: ui/avisos.slint ui/buscador.slint ui/ventana.slint
+msgid "Duración"
+msgstr "Duration"
+
+#: ui/avisos.slint
+msgid "Todo el catalogo tiene tipo."
+msgstr "Everything in the catalog has a type."
+
+#: ui/avisos.slint
+msgid "No hay avisos en el catalogo: agregue uno desde un archivo o asigne el tipo a los que ya estan (filtro Sin tipo o Todo el catalogo)."
+msgstr "There are no spots in the catalog: add one from a file or assign a type to the ones already there (No type or Whole catalog filter)."
+
+#: ui/avisos.slint ui/buscador.slint
+msgid "Sin resultados."
+msgstr "No results."
+
+#: ui/avisos.slint
+msgid "Tipo de los elegidos"
+msgstr "Type of the chosen ones"
+
+#: src/dominio/tipos.rs ui/avisos.slint ui/editor.slint ui/iconografia.slint ui/ordenes.slint ui/pauta.slint
+msgid "Comercial"
+msgstr "Commercial"
+
+#: src/dominio/tipos.rs ui/avisos.slint ui/editor.slint ui/iconografia.slint ui/ordenes.slint ui/pauta.slint
+msgid "Publicidad"
+msgstr "Advertising"
+
+#: src/dominio/tipos.rs ui/avisos.slint ui/editor.slint ui/iconografia.slint ui/ordenes.slint ui/pauta.slint
+msgid "Anuncio"
+msgstr "Announcement"
+
+#: src/dominio/tipos.rs ui/avisos.slint ui/editor.slint ui/iconografia.slint ui/ordenes.slint ui/pauta.slint
+msgid "Podcast"
+msgstr "Podcast"
+
+#: src/dominio/tipos.rs ui/avisos.slint ui/editor.slint ui/iconografia.slint
+msgid "Seco"
+msgstr "Dry voice"
+
+#: ui/avisos.slint
+msgid "Asignar tipo ({})"
+msgstr "Assign type ({})"
+
+#: ui/avisos.slint
+msgid "Se guarda en el catalogo de la emisora (no en el archivo) y vale para la lista, las tandas y las ordenes"
+msgstr "It is saved in the station catalog (not in the file) and applies to the playlist, the breaks and the orders"
+
+#: ui/avisos.slint
+msgid "Clic, Ctrl+clic o Mayus+clic para elegir; doble clic o Enter agrega. Solo se agregan los que tienen archivo y tipo Comercial, Publicidad, Anuncio, Podcast o Seco."
+msgstr "Click, Ctrl+click or Shift+click to choose; double-click or Enter adds. Only items with a file and type Commercial, Advertising, Announcement, Podcast or Dry voice are added."
+
+#: ui/avisos.slint
+msgid "Agregar los elegidos ({})"
+msgstr "Add the chosen ones ({})"
+
+#: ui/avisos.slint
+msgid "Desde un archivo..."
+msgstr "From a file..."
+
+#: ui/avisos.slint
+msgid "Para un aviso nuevo que todavia no esta en el catalogo; al asignarle el tipo queda en el catalogo"
+msgstr "For a new spot that is not in the catalog yet; assigning its type adds it to the catalog"
+
+#: ui/buscador.slint
+msgid "Buscar en el catalogo - MCP Raptor Player"
+msgstr "Search the catalog - MCP Raptor Player"
+
+#: ui/buscador.slint
+msgid "Palabras, o prefijos como artista:sanz ranking:>=4 sonado:>30d (pase el puntero para ver todos)"
+msgstr "Words, or prefixes like artist:sanz rating:>=4 played:>30d (hover to see them all)"
+
+#: ui/buscador.slint
+msgid "Sonó"
+msgstr "Played"
+
+#: ui/buscador.slint
+msgid "Día de la última reproducción (vacío: nunca sonó). Se busca con sonado:, por ejemplo sonado:>30d"
+msgstr "Day of the last playback (empty: never played). Search it with played:, for example played:>30d"
+
+#: ui/buscador.slint
+msgid "En lista"
+msgstr "In playlist"
+
+#: ui/buscador.slint
+msgid "Si el tema ya está en la lista de reproducción, o si falta su archivo"
+msgstr "Whether the song is already in the playlist, or its file is missing"
+
+#: src/interfaz/avisos.rs ui/buscador.slint
+msgid "sin archivo"
+msgstr "no file"
+
+#: ui/buscador.slint
+msgid "si"
+msgstr "yes"
+
+#: ui/buscador.slint
+msgid "El catalogo esta vacio: los temas entran al agregarlos a la lista."
+msgstr "The catalog is empty: songs enter it when you add them to the playlist."
+
+#: ui/buscador.slint
+msgid "Clic, Ctrl+clic o Mayus+clic para elegir; doble clic o Enter inserta. Los que ya estan en la lista no se repiten."
+msgstr "Click, Ctrl+click or Shift+click to choose; double-click or Enter inserts. Songs already in the playlist are not repeated."
+
+#: ui/buscador.slint
+msgid "Insertar despues de la seleccionada ({})"
+msgstr "Insert after the selected one ({})"
+
+#: ui/buscador.slint
+msgid "Inserta los temas elegidos en la lista, despues de la pista seleccionada en la ventana principal (o al final si no hay)"
+msgstr "Inserts the chosen songs in the playlist, after the track selected in the main window (or at the end if there is none)"
+
+#: ui/buscador.slint
+msgid "Agregar al final"
+msgstr "Add at the end"
+
+#: ui/buscador.slint
+msgid "Releer etiquetas"
+msgstr "Reread tags"
+
+#: ui/buscador.slint
+msgid "Vuelve a leer las etiquetas de los archivos elegidos (o de todos los resultados, si no hay elegidos), por ejemplo despues de corregirlas con Picard, y muestra lo que cambiaria para elegirlo"
+msgstr "Reads the tags of the chosen files again (or of all the results, if none are chosen), for example after correcting them with Picard, and shows what would change so you can choose"
+
+#: ui/buscador.slint ui/editor.slint
+msgid "MusicBrainz"
+msgstr "MusicBrainz"
+
+#: ui/buscador.slint
+msgid "Busca los temas elegidos (o todos los resultados, si no hay elegidos) en MusicBrainz y propone completar album, año, genero, titulo y artista"
+msgstr "Looks up the chosen songs (or all the results, if none are chosen) in MusicBrainz and proposes completing album, year, genre, title and artist"
+
+#: ui/editor.slint ui/ventana.slint
+msgid "Manual"
+msgstr "Manual"
+
+#: ui/editor.slint
+msgid "Automatico"
+msgstr "Automatic"
+
+#: ui/editor.slint
+msgid "Deshacer: volver a {}"
+msgstr "Undo: back to {}"
+
+#: ui/editor.slint
+msgid "Deshacer (despues de usar el boton Cursor)"
+msgstr "Undo (after using the Cursor button)"
+
+#: ui/editor.slint
+msgid "Editar pista - MCP Raptor Player"
+msgstr "Edit track - MCP Raptor Player"
+
+#: src/interfaz.rs ui/editor.slint
+msgid "Sin clasificar"
+msgstr "Unclassified"
+
+#: src/dominio/tipos.rs ui/editor.slint ui/iconografia.slint
+msgid "Tema editado"
+msgstr "Edited song"
+
+#: src/dominio/tipos.rs ui/editor.slint ui/iconografia.slint ui/ventana.slint
+msgid "Efecto"
+msgstr "Effect"
+
+#: src/interfaz/salida_de_preescucha.rs ui/editor.slint
+msgid "Misma salida de la musica (con la musica detenida)"
+msgstr "Same output as the music (with the music stopped)"
+
+#: ui/editor.slint
+msgid "sin ventana"
+msgstr "no window"
+
+#: ui/editor.slint
+msgid "Inicio"
+msgstr "Start"
+
+#: ui/editor.slint
+msgid "Fin"
+msgstr "End"
+
+#: ui/editor.slint
+msgid "Intro"
+msgstr "Intro"
+
+#: ui/editor.slint
+msgid "Outro"
+msgstr "Outro"
+
+#: ui/editor.slint ui/ventana.slint
+msgid "Overlay"
+msgstr "Overlay"
+
+#: ui/editor.slint
+msgid "Overlay (auto)"
+msgstr "Overlay (auto)"
+
+#: ui/editor.slint
+msgid "Cursor: {}   Vista: {} a {}"
+msgstr "Cursor: {}   View: {} to {}"
+
+#: ui/editor.slint
+msgid "Acercar"
+msgstr "Zoom in"
+
+#: ui/editor.slint
+msgid "Alejar"
+msgstr "Zoom out"
+
+#: ui/editor.slint
+msgid "Ver todo"
+msgstr "Show all"
+
+#: ui/editor.slint
+msgid "Puntos de mezcla"
+msgstr "Mix points"
+
+#: ui/editor.slint
+msgid "Datos"
+msgstr "Data"
+
+#: ui/editor.slint
+msgid "Volver al automático"
+msgstr "Back to automatic"
+
+#: ui/editor.slint
+msgid "Cursor ([)"
+msgstr "Cursor ([)"
+
+#: ui/editor.slint
+msgid "Cursor (])"
+msgstr "Cursor (])"
+
+#: ui/editor.slint
+msgid "Cursor (I)"
+msgstr "Cursor (I)"
+
+#: ui/editor.slint
+msgid "Cursor (O)"
+msgstr "Cursor (O)"
+
+#: ui/editor.slint
+msgid "Genero reservado: sin ventana de overlay"
+msgstr "Reserved type: no overlay window"
+
+#: ui/editor.slint
+msgid "{} s de ventana"
+msgstr "{} s window"
+
+#: ui/editor.slint
+msgid "Sin ventana: los efectos suenan enseguida"
+msgstr "No window: effects play right away"
+
+#: ui/editor.slint
+msgid "Efecto fijado"
+msgstr "Pinned effect"
+
+#: ui/editor.slint
+msgid "Solo un Tema admite efecto fijado"
+msgstr "Only a Song takes a pinned effect"
+
+#: ui/editor.slint
+msgid "Ya hay un efecto fijado: elegir \"(ninguno)\" en la lista para cambiarlo desde la prueba"
+msgstr "There is already a pinned effect: choose \"(none)\" in the list to change it from the test"
+
+#: ui/editor.slint
+msgid "No hay efectos de tipo Efecto o Seco en la botonera"
+msgstr "There are no Effect or Dry voice items in the effects panel"
+
+#: ui/editor.slint
+msgid "Fijar el efecto elegido para probar: {}"
+msgstr "Pin the effect chosen for testing: {}"
+
+#: ui/editor.slint
+msgid "Usar la sugerida"
+msgstr "Use the suggested one"
+
+#: ui/editor.slint
+msgid "Quitar ventana"
+msgstr "Remove window"
+
+#: ui/editor.slint
+msgid "Crear ventana"
+msgstr "Create window"
+
+#: ui/editor.slint ui/ordenes.slint
+msgid "Desde"
+msgstr "From"
+
+#: ui/editor.slint
+msgid "Overlay desde"
+msgstr "Overlay from"
+
+#: ui/editor.slint
+msgid "Cursor (V)"
+msgstr "Cursor (V)"
+
+#: ui/editor.slint ui/ordenes.slint ui/pauta.slint
+msgid "Hasta"
+msgstr "To"
+
+#: ui/editor.slint
+msgid "Overlay hasta"
+msgstr "Overlay to"
+
+#: ui/editor.slint
+msgid "Cursor (B)"
+msgstr "Cursor (B)"
+
+#: ui/editor.slint
+msgid "Efecto:"
+msgstr "Effect:"
+
+#: ui/editor.slint
+msgid "Bajar la música"
+msgstr "Duck the music"
+
+#: ui/editor.slint
+msgid "Inteligente"
+msgstr "Smart"
+
+#: ui/editor.slint ui/ventana.slint
+msgid "Separación"
+msgstr "Separation"
+
+#: ui/editor.slint ui/ventana.slint
+msgid "Música al"
+msgstr "Music at"
+
+#: ui/editor.slint ui/ventana.slint
+msgid "Atenua en"
+msgstr "Ducks in"
+
+#: ui/editor.slint ui/ventana.slint
+msgid "Vuelve en"
+msgstr "Returns in"
+
+#: ui/editor.slint
+msgid "Estilo musical, libre: no cambia como suena el tema (eso lo decide el Tipo). La lista ofrece todos los generos que ya existen en el catalogo."
+msgstr "Musical style, free text: it does not change how the song plays (the Type decides that). The list offers every genre already in the catalog."
+
+#: ui/editor.slint ui/ventana.slint
+msgid "Ranking"
+msgstr "Rating"
+
+#: ui/editor.slint ui/ventana.slint
+msgid "BPM"
+msgstr "BPM"
+
+#: ui/editor.slint
+msgid "Automático"
+msgstr "Automatic"
+
+#: ui/editor.slint
+msgid "Calcular"
+msgstr "Calculate"
+
+#: ui/editor.slint
+msgid "Estima el tempo analizando todo el tema y lo pone en el campo. Vacio o igual al calculado, el BPM sigue al analisis."
+msgstr "Estimates the tempo by analyzing the whole song and puts it in the field. Empty or equal to the calculated one, the BPM follows the analysis."
+
+#: ui/editor.slint
+msgid "Duplica el BPM, si se detecto a la mitad del tempo real."
+msgstr "Doubles the BPM, if it was detected at half the real tempo."
+
+#: ui/editor.slint
+msgid "Divide el BPM a la mitad, si se detecto al doble del tempo real."
+msgstr "Halves the BPM, if it was detected at twice the real tempo."
+
+#: ui/editor.slint
+msgid "Busca el tema en MusicBrainz por titulo y artista y muestra los datos que propone (album, año, genero) para elegirlos. Se aplican al catalogo y se ven aqui."
+msgstr "Looks up the song in MusicBrainz by title and artist and shows the data it proposes (album, year, genre) so you can choose. They are applied to the catalog and shown here."
+
+#: ui/editor.slint
+msgid "Observación libre: se ve al pasar el puntero por el título en la lista o por el botón de efecto"
+msgstr "Free remark: shown when hovering over the title in the playlist or over the effect button"
+
+#: ui/editor.slint
+msgid "Preescucha"
+msgstr "Preview"
+
+#: ui/editor.slint
+msgid "Escuchar el tema entero, desde la marca de inicio hasta la de fin"
+msgstr "Listen to the whole song, from the start mark to the end mark"
+
+#: ui/editor.slint
+msgid "Ventana con efecto"
+msgstr "Window with effect"
+
+#: ui/editor.slint
+msgid "Se prueba el efecto fijado: {}"
+msgstr "Testing the pinned effect: {}"
+
+#: ui/editor.slint
+msgid "Desde el cursor (Espacio)"
+msgstr "From the cursor (Space)"
+
+#: ui/editor.slint
+msgid "Parar"
+msgstr "Stop"
+
+#: ui/editor.slint
+msgid "Salida:"
+msgstr "Output:"
+
+#: ui/editor.slint
+msgid "Volver a buscar las salidas de audio (por ejemplo, despues de conectar unos auriculares)"
+msgstr "Search the audio outputs again (for example, after plugging in headphones)"
+
+#: ui/editor.slint
+msgid "Volumen:"
+msgstr "Volume:"
+
+#: ui/editor.slint
+msgid "Volumen propio de la preescucha: del tema y del efecto de prueba"
+msgstr "Preview's own volume: for the song and the test effect"
+
+#: ui/editor.slint
+msgid "Detene o pausa la musica para preescuchar"
+msgstr "Stop or pause the music to preview"
+
+#: ui/editor.slint
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: ui/editor.slint
+msgid "Guardar"
+msgstr "Save"
+
+#: ui/iconografia.slint ui/ventana.slint
+msgid "HTH"
+msgstr "TTH"
+
+#: ui/iconografia.slint
+msgid "Bloque fijo"
+msgstr "Locked block"
+
+#: ui/iconografia.slint
+msgid "sin tipo"
+msgstr "no type"
+
+#: ui/localidad.slint
+msgid "Localidad del clima - MCP Raptor Player"
+msgstr "Weather location - MCP Raptor Player"
+
+#: ui/localidad.slint
+msgid "En uso: {}"
+msgstr "In use: {}"
+
+#: ui/localidad.slint
+msgid "Nombre de la ciudad o localidad (por ejemplo: Rosario, Mar del Plata)"
+msgstr "Name of the city or town (for example: Rosario, Mar del Plata)"
+
+#: ui/localidad.slint ui/mantenimiento.slint
+msgid "Buscando..."
+msgstr "Searching..."
+
+#: ui/localidad.slint
+msgid "Buscar"
+msgstr "Search"
+
+#: ui/localidad.slint
+msgid "Escriba el nombre y pulse Enter."
+msgstr "Type the name and press Enter."
+
+#: ui/localidad.slint
+msgid "Clic para elegir; doble clic usa esa localidad. El clima se consulta cada 10 minutos en Open-Meteo, sin clave."
+msgstr "Click to choose; double-click uses that location. The weather is checked every 10 minutes on Open-Meteo, with no key."
+
+#: ui/localidad.slint
+msgid "Usar esta localidad"
+msgstr "Use this location"
+
+#: ui/mantenimiento.slint
+msgid "Mantenimiento del catalogo - MCP Raptor Player"
+msgstr "Catalog maintenance - MCP Raptor Player"
+
+#: ui/mantenimiento.slint
+msgid "El catalogo reconoce cada archivo por su ruta. Si se movio una carpeta, use Buscar en carpeta: se buscan los archivos por nombre (si hay varios iguales, por duracion) y Reubicar pasa cada ficha a su nueva ruta sin perder sus datos; tambien se actualizan la lista, la botonera y los efectos fijados. Los archivos renombrados no se reconocen."
+msgstr "The catalog recognizes each file by its path. If a folder was moved, use Search in folder: files are looked up by name (if there are several with the same name, by duration) and Relocate moves each record to its new path without losing its data; the playlist, the effects panel and the pinned effects are updated too. Renamed files are not recognized."
+
+#: ui/mantenimiento.slint
+msgid "Ubicación anterior"
+msgstr "Previous location"
+
+#: ui/mantenimiento.slint
+msgid "Ruta que tenía el archivo; ya no existe"
+msgstr "Path the file had; it no longer exists"
+
+#: ui/mantenimiento.slint
+msgid "Nueva ubicación"
+msgstr "New location"
+
+#: ui/mantenimiento.slint
+msgid "Dónde se encontró el archivo al buscar en una carpeta"
+msgstr "Where the file was found when searching a folder"
+
+#: ui/mantenimiento.slint
+msgid "Todas las fichas del catalogo tienen su archivo."
+msgstr "Every catalog record has its file."
+
+#: ui/mantenimiento.slint
+msgid "Buscar en carpeta..."
+msgstr "Search in folder..."
+
+#: ui/mantenimiento.slint
+msgid "Reubicar encontradas ({})"
+msgstr "Relocate found ({})"
+
+#: ui/mantenimiento.slint
+msgid "Pasa las fichas elegidas que se encontraron a su nueva ubicacion"
+msgstr "Moves the chosen records that were found to their new location"
+
+#: ui/mantenimiento.slint
+msgid "Quitar elegidas del catálogo"
+msgstr "Remove chosen from the catalog"
+
+#: ui/mantenimiento.slint
+msgid "Borra las fichas elegidas: sus puntos de mezcla, datos, ranking y ultima reproduccion. No borra archivos."
+msgstr "Deletes the chosen records: their mix points, data, rating and last playback. It does not delete files."
+
+#: ui/mantenimiento.slint
+msgid "Limpiar cache de ondas"
+msgstr "Clear waveform cache"
+
+#: ui/mantenimiento.slint
+msgid "Borra las formas de onda guardadas de archivos que ya no existen, se movieron o cambiaron. Se vuelven a calcular si hacen falta."
+msgstr "Deletes the saved waveforms of files that no longer exist, were moved or changed. They are recalculated when needed."
+
+#: ui/ordenes.slint
+msgid "Ordenes de publicidad - MCP Raptor Player"
+msgstr "Advertising orders - MCP Raptor Player"
+
+#: ui/ordenes.slint
+msgid "Cada orden pide salidas en su franja; se reparten solas en las tandas programadas (Pauta de tandas), sin pasar su duracion maxima ni juntar dos avisos del mismo rubro."
+msgstr "Each order asks for airings in its time slot; they are spread automatically over the scheduled breaks (Break schedule), without exceeding their maximum length or putting two spots of the same sector together."
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Activa"
+msgstr "Active"
+
+#: ui/ordenes.slint
+msgid "Una orden inactiva se conserva pero no reparte salidas"
+msgstr "An inactive order is kept but does not place airings"
+
+#: ui/ordenes.slint
+msgid "Orden"
+msgstr "Order"
+
+#: ui/ordenes.slint
+msgid "Salidas"
+msgstr "Airings"
+
+#: ui/ordenes.slint
+msgid "Vigencia"
+msgstr "Validity"
+
+#: ui/ordenes.slint
+msgid "Hoy"
+msgstr "Today"
+
+#: ui/ordenes.slint
+msgid "Salidas ubicadas hoy de las que pide la orden"
+msgstr "Airings placed today out of those the order asks for"
+
+#: ui/ordenes.slint
+msgid "No hay ordenes: use Nueva orden."
+msgstr "There are no orders: use New order."
+
+#: ui/ordenes.slint
+msgid "Nueva orden"
+msgstr "New order"
+
+#: src/interfaz/ordenes.rs ui/ordenes.slint
+msgid "Quitar orden"
+msgstr "Remove order"
+
+#: ui/ordenes.slint
+msgid "Certificado del mes"
+msgstr "Monthly certificate"
+
+#: ui/ordenes.slint
+msgid "Arma el certificado de emision del anunciante (este mes hasta hoy) en un CSV y lo abre"
+msgstr "Builds the advertiser's airing certificate (this month up to today) in a CSV and opens it"
+
+#: ui/ordenes.slint
+msgid "Sol - Noviembre"
+msgstr "Sun - November"
+
+#: ui/ordenes.slint
+msgid "Supermercado Sol"
+msgstr "Sun Supermarket"
+
+#: ui/ordenes.slint
+msgid "Ficha..."
+msgstr "Record..."
+
+#: ui/ordenes.slint
+msgid "Abre la ficha del anunciante (razon social, CUIT, contacto) o la crea"
+msgstr "Opens the advertiser's record (company name, tax ID, contact) or creates it"
+
+#: ui/ordenes.slint
+msgid "AAAA-MM-DD"
+msgstr "YYYY-MM-DD"
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Días"
+msgstr "Days"
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Lun"
+msgstr "Mon"
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Mar"
+msgstr "Tue"
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Mie"
+msgstr "Wed"
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Jue"
+msgstr "Thu"
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Vie"
+msgstr "Fri"
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Sab"
+msgstr "Sat"
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Dom"
+msgstr "Sun"
+
+#: ui/ordenes.slint
+msgid "Franja de"
+msgstr "Time slot from"
+
+#: ui/ordenes.slint
+msgid "Cada tantos minutos"
+msgstr "Every so many minutes"
+
+#: ui/ordenes.slint
+msgid "Veces por dia"
+msgstr "Times per day"
+
+#: ui/ordenes.slint
+msgid "A horas fijas"
+msgstr "At fixed times"
+
+#: ui/ordenes.slint
+msgid "Solo en tandas"
+msgstr "Only in breaks"
+
+#: ui/ordenes.slint
+msgid "vacio: en cualquiera (o nombres separados por coma)"
+msgstr "empty: in any (or names separated by commas)"
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Prioridad"
+msgstr "Priority"
+
+#: ui/ordenes.slint
+msgid "Avisos (rotan: uno por salida)"
+msgstr "Spots (they rotate: one per airing)"
+
+#: ui/ordenes.slint
+msgid "Agregue los avisos de la orden."
+msgstr "Add the order's spots."
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Agregar del catálogo..."
+msgstr "Add from the catalog..."
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Busca los avisos en el catalogo de la emisora (Comercial, Publicidad, Anuncio, Podcast o Seco); desde ahi tambien se asigna el tipo a los que no lo tienen o se agrega un archivo nuevo"
+msgstr "Looks for the spots in the station catalog (Commercial, Advertising, Announcement, Podcast or Dry voice); from there you can also assign the type to those without one or add a new file"
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Tipo del aviso elegido"
+msgstr "Type of the chosen spot"
+
+#: ui/ordenes.slint ui/pauta.slint
+msgid "Asignar tipo"
+msgstr "Assign type"
+
+#: ui/ordenes.slint
+msgid "Pauta de hoy"
+msgstr "Today's schedule"
+
+#: ui/ordenes.slint
+msgid "Hoy no hay avisos de ordenes para repartir."
+msgstr "There are no order spots to place today."
+
+#: ui/ordenes.slint
+msgid "Cargar orden"
+msgstr "Save order"
+
+#: ui/pauta.slint
+msgid "Pauta de tandas - MCP Raptor Player"
+msgstr "Break schedule - MCP Raptor Player"
+
+#: ui/pauta.slint
+msgid "Cada tanda entra en el corte entre temas mas cercano a su hora, como bloque fijo. Sin un corte dentro de la tolerancia, espera el final del tema o, a hora exacta, baja lo que suena con el fader."
+msgstr "Each break goes in at the gap between songs closest to its time, as a locked block. Without a gap within the tolerance, it waits for the end of the song or, at the exact time, fades out what is playing."
+
+#: ui/pauta.slint
+msgid "Una tanda inactiva conserva su programación pero no sale"
+msgstr "An inactive break keeps its schedule but does not air"
+
+#: ui/pauta.slint
+msgid "Tanda"
+msgstr "Break"
+
+#: ui/pauta.slint
+msgid "Horarios"
+msgstr "Times"
+
+#: ui/pauta.slint
+msgid "Entrada"
+msgstr "Entry"
+
+#: ui/pauta.slint
+msgid "Cómo entra si no hay un corte a tiempo: con tolerancia o a hora exacta"
+msgstr "How it goes in if there is no gap in time: with tolerance or at the exact time"
+
+#: ui/pauta.slint
+msgid "Avisos"
+msgstr "Spots"
+
+#: ui/pauta.slint
+msgid "Próxima salida"
+msgstr "Next airing"
+
+#: ui/pauta.slint
+msgid "No hay tandas programadas: use Nueva tanda."
+msgstr "There are no scheduled breaks: use New break."
+
+#: ui/pauta.slint
+msgid "Nueva tanda"
+msgstr "New break"
+
+#: src/interfaz/pauta.rs ui/pauta.slint
+msgid "Quitar tanda"
+msgstr "Remove break"
+
+#: ui/pauta.slint
+msgid "Encolar ahora"
+msgstr "Queue now"
+
+#: ui/pauta.slint
+msgid "Encola la tanda ya, en el proximo corte entre temas, fuera de su horario (no cambia su programacion)"
+msgstr "Queues the break right now, at the next gap between songs, outside its schedule (its schedule does not change)"
+
+#: ui/pauta.slint
+msgid "Nombre"
+msgstr "Name"
+
+#: ui/pauta.slint
+msgid "Tanda A"
+msgstr "Break A"
+
+#: ui/pauta.slint
+msgid "Primer horario"
+msgstr "First time"
+
+#: ui/pauta.slint
+msgid "fin del dia"
+msgstr "end of the day"
+
+#: ui/pauta.slint
+msgid "(solo con repeticion)"
+msgstr "(only with repetition)"
+
+#: ui/pauta.slint
+msgid "Repetir cada"
+msgstr "Repeat every"
+
+#: ui/pauta.slint
+msgid "minutos"
+msgstr "minutes"
+
+#: ui/pauta.slint
+msgid "minutos (0: una vez por dia)"
+msgstr "minutes (0: once a day)"
+
+#: ui/pauta.slint
+msgid "Tolerancia (min)"
+msgstr "Tolerance (min)"
+
+#: ui/pauta.slint
+msgid "antes"
+msgstr "before"
+
+#: ui/pauta.slint
+msgid "despues de la hora"
+msgstr "after the time"
+
+#: ui/pauta.slint
+msgid "Sin corte a tiempo"
+msgstr "No gap in time"
+
+#: ui/pauta.slint
+msgid "Esperar el final del tema (sale tarde)"
+msgstr "Wait for the end of the song (airs late)"
+
+#: ui/pauta.slint
+msgid "Bajar lo que suena a la hora exacta"
+msgstr "Fade out what is playing at the exact time"
+
+#: ui/pauta.slint
+msgid "Duración máxima"
+msgstr "Maximum length"
+
+#: ui/pauta.slint
+msgid "segundos, con los avisos de las ordenes"
+msgstr "seconds, including the order spots"
+
+#: ui/pauta.slint
+msgid "segundos (0: sin limite)"
+msgstr "seconds (0: no limit)"
+
+#: ui/pauta.slint
+msgid "Avisos (en el orden en que salen)"
+msgstr "Spots (in airing order)"
+
+#: ui/pauta.slint
+msgid "Agregue los avisos de la tanda."
+msgstr "Add the break's spots."
+
+#: ui/pauta.slint
+msgid "Quitar el aviso de la tanda"
+msgstr "Remove the spot from the break"
+
+#: ui/pauta.slint
+msgid "Subir el aviso"
+msgstr "Move the spot up"
+
+#: ui/pauta.slint
+msgid "Bajar el aviso"
+msgstr "Move the spot down"
+
+#: ui/pauta.slint
+msgid "En una tanda solo van Comercial, Publicidad, Anuncio, Podcast o Seco. Se guarda en el catalogo, no en el archivo"
+msgstr "A break only takes Commercial, Advertising, Announcement, Podcast or Dry voice. It is saved in the catalog, not in the file"
+
+#: ui/pauta.slint
+msgid "Programar tanda"
+msgstr "Schedule break"
+
+#: ui/ventana.slint
+msgid "Efecto {}: {}"
+msgstr "Effect {}: {}"
+
+#: ui/ventana.slint
+msgid "Asignar archivo..."
+msgstr "Assign file..."
+
+#: ui/ventana.slint
+msgid "Vaciar"
+msgstr "Clear"
+
+#: ui/ventana.slint
+msgid "Editar..."
+msgstr "Edit..."
+
+#: ui/ventana.slint
+msgid "Insertar en la playlist"
+msgstr "Insert in the playlist"
+
+#: src/interfaz.rs ui/ventana.slint
+msgid "Lista sin nombre"
+msgstr "Untitled playlist"
+
+#: ui/ventana.slint
+msgid "Deteniendo..."
+msgstr "Stopping..."
+
+#: ui/ventana.slint
+msgid "Mezclando..."
+msgstr "Mixing..."
+
+#: ui/ventana.slint
+msgid "Siguiente"
+msgstr "Next"
+
+#: src/interfaz.rs ui/ventana.slint
+msgid "Sin pista cargada"
+msgstr "No track loaded"
+
+#: src/interfaz.rs ui/ventana.slint
+msgid "Reproducir"
+msgstr "Play"
+
+#: ui/ventana.slint
+msgid "Agregue archivos de audio para comenzar"
+msgstr "Add audio files to start"
+
+#: ui/ventana.slint
+msgid "Archivo"
+msgstr "File"
+
+#: ui/ventana.slint
+msgid "Cargar lista... (Ctrl+O)"
+msgstr "Open playlist... (Ctrl+O)"
+
+#: ui/ventana.slint
+msgid "Guardar lista (Ctrl+S)"
+msgstr "Save playlist (Ctrl+S)"
+
+#: ui/ventana.slint
+msgid "Guardar lista como... (Ctrl+Mayus+S)"
+msgstr "Save playlist as... (Ctrl+Shift+S)"
+
+#: ui/ventana.slint
+msgid "Buscar en el catalogo... (Ctrl+Mayus+F)"
+msgstr "Search the catalog... (Ctrl+Shift+F)"
+
+#: ui/ventana.slint
+msgid "Pauta de tandas... (Ctrl+T)"
+msgstr "Break schedule... (Ctrl+T)"
+
+#: ui/ventana.slint
+msgid "Ordenes de publicidad... (Ctrl+Mayus+T)"
+msgstr "Advertising orders... (Ctrl+Shift+T)"
+
+#: ui/ventana.slint
+msgid "Anunciantes..."
+msgstr "Advertisers..."
+
+#: ui/ventana.slint
+msgid "Mantenimiento del catálogo..."
+msgstr "Catalog maintenance..."
+
+#: ui/ventana.slint
+msgid "Ventana"
+msgstr "Window"
+
+#: ui/ventana.slint
+msgid "Traer las ventanas a la ventana principal"
+msgstr "Bring the windows to the main window"
+
+#: ui/ventana.slint
+msgid "Editor siempre centrado: Sí"
+msgstr "Editor always centered: Yes"
+
+#: ui/ventana.slint
+msgid "Editor siempre centrado: No"
+msgstr "Editor always centered: No"
+
+#: ui/ventana.slint
+msgid "Ocultar textos de los botones: Sí"
+msgstr "Hide button labels: Yes"
+
+#: ui/ventana.slint
+msgid "Ocultar textos de los botones: No"
+msgstr "Hide button labels: No"
+
+#: ui/ventana.slint
+msgid "Ayuda"
+msgstr "Help"
+
+#: ui/ventana.slint
+msgid "Carpeta: {}"
+msgstr "Folder: {}"
+
+#: ui/ventana.slint
+msgid "Archivo: {}"
+msgstr "File: {}"
+
+#: ui/ventana.slint
+msgid "Tipo: {} · Género: {}"
+msgstr "Type: {} · Genre: {}"
+
+#: ui/ventana.slint
+msgid "Ranking: {}"
+msgstr "Rating: {}"
+
+#: ui/ventana.slint
+msgid "Última reproducción: {}"
+msgstr "Last played: {}"
+
+#: ui/ventana.slint
+msgid "Álbum: {}"
+msgstr "Album: {}"
+
+#: ui/ventana.slint
+msgid "Año: {}"
+msgstr "Year: {}"
+
+#: ui/ventana.slint
+msgid "Efecto fijado: {}"
+msgstr "Pinned effect: {}"
+
+#: ui/ventana.slint
+msgid "Ver los datos del tema"
+msgstr "Show the song data"
+
+#: ui/ventana.slint
+msgid "Ver la forma de onda"
+msgstr "Show the waveform"
+
+#: ui/ventana.slint
+msgid "Ver la forma de onda del tema: barras de nivel; con el tema que suena, un clic salta a ese punto"
+msgstr "Show the song waveform as level bars; with the playing song, a click jumps to that point"
+
+#: ui/ventana.slint
+msgid "Clic: cambiar la localidad del clima"
+msgstr "Click: change the weather location"
+
+#: ui/ventana.slint
+msgid "Abrir la pauta de tandas (Ctrl+T)"
+msgstr "Open the break schedule (Ctrl+T)"
+
+#: ui/ventana.slint
+msgid "Desplazar"
+msgstr "Scroll"
+
+#: ui/ventana.slint
+msgid "Mantiene la pista que suena en el centro de la lista: la desplaza en cada cambio de tema."
+msgstr "Keeps the playing track in the middle of the playlist: it scrolls on every song change."
+
+#: ui/ventana.slint
+msgid "Repetir lista"
+msgstr "Repeat playlist"
+
+#: ui/ventana.slint
+msgid "Crossfade inteligente"
+msgstr "Smart crossfade"
+
+#: ui/ventana.slint
+msgid "Nivelar volumen"
+msgstr "Level volume"
+
+#: ui/ventana.slint
+msgid "-14 LUFS"
+msgstr "-14 LUFS"
+
+#: ui/ventana.slint
+msgid "-11 LUFS"
+msgstr "-11 LUFS"
+
+#: ui/ventana.slint
+msgid "-8 LUFS"
+msgstr "-8 LUFS"
+
+#: ui/ventana.slint
+msgid "Ventana de overlay: naranja si es sugerida, rosa si la fijo usted. Outro (desde donde el tema empieza a bajar): celeste si es sugerida, verde si la fijo usted. Violeta: donde el overlay se solapa con la outro. Recuadro rojo: la mezcla efectiva con la siguiente (con el crossfade inteligente dura de 2 a 12 s). Arrastre hasta una marca para probarla."
+msgstr "Overlay window: orange if suggested, pink if you set it. Outro (where the song starts to fade): light blue if suggested, green if you set it. Violet: where the overlay overlaps the outro. Red box: the actual mix with the next one (with smart crossfade it lasts 2 to 12 s). Drag to a mark to try it."
+
+#: ui/ventana.slint
+msgid "Clic para alternar: transcurrido, restante, segundos restantes / totales o segundos transcurridos / totales. Naranja: mezclando con el tema siguiente."
+msgstr "Click to switch: elapsed, remaining, remaining seconds / total or elapsed seconds / total. Orange: mixing with the next song."
+
+#: ui/ventana.slint
+msgid "Anterior"
+msgstr "Previous"
+
+#: src/interfaz.rs ui/ventana.slint
+msgid "Pausa"
+msgstr "Pause"
+
+#: ui/ventana.slint
+msgid "Ocultar el volumen, el fader y las opciones de reproducción"
+msgstr "Hide the volume, the fader and the playback options"
+
+#: ui/ventana.slint
+msgid "Mostrar el volumen, el fader y las opciones de reproducción (desplazar, repetir, crossfade inteligente y nivelar volumen)"
+msgstr "Show the volume, the fader and the playback options (scroll, repeat, smart crossfade and level volume)"
+
+#: ui/ventana.slint
+msgid "Volumen"
+msgstr "Volume"
+
+#: ui/ventana.slint
+msgid "Doble clic: volver al 80 %"
+msgstr "Double-click: back to 80 %"
+
+#: ui/ventana.slint
+msgid "Fader"
+msgstr "Fader"
+
+#: ui/ventana.slint
+msgid "Segundos de mezcla al pasar con Siguiente y de fundido al Detener; 0 los desactiva. Doble clic: 5 s"
+msgstr "Seconds of mix when skipping with Next and of fade-out when Stopping; 0 turns them off. Double-click: 5 s"
+
+#: ui/ventana.slint
+msgid "Agregar"
+msgstr "Add"
+
+#: ui/ventana.slint
+msgid "Agregar archivos, una carpeta con sus subcarpetas, temas del catalogo o marcadores de bloque fijo (lo que queda entre el inicio y el fin no lo cambian Mezclar ni BPM). Lo nuevo se inserta despues de la seleccionada."
+msgstr "Add files, a folder with its subfolders, songs from the catalog or locked block markers (Shuffle and BPM do not change what lies between the start and the end). New items are inserted after the selected one."
+
+#: ui/ventana.slint
+msgid "Archivos..."
+msgstr "Files..."
+
+#: ui/ventana.slint
+msgid "Carpeta con subcarpetas..."
+msgstr "Folder with subfolders..."
+
+#: ui/ventana.slint
+msgid "Desde el catalogo... (Ctrl+Mayus+F)"
+msgstr "From the catalog... (Ctrl+Shift+F)"
+
+#: ui/ventana.slint
+msgid "Fijar la selección como bloque"
+msgstr "Lock the selection as a block"
+
+#: src/interfaz/marcadores.rs ui/ventana.slint
+msgid "Inicio de bloque fijo"
+msgstr "Locked block start"
+
+#: src/interfaz/marcadores.rs ui/ventana.slint
+msgid "Fin de bloque fijo"
+msgstr "Locked block end"
+
+#: ui/ventana.slint
+msgid "Quitar"
+msgstr "Remove"
+
+#: ui/ventana.slint
+msgid "Quita de la lista las pistas seleccionadas (no borra archivos). La que suena no se quita. Con un bloque fijo seleccionado, primero quita los marcadores y, pulsando otra vez, los temas."
+msgstr "Removes the selected tracks from the playlist (it does not delete files). The playing one is not removed. With a locked block selected, it first removes the markers and, pressing again, the songs."
+
+#: ui/ventana.slint
+msgid "Limpiar"
+msgstr "Clear"
+
+#: ui/ventana.slint
+msgid "Editar"
+msgstr "Edit"
+
+#: ui/ventana.slint
+msgid "Subir"
+msgstr "Up"
+
+#: ui/ventana.slint
+msgid "Bajar"
+msgstr "Down"
+
+#: ui/ventana.slint
+msgid "Mezclar"
+msgstr "Shuffle"
+
+#: ui/ventana.slint
+msgid "Mezcla al azar (shuffle) toda la lista o, si hay varias pistas seleccionadas, solo esas entre ellas. La pista que suena queda primera."
+msgstr "Shuffles the whole playlist or, if several tracks are selected, only those among themselves. The playing track stays first."
+
+#: ui/ventana.slint
+msgid "Ordena por BPM, de menor a mayor, toda la lista o, si hay varias pistas seleccionadas, solo esas entre ellas. A igual tempo, primero el de mayor ranking; los que no tienen tempo van al final."
+msgstr "Sorts by BPM, from lowest to highest, the whole playlist or, if several tracks are selected, only those among themselves. At the same tempo, the highest rated first; those without a tempo go to the end."
+
+#: ui/ventana.slint
+msgid "Validar"
+msgstr "Validate"
+
+#: ui/ventana.slint
+msgid "Revisa que existan los archivos de la lista (ofrece quitar los que faltan) y busca temas repetidos: mismo titulo y artista en otro archivo. Por cada repetido pregunta si quitarlo."
+msgstr "Checks that the playlist files exist (offers to remove the missing ones) and looks for repeated songs: same title and artist in another file. For each repeat it asks whether to remove it."
+
+#: ui/ventana.slint
+msgid "Buscar (Ctrl+F)"
+msgstr "Search (Ctrl+F)"
+
+#: src/interfaz.rs ui/ventana.slint
+msgid "Sin resultados"
+msgstr "No results"
+
+#: src/interfaz.rs ui/ventana.slint
+msgid "Búsqueda no válida"
+msgstr "Invalid search"
+
+#: ui/ventana.slint
+msgid "Efectos"
+msgstr "Effects"
+
+#: ui/ventana.slint
+msgid "Título del tema, leido de sus etiquetas o corregido en el editor. Al pasar el puntero por un titulo se ve la ruta del archivo. Doble clic: reproducir."
+msgstr "Song title, read from its tags or corrected in the editor. Hovering over a title shows the file path. Double-click: play."
+
+#: ui/ventana.slint
+msgid "Artista del tema, leido de sus etiquetas o corregido en el editor. Doble clic: reproducir."
+msgstr "Song artist, read from its tags or corrected in the editor. Double-click: play."
+
+#: ui/ventana.slint
+msgid "Duración del tema en minutos, segundos y decimas. Doble clic: abrir el editor."
+msgstr "Song length in minutes, seconds and tenths. Double-click: open the editor."
+
+#: ui/ventana.slint
+msgid "Que es cada elemento: Tema, Tema editado, Comercial, Anuncio, Publicidad, Podcast, Efecto o Seco (vacio: sin clasificar, suena como un Tema). Se fija en el editor. Todo lo que no es un Tema (o Tema editado) suena sin mezcla, puede repetirse y lleva una franja de color; comercial, anuncio y publicidad ademas se pintan en verde azulado. Para que Mezclar no desarme una tanda, enciérrela en un bloque fijo. Doble clic: abrir el editor."
+msgstr "What each item is: Song, Edited song, Commercial, Announcement, Advertising, Podcast, Effect or Dry voice (empty: unclassified, plays like a Song). It is set in the editor. Everything that is not a Song (or Edited song) plays without mixing, can repeat and has a color stripe; commercials, announcements and advertising are also painted teal. So that Shuffle does not break up a break, enclose it in a locked block. Double-click: open the editor."
+
+#: ui/ventana.slint
+msgid "Valoración del tema, de 0 a 5 estrellas. Se fija en el editor; a igual tempo, el botón BPM pone primero los de mayor ranking. Doble clic: abrir el editor."
+msgstr "Song rating, from 0 to 5 stars. It is set in the editor; at the same tempo, the BPM button puts the highest rated first. Double-click: open the editor."
+
+#: ui/ventana.slint
+msgid "Estilo musical del tema, leido de sus etiquetas o corregido en el editor; no cambia como suena (eso lo decide el Tipo). Al pasar el puntero se ve completo. Doble clic: abrir el editor."
+msgstr "Musical style of the song, read from its tags or corrected in the editor; it does not change how it plays (the Type decides that). Hover to see it in full. Double-click: open the editor."
+
+#: ui/ventana.slint
+msgid "Año de edición del tema, leído de sus etiquetas, corregido en el editor o completado desde MusicBrainz. Se busca con anio:, por ejemplo anio:1990..1999. Doble clic: abrir el editor."
+msgstr "Release year of the song, read from its tags, corrected in the editor or completed from MusicBrainz. Search it with year:, for example year:1990..1999. Double-click: open the editor."
+
+#: ui/ventana.slint
+msgid "Tempo del tema en golpes por minuto, estimado en el analisis. Con el boton BPM se ordena la lista por este valor. Doble clic: abrir el editor."
+msgstr "Song tempo in beats per minute, estimated by the analysis. The BPM button sorts the playlist by this value. Double-click: open the editor."
+
+#: ui/ventana.slint
+msgid "Segundos de la ventana dentro de la cual un efecto en modo trabado puede sonar entero (en cursiva: sugerida por el análisis). Su inicio y su fin se ven al pasar el puntero, en el panel de detalle y en el editor. Doble clic: abrir el editor."
+msgstr "Seconds of the window in which an effect in locked mode can play in full (in italics: suggested by the analysis). Its start and end show when hovering, in the detail panel and in the editor. Double-click: open the editor."
+
+#: ui/ventana.slint
+msgid "Mezcla"
+msgstr "Mix"
+
+#: ui/ventana.slint
+msgid "Segundos que este tema se mezcla con el siguiente: el menor entre su outro y la intro del siguiente. Doble clic: abrir el editor."
+msgstr "Seconds this song mixes with the next one: the shorter of its outro and the next one's intro. Double-click: open the editor."
+
+#: ui/ventana.slint
+msgid "Encolar como siguiente"
+msgstr "Queue as next"
+
+#: ui/ventana.slint
+msgid "Editar pista..."
+msgstr "Edit track..."
+
+#: src/interfaz.rs ui/ventana.slint
+msgid "Quitar de la lista"
+msgstr "Remove from the playlist"
+
+#: ui/ventana.slint
+msgid "Actualizar datos"
+msgstr "Update data"
+
+#: ui/ventana.slint
+msgid "Releer las etiquetas del archivo..."
+msgstr "Reread the file tags..."
+
+#: ui/ventana.slint
+msgid "Completar desde MusicBrainz..."
+msgstr "Complete from MusicBrainz..."
+
+#: ui/ventana.slint
+msgid "Descatalogar..."
+msgstr "Remove from the catalog..."
+
+#: ui/ventana.slint
+msgid "Base del anuncio HTH"
+msgstr "TTH announcement bed"
+
+#: ui/ventana.slint
+msgid "Sin base (la voz sola)"
+msgstr "No bed (voice only)"
+
+#: ui/ventana.slint
+msgid "Nota: {}"
+msgstr "Note: {}"
+
+#: src/interfaz.rs ui/ventana.slint
+msgid "La lista esta vacia"
+msgstr "The playlist is empty"
+
+#: ui/ventana.slint
+msgid "Doble clic en el numero, el titulo o el artista: reproducir. En las demas columnas: abrir el editor (overlay en cursiva: sugerido). En un marcador: seleccionar el bloque. Las pistas nuevas se insertan despues de la seleccionada."
+msgstr "Double-click on the number, title or artist: play. On the other columns: open the editor (overlay in italics: suggested). On a marker: select the block. New tracks are inserted after the selected one."
+
+#: ui/ventana.slint
+msgid "Suma de las duraciones descontando los segundos de mezcla entre temas. El restante cuenta desde la posicion actual hasta el final de la lista."
+msgstr "Sum of the lengths minus the mix seconds between songs. The remaining time counts from the current position to the end of the playlist."
+
+#: ui/ventana.slint
+msgid "Hoja anterior"
+msgstr "Previous page"
+
+#: ui/ventana.slint
+msgid "Hoja siguiente"
+msgstr "Next page"
+
+#: ui/ventana.slint
+msgid "Agregar una hoja de efectos"
+msgstr "Add an effects page"
+
+#: ui/ventana.slint
+msgid "Quitar esta hoja de efectos"
+msgstr "Remove this effects page"
+
+#: ui/ventana.slint
+msgid "Modo libre"
+msgstr "Free mode"
+
+#: ui/ventana.slint
+msgid "Ocultar los ajustes de los efectos"
+msgstr "Hide the effect settings"
+
+#: ui/ventana.slint
+msgid "Mostrar los ajustes de los efectos: bajar la música, ajuste inteligente, volumen del efecto, nivel de la música, atenuación y recuperación"
+msgstr "Show the effect settings: duck the music, smart adjustment, effect volume, music level, ducking and recovery"
+
+#: ui/ventana.slint
+msgid "Bajar la música durante el efecto"
+msgstr "Duck the music during the effect"
+
+#: ui/ventana.slint
+msgid "Ajuste inteligente"
+msgstr "Smart adjustment"
+
+#: ui/ventana.slint
+msgid "Iguala el efecto con la musica y baja la musica segun lo fuerte que suena ese tramo"
+msgstr "Matches the effect to the music and ducks the music according to how loud that passage is"
+
+#: ui/ventana.slint
+msgid "Volumen del efecto. Con ajuste inteligente, 0 dB es la sonoridad de la musica. Doble clic: 0 dB"
+msgstr "Effect volume. With smart adjustment, 0 dB is the loudness of the music. Double-click: 0 dB"
+
+#: ui/ventana.slint
+msgid "Con ajuste inteligente: cuántos dB por debajo del efecto queda la música (más, la baja más). También vale para la voz del anuncio HTH sobre su base. Doble clic: 12 dB"
+msgstr "With smart adjustment: how many dB below the effect the music stays (more ducks it more). It also applies to the TTH announcement voice over its bed. Double-click: 12 dB"
+
+#: ui/ventana.slint
+msgid "Sin ajuste inteligente. Doble clic: volver al 50 %"
+msgstr "Without smart adjustment. Double-click: back to 50 %"
+
+#: ui/ventana.slint
+msgid "Segundos en que la musica baja; la bajada termina justo cuando arranca el efecto. Doble clic: 40 ms (1/25 s)"
+msgstr "Seconds over which the music ducks; the ducking ends just as the effect starts. Double-click: 40 ms (1/25 s)"
+
+#: ui/ventana.slint
+msgid "Recuperacion: segundos en que la musica vuelve despues del efecto. Doble clic: 0,8 s"
+msgstr "Recovery: seconds over which the music returns after the effect. Double-click: 0.8 s"
+
+#: ui/ventana.slint
+msgid "Detener efecto"
+msgstr "Stop effect"
+
+#: ui/ventana.slint
+msgid "Insertar el anuncio HTH"
+msgstr "Insert the TTH announcement"
+
+#: ui/ventana.slint
+msgid "Cambiar la localidad del clima..."
+msgstr "Change the weather location..."
+
+#: ui/ventana.slint
+msgid "Actualizar el clima ahora"
+msgstr "Update the weather now"
+
+#: ui/ventana.slint
+msgid "Carpeta de las locuciones..."
+msgstr "Voice clips folder..."
+
+#: ui/ventana.slint
+msgid "Inserta en la lista el anuncio de hora, temperatura y humedad, despues de la pista seleccionada. Se arma con la hora del momento en que sale al aire; con bases musicales, se dice sobre una base en su ventana de overlay. Clic derecho: cambiar la localidad del clima, actualizarlo ahora o elegir la carpeta de las locuciones"
+msgstr "Inserts the time, temperature and humidity (TTH) announcement in the playlist, after the selected track. It is built with the time at which it goes on air; with music beds, it is spoken over a bed in its overlay window. Right-click: change the weather location, update it now or choose the voice clips folder"
+
+#: ui/ventana.slint
+msgid "Elegir la carpeta de las locuciones del anuncio HTH"
+msgstr "Choose the TTH announcement voice clips folder"
+
+#: ui/ventana.slint
+msgid "Clima de Open-Meteo que dice el anuncio HTH. Se consulta cada 10 minutos; si pasa una hora sin una lectura buena, el anuncio dice solo la hora. Clic (o clic derecho en HTH): cambiar la localidad"
+msgstr "Open-Meteo weather that the TTH announcement says. It is checked every 10 minutes; if an hour goes by without a good reading, the announcement only says the time. Click (or right-click on TTH): change the location"
+
+#: src/audio/decodificador.rs
+msgid "mono"
+msgstr "mono"
+
+#: src/audio/decodificador.rs
+msgid "estéreo"
+msgstr "stereo"
+
+#: src/audio/decodificador.rs
+msgid "{canales} canales"
+msgstr "{canales} channels"
+
+#: src/audio/decodificador.rs
+msgid "No se pudo abrir {nombre}: {error}"
+msgstr "Could not open {nombre}: {error}"
+
+#: src/audio/decodificador.rs
+msgid "Formato no reconocido en {nombre}: {error}"
+msgstr "Unrecognized format in {nombre}: {error}"
+
+#: src/audio/decodificador.rs
+msgid "{nombre} no tiene una pista de audio"
+msgstr "{nombre} has no audio track"
+
+#: src/audio/decodificador.rs
+msgid "{nombre} no tiene parametros de audio"
+msgstr "{nombre} has no audio parameters"
+
+#: src/audio/decodificador.rs
+msgid "Codec no soportado en {nombre}: {error}"
+msgstr "Unsupported codec in {nombre}: {error}"
+
+#: src/audio/decodificador.rs
+msgid "Posicion de busqueda invalida"
+msgstr "Invalid seek position"
+
+#: src/audio/decodificador.rs
+msgid "No se pudo buscar la posicion: {error}"
+msgstr "Could not seek: {error}"
+
+#: src/audio/mezclador.rs
+msgid "No se encontro un dispositivo de salida de audio"
+msgstr "No audio output device was found"
+
+#: src/audio/mezclador.rs
+msgid "Identificador de salida invalido ({id}): {error}"
+msgstr "Invalid output identifier ({id}): {error}"
+
+#: src/audio/mezclador.rs
+msgid "La salida de audio elegida no esta conectada"
+msgstr "The chosen audio output is not connected"
+
+#: src/audio/mezclador.rs
+msgid "No se pudo consultar la salida de audio: {error}"
+msgstr "Could not query the audio output: {error}"
+
+#: src/audio/mezclador.rs
+msgid "Formato de salida no soportado: {otro}"
+msgstr "Unsupported output format: {otro}"
+
+#: src/audio/mezclador.rs
+msgid "No se pudo iniciar la salida de audio: {error}"
+msgstr "Could not start the audio output: {error}"
+
+#: src/audio/mezclador.rs
+msgid "No se pudo abrir la salida de audio: {error}"
+msgstr "Could not open the audio output: {error}"
+
+#: src/audio/motor.rs
+msgid "El archivo no existe o no es accesible: {}"
+msgstr "The file does not exist or is not accessible: {}"
+
+#: src/audio/motor.rs
+msgid "No se pudo iniciar el hilo de audio: {error}"
+msgstr "Could not start the audio thread: {error}"
+
+#: src/audio/motor.rs
+msgid "No se pudo iniciar la reproduccion de {nombre}: {error}"
+msgstr "Could not start playing {nombre}: {error}"
+
+#: src/audio/onda.rs
+msgid "cache de onda de otra version"
+msgstr "waveform cache from another version"
+
+#: src/audio/onda.rs
+msgid "cache de onda incompleta"
+msgstr "incomplete waveform cache"
+
+#: src/dominio/anunciantes.rs
+msgid "Indique el nombre comercial del anunciante."
+msgstr "Enter the advertiser's trade name."
+
+#: src/dominio/anunciantes.rs
+msgid "El correo «{}» no es valido (ejemplo: ventas@empresa.com)."
+msgstr "The email «{}» is not valid (example: sales@company.com)."
+
+#: src/dominio/anunciantes.rs
+msgid "El telefono «{}» solo puede tener numeros, espacios, guiones, parentesis y +."
+msgstr "The phone «{}» can only have numbers, spaces, hyphens, parentheses and +."
+
+#: src/dominio/anunciantes.rs
+msgid "razon social"
+msgstr "company name"
+
+#: src/dominio/anunciantes.rs
+msgid "telefono o correo"
+msgstr "phone or email"
+
+#: src/dominio/anunciantes.rs
+msgid "El CUIT «{texto}» solo puede tener numeros y guiones."
+msgstr "The tax ID «{texto}» can only have numbers and hyphens."
+
+#: src/dominio/anunciantes.rs
+msgid "El CUIT «{texto}» debe tener 11 digitos (tiene {})."
+msgstr "The tax ID «{texto}» must have 11 digits (it has {})."
+
+#: src/dominio/anunciantes.rs
+msgid "El CUIT «{texto}» no es valido: revise los numeros."
+msgstr "The tax ID «{texto}» is not valid: check the numbers."
+
+#: src/dominio/anunciantes.rs
+msgid "El CUIT «{texto}» no es valido: el digito verificador deberia ser {esperado}."
+msgstr "The tax ID «{texto}» is not valid: the check digit should be {esperado}."
+
+#: src/dominio/consulta.rs
+msgid "anio"
+msgstr "year"
+
+#: src/dominio/consulta.rs
+msgid "ranking"
+msgstr "rating"
+
+#: src/dominio/consulta.rs
+msgid "duracion"
+msgstr "duration"
+
+#: src/dominio/consulta.rs
+msgid "Falta el valor después de «{nombre}:»"
+msgstr "The value after «{nombre}:» is missing"
+
+#: src/dominio/consulta.rs
+msgid "#508 o #10..20"
+msgstr "#508 or #10..20"
+
+#: src/dominio/consulta.rs
+msgid "anio:1995, anio:>=2000 o anio:1990..1999"
+msgstr "year:1995, year:>=2000 or year:1990..1999"
+
+#: src/dominio/consulta.rs
+msgid "ranking:5 o ranking:>=4"
+msgstr "rating:5 or rating:>=4"
+
+#: src/dominio/consulta.rs
+msgid "bpm:120 o bpm:118..126"
+msgstr "bpm:120 or bpm:118..126"
+
+#: src/dominio/consulta.rs
+msgid "duracion:<3:30 o duracion:3..5 (minutos)"
+msgstr "duration:<3:30 or duration:3..5 (minutes)"
+
+#: src/dominio/consulta.rs
+msgid "No se entiende «{valor}» para {}; por ejemplo: {ejemplo}"
+msgstr "«{valor}» is not understood for {}; for example: {ejemplo}"
+
+#: src/dominio/consulta.rs
+msgid "No se entiende «{valor}» para sonado; por ejemplo: sonado:hoy, sonado:7d, sonado:>30d, sonado:2026-11-03, sonado:<01/10/2026 o sonado:nunca"
+msgstr "«{valor}» is not understood for played; for example: played:today, played:7d, played:>30d, played:2026-11-03, played:<01/10/2026 or played:never"
+
+#: src/dominio/ordenes.rs
+msgid "cada {} h"
+msgstr "every {} h"
+
+#: src/dominio/ordenes.rs
+msgid "cada {minutos} min"
+msgstr "every {minutos} min"
+
+#: src/dominio/ordenes.rs
+msgid "{veces} por dia"
+msgstr "{veces} per day"
+
+#: src/dominio/ordenes.rs
+msgid "a las {}"
+msgstr "at {}"
+
+#: src/dominio/ordenes.rs
+msgid "Indique el nombre de la orden."
+msgstr "Enter the order name."
+
+#: src/dominio/ordenes.rs
+msgid "Indique el anunciante."
+msgstr "Enter the advertiser."
+
+#: src/dominio/ordenes.rs
+msgid "La vigencia termina antes de empezar."
+msgstr "The validity ends before it starts."
+
+#: src/dominio/ordenes.rs src/dominio/tandas.rs
+msgid "Elija al menos un dia de la semana."
+msgstr "Choose at least one day of the week."
+
+#: src/dominio/ordenes.rs
+msgid "La franja horaria debe terminar despues de empezar (de 00:00 a 23:59)."
+msgstr "The time slot must end after it starts (from 00:00 to 23:59)."
+
+#: src/dominio/ordenes.rs
+msgid "El intervalo va de 5 minutos a 1440 (un dia)."
+msgstr "The interval goes from 5 minutes to 1440 (one day)."
+
+#: src/dominio/ordenes.rs
+msgid "Las veces por dia van de 1 a 96."
+msgstr "Times per day go from 1 to 96."
+
+#: src/dominio/ordenes.rs
+msgid "Indique al menos un horario."
+msgstr "Enter at least one time."
+
+#: src/dominio/ordenes.rs
+msgid "Indique al menos un aviso."
+msgstr "Add at least one spot."
+
+#: src/dominio/ordenes.rs
+msgid "{} de {} a {}, {}, del {} al {}"
+msgstr "{} from {} to {}, {}, from {} to {}"
+
+#: src/dominio/ordenes.rs
+msgid "no hay tandas entre las {} y las {}"
+msgstr "there are no breaks between {} and {}"
+
+#: src/dominio/ordenes.rs
+msgid "ya sale en las tandas posibles"
+msgstr "it already airs in the possible breaks"
+
+#: src/dominio/ordenes.rs
+msgid "otro aviso de su rubro ocupa las tandas posibles"
+msgstr "another spot of its sector takes the possible breaks"
+
+#: src/dominio/ordenes.rs
+msgid "las tandas posibles estan llenas"
+msgstr "the possible breaks are full"
+
+#: src/dominio/tandas.rs
+msgid "Los horarios van de 00:00 a 23:59."
+msgstr "Times go from 00:00 to 23:59."
+
+#: src/dominio/tandas.rs
+msgid "El intervalo va de 1 minuto a 1440 (un dia)."
+msgstr "The interval goes from 1 minute to 1440 (one day)."
+
+#: src/dominio/tandas.rs
+msgid "El horario limite solo tiene sentido con un intervalo ('cada')."
+msgstr "The end time only makes sense with an interval ('every')."
+
+#: src/dominio/tandas.rs
+msgid "El horario limite no puede ser anterior al primer horario."
+msgstr "The end time cannot be before the first time."
+
+#: src/dominio/tandas.rs
+msgid " y cada {minutos} min"
+msgstr " and every {minutos} min"
+
+#: src/dominio/tandas.rs
+msgid "Horario invalido: '{texto}' (use HH:MM, de 00:00 a 23:59)."
+msgstr "Invalid time: '{texto}' (use HH:MM, from 00:00 to 23:59)."
+
+#: src/dominio/tandas.rs
+msgid "Dia desconocido: '{texto}' (use lun, mar, mie, jue, vie, sab, dom, todos o habiles)."
+msgstr "Unknown day: '{texto}' (use lun, mar, mie, jue, vie, sab, dom, todos or habiles)."
+
+#: src/dominio/tandas.rs
+msgid "todos los dias"
+msgstr "every day"
+
+#: src/dominio/tandas.rs
+msgid "lun a vie"
+msgstr "Mon to Fri"
+
+#: src/dominio/tandas.rs
+msgid "sab y dom"
+msgstr "Sat and Sun"
+
+#: src/dominio/tandas.rs
+msgid "Modo desconocido: '{clave}' (use tolerancia o exacta)."
+msgstr "Unknown mode: '{clave}' (use tolerancia or exacta)."
+
+#: src/dominio/tandas.rs
+msgid "con tolerancia"
+msgstr "with tolerance"
+
+#: src/dominio/tandas.rs
+msgid "a hora exacta"
+msgstr "at the exact time"
+
+#: src/dominio.rs
+msgid "inicio del overlay"
+msgstr "overlay start"
+
+#: src/dominio.rs
+msgid "fin del overlay"
+msgstr "overlay end"
+
+#: src/dominio.rs
+msgid "El fin del overlay debe ser posterior a su inicio"
+msgstr "The overlay end must be after its start"
+
+#: src/dominio.rs
+msgid "El overlay termina en {} pero la pista dura {}"
+msgstr "The overlay ends at {} but the track lasts {}"
+
+#: src/dominio.rs
+msgid "recorte final"
+msgstr "end trim"
+
+#: src/dominio.rs
+msgid "La intro supera la duracion de la pista ({})"
+msgstr "The intro is longer than the track ({})"
+
+#: src/dominio.rs
+msgid "La outro supera la duracion de la pista ({})"
+msgstr "The outro is longer than the track ({})"
+
+#: src/dominio.rs
+msgid "El fin del tema debe ser posterior a su inicio"
+msgstr "The song end must be after its start"
+
+#: src/dominio.rs
+msgid "El {campo} debe ser un numero de segundos mayor o igual a 0"
+msgstr "The {campo} must be a number of seconds greater than or equal to 0"
+
+#: src/dominio.rs
+msgid "'{texto}' no es un tiempo valido (use segundos o m:ss)"
+msgstr "'{texto}' is not a valid time (use seconds or m:ss)"
+
+#: src/dominio.rs
+msgid "La pista no esta en la lista: {}"
+msgstr "The track is not in the playlist: {}"
+
+#: src/idioma.rs
+msgid "No se pudo leer {ruta}: {error}"
+msgstr "Could not read {ruta}: {error}"
+
+#: src/interfaz/actualizacion.rs
+msgid "No se pudo crear la ventana de actualizacion de datos: {error}"
+msgstr "Could not create the data update window: {error}"
+
+#: src/interfaz/actualizacion.rs
+msgid "corregido a mano"
+msgstr "corrected by hand"
+
+#: src/interfaz/actualizacion.rs
+msgid "ficha anterior: no registra correcciones"
+msgstr "older record: corrections not tracked"
+
+#: src/interfaz/actualizacion.rs
+msgid "No hay archivos para releer (los marcadores, los anuncios HTH y los archivos que faltan no tienen etiquetas)."
+msgstr "There are no files to reread (markers, TTH announcements and missing files have no tags)."
+
+#: src/interfaz/actualizacion.rs
+msgid "Etiquetas de los archivos: lo que escribio en ellos otro programa (Picard, Mp3tag...). Los datos que usted corrigio a mano no se marcan solos."
+msgstr "File tags: what another program (Picard, Mp3tag...) wrote in them. Data you corrected by hand is not checked automatically."
+
+#: src/interfaz/actualizacion.rs
+msgid "No se pudo iniciar la lectura: {error}"
+msgstr "Could not start reading: {error}"
+
+#: src/interfaz/actualizacion.rs
+msgid "No hay temas para buscar en MusicBrainz (los avisos, efectos, marcadores y anuncios HTH no se buscan)."
+msgstr "There are no songs to look up in MusicBrainz (spots, effects, markers and TTH announcements are not looked up)."
+
+#: src/interfaz/actualizacion.rs
+msgid "MusicBrainz (musicbrainz.org), la base libre de datos musicales que usa Picard: se busca cada tema por titulo y artista, de a uno por segundo. Solo se marcan los datos que faltan; los demas, revíselos."
+msgstr "MusicBrainz (musicbrainz.org), the free music database Picard uses: each song is looked up by title and artist, one per second. Only missing data is checked; review the rest."
+
+#: src/interfaz/actualizacion.rs src/interfaz/mantenimiento.rs
+msgid "No se pudo iniciar la busqueda: {error}"
+msgstr "Could not start the search: {error}"
+
+#: src/interfaz/actualizacion.rs
+msgid "{} error(es); el ultimo: {error}"
+msgstr "{} error(s); the last one: {error}"
+
+#: src/interfaz/actualizacion.rs
+msgid "{} de {} tema(s) revisados: {} dato(s) distintos en {} tema(s)"
+msgstr "{} of {} song(s) checked: {} different field(s) in {} song(s)"
+
+#: src/interfaz/actualizacion.rs
+msgid "; {} sin una coincidencia segura en MusicBrainz"
+msgstr "; {} without a reliable match in MusicBrainz"
+
+#: src/interfaz/actualizacion.rs
+msgid "Se actualizaron {cambiados} dato(s) en {} tema(s) del catalogo."
+msgstr "{cambiados} field(s) were updated in {} catalog song(s)."
+
+#: src/interfaz/actualizacion.rs
+msgid "Detenido: puede aplicar lo encontrado hasta ahora."
+msgstr "Stopped: you can apply what was found so far."
+
+#: src/interfaz/anunciantes.rs
+msgid "No se pudo crear la ventana de anunciantes: {error}"
+msgstr "Could not create the advertisers window: {error}"
+
+#: src/interfaz/anunciantes.rs
+msgid "Anunciante nuevo: complete al menos el nombre comercial y pulse Cargar anunciante."
+msgstr "New advertiser: fill in at least the trade name and press Save advertiser."
+
+#: src/interfaz/anunciantes.rs
+msgid "¿Quitar la ficha del anunciante «{nombre}»?"
+msgstr "Remove the record of advertiser «{nombre}»?"
+
+#: src/interfaz/anunciantes.rs src/interfaz/ordenes.rs src/interfaz/pauta.rs
+msgid "Cambios descartados."
+msgstr "Changes discarded."
+
+#: src/interfaz/anunciantes.rs
+msgid "No hay un anunciante llamado «{anterior}»."
+msgstr "There is no advertiser called «{anterior}»."
+
+#: src/interfaz/anunciantes.rs
+msgid "Ya hay un anunciante llamado «{}»: elija otro nombre."
+msgstr "There is already an advertiser called «{}»: choose another name."
+
+#: src/interfaz/anunciantes.rs
+msgid " Falta cargar: {}."
+msgstr " Still missing: {}."
+
+#: src/interfaz/anunciantes.rs
+msgid "Anunciante «{anterior}» renombrado a «{nombre}»"
+msgstr "Advertiser «{anterior}» renamed to «{nombre}»"
+
+#: src/interfaz/anunciantes.rs
+msgid "Anunciante «{nombre}» actualizado"
+msgstr "Advertiser «{nombre}» updated"
+
+#: src/interfaz/anunciantes.rs
+msgid "Anunciante «{nombre}» cargado"
+msgstr "Advertiser «{nombre}» saved"
+
+#: src/interfaz/anunciantes.rs
+msgid "; {corregidas} orden(es) actualizada(s)"
+msgstr "; {corregidas} order(s) updated"
+
+#: src/interfaz/anunciantes.rs
+msgid "No hay un anunciante llamado «{nombre}»."
+msgstr "There is no advertiser called «{nombre}»."
+
+#: src/interfaz/anunciantes.rs
+msgid "«{}» tiene {ordenes} orden(es): quitelas antes o desactive el anunciante para conservar su historial."
+msgstr "«{}» has {ordenes} order(s): remove them first or deactivate the advertiser to keep its history."
+
+#: src/interfaz/anunciantes.rs
+msgid "Anunciante «{}» quitado."
+msgstr "Advertiser «{}» removed."
+
+#: src/interfaz/anunciantes.rs
+msgid "{}. {}{}: {}; {total} orden(es), {activas} activa(s){}\n"
+msgstr "{}. {}{}: {}; {total} order(s), {activas} active{}\n"
+
+#: src/interfaz/anunciantes.rs
+msgid "{nombre} ({total} orden(es))"
+msgstr "{nombre} ({total} order(s))"
+
+#: src/interfaz/anunciantes.rs
+msgid "Nombrados en ordenes sin ficha: {}."
+msgstr "Named in orders without a record: {}."
+
+#: src/interfaz/anunciantes.rs
+msgid "«{nombre}» no tiene ficha: complete sus datos y pulse Cargar anunciante."
+msgstr "«{nombre}» has no record: fill in its data and press Save advertiser."
+
+#: src/interfaz/anunciantes.rs
+msgid "{activas} activa(s) de {total}"
+msgstr "{activas} active of {total}"
+
+#: src/interfaz/anunciantes.rs
+msgid "sin ficha: elijalo y carguela"
+msgstr "no record: choose it and fill it in"
+
+#: src/interfaz/anunciantes.rs
+msgid "{} anunciante(s) con ficha"
+msgstr "{} advertiser(s) with a record"
+
+#: src/interfaz/anunciantes.rs
+msgid "; {sin_ficha} nombrado(s) en ordenes SIN FICHA"
+msgstr "; {sin_ficha} named in orders WITHOUT A RECORD"
+
+#: src/interfaz/anunciantes.rs
+msgid "; {incompletos} con datos de facturacion incompletos"
+msgstr "; {incompletos} with incomplete billing data"
+
+#: src/interfaz/anunciantes.rs
+msgid "«{nombre}» esta nombrado en ordenes pero no tiene ficha: complete sus datos y pulse Cargar anunciante."
+msgstr "«{nombre}» is named in orders but has no record: fill in its data and press Save advertiser."
+
+#: src/interfaz/anunciantes.rs
+msgid "Para facturarle falta: {}."
+msgstr "To bill it, missing: {}."
+
+#: src/interfaz/anunciantes.rs
+msgid "«{}» esta inactivo: activelo para cargarle ordenes."
+msgstr "«{}» is inactive: activate it to add orders."
+
+#: src/interfaz/avisos.rs
+msgid "No se pudo crear el selector de avisos: {error}"
+msgstr "Could not create the spot selector: {error}"
+
+#: src/interfaz/avisos.rs
+msgid "Avisos fuera del catalogo"
+msgstr "Spots outside the catalog"
+
+#: src/interfaz/avisos.rs
+msgid "Archivos de audio"
+msgstr "Audio files"
+
+#: src/interfaz/avisos.rs
+msgid "la tanda"
+msgstr "the break"
+
+#: src/interfaz/avisos.rs
+msgid "la orden"
+msgstr "the order"
+
+#: src/interfaz/avisos.rs
+msgid "sin tipo: asignele uno"
+msgstr "no type: assign one"
+
+#: src/interfaz/avisos.rs
+msgid "{}: no va en tandas"
+msgstr "{}: does not go in breaks"
+
+#: src/interfaz/avisos.rs
+msgid "Ningun tema del catalogo con ese filtro"
+msgstr "No catalog item with that filter"
+
+#: src/interfaz/avisos.rs
+msgid "Ningun tema coincide"
+msgstr "No song matches"
+
+#: src/interfaz/avisos.rs src/interfaz/buscador.rs
+msgid "{total} tema(s) coinciden; se muestran los primeros {}: afine la busqueda"
+msgstr "{total} song(s) match; the first {} are shown: refine the search"
+
+#: src/interfaz/avisos.rs
+msgid ". En el catalogo hay {} aviso(s) con tipo de tanda"
+msgstr ". The catalog has {} spot(s) with a break type"
+
+#: src/interfaz/avisos.rs
+msgid " y {} elemento(s) SIN TIPO: reviselos con el filtro «Sin tipo» y asigneles uno (un aviso sin tipo no puede ir en tandas ni ordenes)"
+msgstr " and {} item(s) WITHOUT A TYPE: check them with the «No type» filter and assign one (a spot without a type cannot go in breaks or orders)"
+
+#: src/interfaz/avisos.rs
+msgid "ya esta"
+msgstr "already there"
+
+#: src/interfaz/avisos.rs
+msgid "Elija uno o mas avisos de la lista."
+msgstr "Choose one or more spots from the list."
+
+#: src/interfaz/avisos.rs
+msgid "Se agregaron {agregados} de {total} aviso(s) a {}"
+msgstr "{agregados} of {total} spot(s) were added to {}"
+
+#: src/interfaz/avisos.rs
+msgid "{} ya estaban"
+msgstr "{} were already there"
+
+#: src/interfaz/avisos.rs
+msgid " y {} mas"
+msgstr " and {} more"
+
+#: src/interfaz/avisos.rs
+msgid "{} no se agregaron: {}{resto}"
+msgstr "{} were not added: {}{resto}"
+
+#: src/interfaz/avisos.rs
+msgid " Asigneles un tipo con el selector de abajo y vuelva a agregarlos."
+msgstr " Assign them a type with the selector below and add them again."
+
+#: src/interfaz/avisos.rs
+msgid "{agregados} aviso(s) agregado(s) del catalogo; se guardan con el boton de abajo."
+msgstr "{agregados} spot(s) added from the catalog; they are saved with the button below."
+
+#: src/interfaz/avisos.rs
+msgid "Tipo {} asignado a {} aviso(s) en el catalogo."
+msgstr "Type {} assigned to {} spot(s) in the catalog."
+
+#: src/interfaz/avisos.rs
+msgid "{agregados} aviso(s) agregado(s) desde archivos a {}."
+msgstr "{agregados} spot(s) added from files to {}."
+
+#: src/interfaz/avisos.rs
+msgid " {} sin un tipo valido ({}): eligalos aqui con el filtro «Sin tipo» y use Asignar tipo; asi tambien quedan clasificados en el catalogo."
+msgstr " {} without a valid type ({}): choose them here with the «No type» filter and use Assign type; that way they are also classified in the catalog."
+
+#: src/interfaz/buscador.rs
+msgid "«#» busca por posición en la lista; en el catálogo no hay posiciones"
+msgstr "«#» searches by position in the playlist; the catalog has no positions"
+
+#: src/interfaz/buscador.rs
+msgid "No se pudo crear el buscador del catalogo: {error}"
+msgstr "Could not create the catalog search: {error}"
+
+#: src/interfaz/buscador.rs
+msgid "{en_catalogo} tema(s) en el catalogo"
+msgstr "{en_catalogo} song(s) in the catalog"
+
+#: src/interfaz/buscador.rs
+msgid "Ningun tema del catalogo coincide"
+msgstr "No catalog song matches"
+
+#: src/interfaz/buscador.rs
+msgid "{total} tema(s) coinciden"
+msgstr "{total} song(s) match"
+
+#: src/interfaz/buscador.rs
+msgid "Elija uno o mas temas de la lista de resultados."
+msgstr "Choose one or more songs from the results."
+
+#: src/interfaz/buscador.rs
+msgid "Se insertaron {} de {total} tema(s) en la lista"
+msgstr "{} of {total} song(s) were inserted in the playlist"
+
+#: src/interfaz/buscador.rs
+msgid "{ya_estaban} ya estaban"
+msgstr "{ya_estaban} were already there"
+
+#: src/interfaz/buscador.rs
+msgid "{} sin archivo (ver el mantenimiento del catalogo)"
+msgstr "{} without a file (see catalog maintenance)"
+
+#: src/interfaz/editor.rs
+msgid "- Se quitara el efecto fijado: {efecto}."
+msgstr "- The pinned effect will be removed: {efecto}."
+
+#: src/interfaz/editor.rs
+msgid " Se quita la ventana actual ({} a {})."
+msgstr " The current window ({} to {}) is removed."
+
+#: src/interfaz/editor.rs
+msgid "- No estara disponible la ventana de overlay.{ventana}"
+msgstr "- The overlay window will not be available.{ventana}"
+
+#: src/interfaz/editor.rs
+msgid "- Tambien se quitan la intro y la outro: el tema suena sin mezcla."
+msgstr "- The intro and outro are removed too: the song plays without mixing."
+
+#: src/interfaz/editor.rs
+msgid "Un elemento de tipo {} no es un Tema: suena sin mezcla.\n\n{}\n\n¿Desea cambiar el tipo?"
+msgstr "An item of type {} is not a Song: it plays without mixing.\n\n{}\n\nDo you want to change the type?"
+
+#: src/interfaz/editor.rs
+msgid "Tipo sin mezcla"
+msgstr "Type without mixing"
+
+#: src/interfaz/editor.rs
+msgid "Sugerida: {} a {} sobre la {} (confianza {:.0} %)."
+msgstr "Suggested: {} to {} over the {} (confidence {:.0} %)."
+
+#: src/interfaz/editor.rs
+msgid "Sin sugerencia: no se encontro un tramo instrumental claro de al menos 4 s."
+msgstr "No suggestion: no clear instrumental passage of at least 4 s was found."
+
+#: src/interfaz/editor.rs
+msgid "El BPM debe ser un numero entre {BPM_MINIMO} y {BPM_MAXIMO}, o quedar vacio."
+msgstr "The BPM must be a number between {BPM_MINIMO} and {BPM_MAXIMO}, or be left empty."
+
+#: src/interfaz.rs src/interfaz/editor.rs src/interfaz/hth.rs
+msgid "Posicion {} fuera de la lista (1 a {})."
+msgstr "Position {} is outside the playlist (1 to {})."
+
+#: src/interfaz/editor.rs
+msgid "El boton {boton} no tiene un archivo asignado."
+msgstr "Button {boton} has no file assigned."
+
+#: src/interfaz/editor.rs
+msgid "No existe el archivo del boton {boton}: {}"
+msgstr "The file of button {boton} does not exist: {}"
+
+#: src/interfaz/editor.rs
+msgid "Hoja {} · {boton}: {}"
+msgstr "Page {} · {boton}: {}"
+
+#: src/interfaz/editor.rs
+msgid "Calculando la forma de onda..."
+msgstr "Calculating the waveform..."
+
+#: src/interfaz/editor.rs
+msgid "Buscando un tramo instrumental para el overlay..."
+msgstr "Looking for an instrumental passage for the overlay..."
+
+#: src/interfaz/editor.rs
+msgid "No se pudo abrir el editor: {error}"
+msgstr "Could not open the editor: {error}"
+
+#: src/interfaz/editor.rs
+msgid "Editor abierto con {}."
+msgstr "Editor opened with {}."
+
+#: src/interfaz/editor.rs
+msgid "No se pudo calcular la forma de onda: {error}"
+msgstr "Could not calculate the waveform: {error}"
+
+#: src/interfaz/editor.rs
+msgid "No se pudo leer la forma de onda: {error}"
+msgstr "Could not read the waveform: {error}"
+
+#: src/interfaz/editor.rs
+msgid "Automatico: empieza en {}, termina en {}, intro de {} s y outro de {} s. Guarde para aplicarlo."
+msgstr "Automatic: starts at {}, ends at {}, {} s intro and {} s outro. Save to apply it."
+
+#: src/interfaz/editor.rs
+msgid "Ventana sugerida. Pruebela con \"Ventana con efecto\" y guarde."
+msgstr "Suggested window. Try it with \"Window with effect\" and save."
+
+#: src/interfaz/editor.rs
+msgid "No hay sugerencia: sin ventana, los efectos suenan enseguida."
+msgstr "No suggestion: without a window, effects play right away."
+
+#: src/interfaz/editor.rs
+msgid "El tiempo supera la duracion de la pista ({texto})."
+msgstr "The time exceeds the track length ({texto})."
+
+#: src/interfaz/editor.rs
+msgid "El fin del tema debe ser posterior a su inicio."
+msgstr "The song end must be after its start."
+
+#: src/interfaz/editor.rs
+msgid "El overlay debe terminar despues de empezar."
+msgstr "The overlay must end after it starts."
+
+#: src/interfaz/editor.rs
+msgid "El anio debe ser un numero entre 1000 y 2999 (o quedar vacio)."
+msgstr "The year must be a number between 1000 and 2999 (or be left empty)."
+
+#: src/interfaz/editor.rs
+msgid ". Base del anuncio HTH: {aviso}"
+msgstr ". TTH announcement bed: {aviso}"
+
+#: src/interfaz/editor.rs
+msgid "{}: sin intro, outro, ventana de overlay ni efecto fijado; solo cuentan el inicio y el fin. Guarde para aplicarlo."
+msgstr "{}: no intro, outro, overlay window or pinned effect; only the start and end count. Save to apply it."
+
+#: src/interfaz/editor.rs
+msgid "Todavia se esta calculando la forma de onda; pruebe en un momento."
+msgstr "The waveform is still being calculated; try again in a moment."
+
+#: src/interfaz/editor.rs
+msgid "BPM calculado: {} (estimado sobre todo el tema). Guarde para aplicarlo."
+msgstr "Calculated BPM: {} (estimated over the whole song). Save to apply it."
+
+#: src/interfaz/editor.rs
+msgid "No se encontro un ritmo claro en el tema; puede escribir el BPM a mano."
+msgstr "No clear beat was found in the song; you can type the BPM by hand."
+
+#: src/interfaz/editor.rs
+msgid "BPM {} → {}. Guarde para aplicarlo."
+msgstr "BPM {} → {}. Save to apply it."
+
+#: src/interfaz/editor.rs
+msgid "{} BPM queda fuera del rango ({BPM_MINIMO} a {BPM_MAXIMO})."
+msgstr "{} BPM is out of range ({BPM_MINIMO} to {BPM_MAXIMO})."
+
+#: src/interfaz/editor.rs
+msgid "Escriba o calcule un BPM primero."
+msgstr "Type or calculate a BPM first."
+
+#: src/interfaz/editor.rs
+msgid "El editor no esta abierto: al abrirlo aparece sobre la ventana principal."
+msgstr "The editor is not open: when opened it appears over the main window."
+
+#: src/interfaz/editor.rs
+msgid "El editor se centro sobre la ventana principal."
+msgstr "The editor was centered over the main window."
+
+#: src/interfaz/editor.rs
+msgid "El editor se abrira siempre centrado sobre la ventana principal."
+msgstr "The editor will always open centered over the main window."
+
+#: src/interfaz/editor.rs
+msgid "El editor se abrira donde quedo la ultima vez (si esa pantalla esta conectada)."
+msgstr "The editor will open where it was last time (if that screen is connected)."
+
+#: src/interfaz/editor.rs
+msgid "Los botones muestran solo el icono; el nombre aparece al pasar el puntero."
+msgstr "Buttons show only the icon; the name appears when hovering."
+
+#: src/interfaz/editor.rs
+msgid "Los botones muestran el icono y el texto (en ventanas angostas quedan solo los iconos)."
+msgstr "Buttons show the icon and the label (narrow windows show only the icons)."
+
+#: src/interfaz/editor.rs
+msgid "Salidas de audio actualizadas: {cantidad} distinta(s) de la de la musica."
+msgstr "Audio outputs updated: {cantidad} different from the music one."
+
+#: src/interfaz/editor.rs
+msgid "La preescucha suena por {}, aun con la musica sonando."
+msgstr "The preview plays through {}, even with the music playing."
+
+#: src/interfaz/editor.rs
+msgid "La preescucha comparte la salida de la musica: se usa con la musica detenida."
+msgstr "The preview shares the music output: use it with the music stopped."
+
+#: src/interfaz/editor.rs
+msgid "Detene o pausa la musica para preescuchar."
+msgstr "Stop or pause the music to preview."
+
+#: src/interfaz/editor.rs
+msgid "No se pudo preescuchar: {error}"
+msgstr "Could not preview: {error}"
+
+#: src/interfaz/editor.rs
+msgid "No se pudo hacer sonar el efecto: {error}"
+msgstr "Could not play the effect: {error}"
+
+#: src/interfaz/editor.rs
+msgid "No se pudo preescuchar: {motivo}"
+msgstr "Could not preview: {motivo}"
+
+#: src/interfaz/editor.rs
+msgid "Ultima prueba: {}"
+msgstr "Last test: {}"
+
+#: src/interfaz/hth.rs
+msgid "Hora, temperatura y humedad"
+msgstr "Time, temperature and humidity"
+
+#: src/interfaz/hth.rs
+msgid "hace {segundos} s"
+msgstr "{segundos} s ago"
+
+#: src/interfaz/hth.rs
+msgid "hace {} min"
+msgstr "{} min ago"
+
+#: src/interfaz/hth.rs
+msgid "hace {} h"
+msgstr "{} h ago"
+
+#: src/interfaz/hth.rs
+msgid "hace {} h {} min"
+msgstr "{} h {} min ago"
+
+#: src/interfaz/hth.rs
+msgid "{localidad}: {} °C, humedad {} %\nUltima lectura {}"
+msgstr "{localidad}: {} °C, humidity {} %\nLast reading {}"
+
+#: src/interfaz/hth.rs
+msgid " (sin conexion: reintentando)"
+msgstr " (offline: retrying)"
+
+#: src/interfaz/hth.rs
+msgid "{localidad}: sin datos\nSin conexion; ultima lectura {}"
+msgstr "{localidad}: no data\nOffline; last reading {}"
+
+#: src/interfaz/hth.rs
+msgid "{localidad}: sin datos\nSin conexion con el servicio del clima"
+msgstr "{localidad}: no data\nNo connection to the weather service"
+
+#: src/interfaz/hth.rs
+msgid "{localidad}: consultando el clima..."
+msgstr "{localidad}: checking the weather..."
+
+#: src/interfaz/hth.rs
+msgid "{localidad}: sin datos\nSe consulta al usar el anuncio HTH"
+msgstr "{localidad}: no data\nIt is checked when the TTH announcement is used"
+
+#: src/interfaz/hth.rs
+msgid "{} °C · humedad {} % · {localidad}"
+msgstr "{} °C · humidity {} % · {localidad}"
+
+#: src/interfaz/hth.rs
+msgid "{localidad}: sin datos del clima"
+msgstr "{localidad}: no weather data"
+
+#: src/interfaz/hth.rs
+msgid "En {} faltan {} locucion(es) de la hora, por ejemplo: {}. Se esperan las carpetas hora (00 a 23) y minutos (00 a 59), y opcionalmente temperatura y humedad."
+msgstr "In {} {} time voice clip(s) are missing, for example: {}. The folders hora (00 to 23) and minutos (00 to 59) are expected, and optionally temperatura and humedad."
+
+#: src/interfaz/hth.rs
+msgid "Locuciones del anuncio HTH: {}"
+msgstr "TTH announcement voice clips: {}"
+
+#: src/interfaz/hth.rs
+msgid "Consultando el clima de {nombre}..."
+msgstr "Checking the weather for {nombre}..."
+
+#: src/interfaz/hth.rs
+msgid "Se inserto el anuncio de hora, temperatura y humedad con la base {} en la posicion {}: la voz se dice en su ventana de overlay"
+msgstr "The time, temperature and humidity announcement was inserted with bed {} at position {}: the voice is spoken in its overlay window"
+
+#: src/interfaz/hth.rs
+msgid "Se inserto el anuncio de hora, temperatura y humedad en la posicion {}"
+msgstr "The time, temperature and humidity announcement was inserted at position {}"
+
+#: src/interfaz/hth.rs
+msgid "No se encontraron las locuciones del anuncio HTH: elija la carpeta con el boton de la carpeta, junto al boton HTH."
+msgstr "The TTH announcement voice clips were not found: choose the folder with the folder button, next to the TTH button."
+
+#: src/interfaz/hth.rs
+msgid "Anuncio HTH sobre {}: {resumen}"
+msgstr "TTH announcement over {}: {resumen}"
+
+#: src/interfaz/hth.rs
+msgid "La base {} suena sin la voz del HTH: {error}"
+msgstr "Bed {} plays without the TTH voice: {error}"
+
+#: src/interfaz/hth.rs
+msgid "La posicion {} no es un anuncio de hora, temperatura y humedad."
+msgstr "Position {} is not a time, temperature and humidity announcement."
+
+#: src/interfaz/hth.rs
+msgid "El anuncio HTH esta sonando: su base se puede cambiar cuando termine."
+msgstr "The TTH announcement is playing: its bed can be changed when it ends."
+
+#: src/interfaz/hth.rs
+msgid "No existe la base {} (hay {})."
+msgstr "Bed {} does not exist (there are {})."
+
+#: src/interfaz/hth.rs
+msgid "El anuncio HTH ya tenia esa base."
+msgstr "The TTH announcement already had that bed."
+
+#: src/interfaz/hth.rs
+msgid "El anuncio HTH de la posicion {} ahora usa la base {}"
+msgstr "The TTH announcement at position {} now uses bed {}"
+
+#: src/interfaz/hth.rs
+msgid "El anuncio HTH de la posicion {} quedo sin base: la voz sola, sin mezcla"
+msgstr "The TTH announcement at position {} has no bed now: voice only, without mixing"
+
+#: src/interfaz/hth.rs
+msgid "Anuncio HTH: {resumen}"
+msgstr "TTH announcement: {resumen}"
+
+#: src/interfaz/hth.rs
+msgid "Se salteo el anuncio HTH: {error}"
+msgstr "The TTH announcement was skipped: {error}"
+
+#: src/interfaz/hth.rs
+msgid "la base no tiene ventana de overlay: la voz arranca con la base"
+msgstr "the bed has no overlay window: the voice starts with the bed"
+
+#: src/interfaz/hth.rs
+msgid "la ventana de overlay dura {segundos:.1} s y la voz {voz:.1} s: la voz sigue despues de la ventana"
+msgstr "the overlay window lasts {segundos:.1} s and the voice {voz:.1} s: the voice continues after the window"
+
+#: src/interfaz/hth.rs
+msgid "Carpeta de las locuciones del anuncio HTH (con hora, minutos, temperatura y humedad)"
+msgstr "TTH announcement voice clips folder (with hora, minutos, temperatura and humedad)"
+
+#: src/interfaz/hth.rs
+msgid "Locuciones del anuncio HTH"
+msgstr "TTH announcement voice clips"
+
+#: src/interfaz/localidad.rs
+msgid "No se pudo crear el selector de localidad: {error}"
+msgstr "Could not create the location selector: {error}"
+
+#: src/interfaz/localidad.rs
+msgid "Buscando «{nombre}»..."
+msgstr "Searching «{nombre}»..."
+
+#: src/interfaz/localidad.rs
+msgid "No se pudo buscar: {error}"
+msgstr "Could not search: {error}"
+
+#: src/interfaz/localidad.rs
+msgid "No se encontro «{nombre}». Pruebe con otro nombre o sin abreviaturas."
+msgstr "«{nombre}» was not found. Try another name or without abbreviations."
+
+#: src/interfaz/localidad.rs
+msgid "{} localidad(es) para «{nombre}»; elija la suya por la region."
+msgstr "{} location(s) for «{nombre}»; choose yours by its region."
+
+#: src/interfaz/localidad.rs
+msgid "{error}. Revise la conexion a internet."
+msgstr "{error}. Check the internet connection."
+
+#: src/interfaz/localidad.rs
+msgid "Clima del anuncio HTH: {donde}. Consultando..."
+msgstr "TTH announcement weather: {donde}. Checking..."
+
+#: src/interfaz/mantenimiento.rs
+msgid "Sin buscar"
+msgstr "Not searched"
+
+#: src/interfaz/mantenimiento.rs
+msgid "{cantidad} archivos con ese nombre: no se puede elegir uno"
+msgstr "{cantidad} files with that name: one cannot be chosen"
+
+#: src/interfaz/mantenimiento.rs
+msgid "No esta en la carpeta"
+msgstr "Not in the folder"
+
+#: src/interfaz/mantenimiento.rs
+msgid "Carpeta donde buscar los archivos movidos"
+msgstr "Folder to search for the moved files"
+
+#: src/interfaz/mantenimiento.rs
+msgid "Quitar del catalogo"
+msgstr "Remove from the catalog"
+
+#: src/interfaz/mantenimiento.rs
+msgid "Las {total} fichas del catalogo tienen su archivo."
+msgstr "All {total} catalog records have their file."
+
+#: src/interfaz/mantenimiento.rs
+msgid "{perdidas} de {total} fichas del catalogo tienen un archivo que ya no existe"
+msgstr "{perdidas} of {total} catalog records have a file that no longer exists"
+
+#: src/interfaz/mantenimiento.rs
+msgid "Buscando en {}..."
+msgstr "Searching in {}..."
+
+#: src/interfaz/mantenimiento.rs
+msgid "En {} se encontraron {encontradas} de {}"
+msgstr "In {}, {encontradas} of {} were found"
+
+#: src/interfaz/mantenimiento.rs
+msgid "; {varios} con varios archivos del mismo nombre"
+msgstr "; {varios} with several files of the same name"
+
+#: src/interfaz/mantenimiento.rs
+msgid "Se reubicaron {fichas} ficha(s): {en_la_lista} pista(s) de la lista y {botones} boton(es) de efectos."
+msgstr "{fichas} record(s) were relocated: {en_la_lista} playlist track(s) and {botones} effect button(s)."
+
+#: src/interfaz/mantenimiento.rs
+msgid "Se quitaron {quitadas} ficha(s) del catalogo."
+msgstr "{quitadas} record(s) were removed from the catalog."
+
+#: src/interfaz/mantenimiento.rs
+msgid "La cache de ondas ya estaba limpia."
+msgstr "The waveform cache was already clean."
+
+#: src/interfaz/mantenimiento.rs
+msgid "Se borraron {borradas} forma(s) de onda ({:.1} MB)."
+msgstr "{borradas} waveform(s) were deleted ({:.1} MB)."
+
+#: src/interfaz/mantenimiento.rs
+msgid "No se pudo limpiar la cache de ondas: {error}"
+msgstr "Could not clear the waveform cache: {error}"
+
+#: src/interfaz/marcadores.rs
+msgid "Mezclar y BPM no cambian lo que queda dentro"
+msgstr "Shuffle and BPM do not change what lies inside"
+
+#: src/interfaz/marcadores.rs src/servicio/anuncio_hth.rs
+msgid "No se pudo crear {}: {error}"
+msgstr "Could not create {}: {error}"
+
+#: src/interfaz/marcadores.rs
+msgid "{} en la posicion {}: Mezclar y BPM no cambian lo que queda entre el inicio y el fin"
+msgstr "{} at position {}: Shuffle and BPM do not change what lies between the start and the end"
+
+#: src/interfaz/marcadores.rs
+msgid "Indique un tramo de la lista: desde y hasta entre 1 y {tamano}, desde no mayor que hasta."
+msgstr "Enter a range of the playlist: from and to between 1 and {tamano}, from not greater than to."
+
+#: src/interfaz/marcadores.rs
+msgid "Bloque fijo de {} pista(s), de la posicion {} a la {}: Mezclar y BPM no lo cambian"
+msgstr "Locked block of {} track(s), from position {} to {}: Shuffle and BPM do not change it"
+
+#: src/interfaz/marcadores.rs
+msgid "Seleccione las pistas que forman el bloque fijo."
+msgstr "Select the tracks that make up the locked block."
+
+#: src/interfaz/ordenes.rs
+msgid "No se pudo crear la ventana de ordenes: {error}"
+msgstr "Could not create the orders window: {error}"
+
+#: src/interfaz/ordenes.rs
+msgid "Orden nueva: complete los datos y los avisos, y pulse Cargar orden."
+msgstr "New order: fill in the data and the spots, and press Save order."
+
+#: src/interfaz/ordenes.rs
+msgid "¿Quitar la orden «{nombre}»?\n\nSus avisos dejan de repartirse; lo emitido queda en el registro."
+msgstr "Remove the order «{nombre}»?\n\nIts spots stop being placed; what aired stays in the log."
+
+#: src/interfaz/ordenes.rs
+msgid "El {fecha} no hay avisos de ordenes para repartir."
+msgstr "On {fecha} there are no order spots to place."
+
+#: src/interfaz/ordenes.rs
+msgid "Pauta del {fecha}:\n"
+msgstr "Schedule for {fecha}:\n"
+
+#: src/interfaz/ordenes.rs
+msgid "SIN UBICAR {} {}: {}"
+msgstr "NOT PLACED {} {}: {}"
+
+#: src/interfaz/ordenes.rs
+msgid "El anunciante «{}» esta inactivo: activelo en Anunciantes para cargarle ordenes."
+msgstr "Advertiser «{}» is inactive: activate it in Advertisers to add orders."
+
+#: src/interfaz/ordenes.rs
+msgid "{}: no existe"
+msgstr "{}: does not exist"
+
+#: src/interfaz/ordenes.rs
+msgid "La orden no se cargo. {}."
+msgstr "The order was not saved. {}."
+
+#: src/interfaz/ordenes.rs
+msgid "La orden no se cargo: no hay tandas llamadas {}."
+msgstr "The order was not saved: there are no breaks called {}."
+
+#: src/interfaz/ordenes.rs
+msgid "Orden actualizada: {resumen}"
+msgstr "Order updated: {resumen}"
+
+#: src/interfaz/ordenes.rs
+msgid "Orden cargada: {resumen}"
+msgstr "Order saved: {resumen}"
+
+#: src/interfaz/ordenes.rs
+msgid ". Atencion: «{anunciante}» no tiene ficha de anunciante; carguela en Archivo › Anunciantes (razon social, CUIT, contacto)."
+msgstr ". Note: «{anunciante}» has no advertiser record; fill it in at File › Advertisers (company name, tax ID, contact)."
+
+#: src/interfaz/ordenes.rs
+msgid "No hay una orden llamada «{nombre}»."
+msgstr "There is no order called «{nombre}»."
+
+#: src/interfaz/ordenes.rs
+msgid "Orden «{}» quitada: sus avisos dejan de repartirse"
+msgstr "Order «{}» removed: its spots stop being placed"
+
+#: src/interfaz/ordenes.rs
+msgid "desde el {}"
+msgstr "from {}"
+
+#: src/interfaz/ordenes.rs
+msgid "no rige hoy"
+msgstr "not valid today"
+
+#: src/interfaz/ordenes.rs
+msgid "cualquier tanda"
+msgstr "any break"
+
+#: src/interfaz/ordenes.rs
+msgid "«{}» de {}{}: {}; {} aviso(s) en rotacion, en {tandas}; prioridad {} | hoy: {hoy}"
+msgstr "«{}» by {}{}: {}; {} spot(s) in rotation, in {tandas}; priority {} | today: {hoy}"
+
+#: src/interfaz/ordenes.rs
+msgid "No hay ordenes de publicidad."
+msgstr "There are no advertising orders."
+
+#: src/interfaz/ordenes.rs
+msgid "No hay ordenes del anunciante «{anunciante}»."
+msgstr "There are no orders from advertiser «{anunciante}»."
+
+#: src/interfaz/ordenes.rs
+msgid "Certificado de emision de {} del {desde} al {hasta}:\n"
+msgstr "Airing certificate for {} from {desde} to {hasta}:\n"
+
+#: src/interfaz/ordenes.rs
+msgid "Certificado de emision;{};del {desde} al {hasta}"
+msgstr "Airing certificate;{};from {desde} to {hasta}"
+
+#: src/interfaz/ordenes.rs
+msgid "Razon social;{};CUIT;{}"
+msgstr "Company name;{};Tax ID;{}"
+
+#: src/interfaz/ordenes.rs
+msgid "(sin ficha de anunciante: faltan razon social y CUIT)\n"
+msgstr "(no advertiser record: company name and tax ID missing)\n"
+
+#: src/interfaz/ordenes.rs
+msgid "Orden;Contratadas;Emitidas completas;Cortadas;Cumplimiento"
+msgstr "Order;Contracted;Aired in full;Cut;Fulfillment"
+
+#: src/interfaz/ordenes.rs
+msgid "- {}: {completas} de {contratadas} contratada(s) completas ({cumplimiento:.0} %), {cortadas} cortada(s)\n"
+msgstr "- {}: {completas} of {contratadas} contracted in full ({cumplimiento:.0} %), {cortadas} cut\n"
+
+#: src/interfaz/ordenes.rs
+msgid "Inicio;Fin;Segundos emitidos;Completo;Aviso;Orden;Tanda"
+msgstr "Start;End;Seconds aired;Complete;Spot;Order;Break"
+
+#: src/interfaz/ordenes.rs
+msgid "{} salida(s) en el registro. Detalle en {}"
+msgstr "{} airing(s) in the log. Details in {}"
+
+#: src/interfaz/ordenes.rs
+msgid "{hoy} (SIN ARCHIVO)"
+msgstr "{hoy} (NO FILE)"
+
+#: src/interfaz/ordenes.rs
+msgid "{sin_ubicar} salida(s) sin ubicar"
+msgstr "{sin_ubicar} airing(s) not placed"
+
+#: src/interfaz/ordenes.rs
+msgid "Orden «{nombre}» {}"
+msgstr "Order «{nombre}» {}"
+
+#: src/interfaz/ordenes.rs
+msgid "Sin ficha de anunciante: use Ficha... para cargar razon social, CUIT y contacto"
+msgstr "No advertiser record: use Record... to fill in the company name, tax ID and contact"
+
+#: src/interfaz/ordenes.rs
+msgid "Orden nueva de {}: complete el nombre, la frecuencia y los avisos."
+msgstr "New order for {}: fill in the name, the frequency and the spots."
+
+#: src/interfaz/ordenes.rs
+msgid "La fecha {que} debe ser AAAA-MM-DD (por ejemplo {})."
+msgstr "The {que} date must be YYYY-MM-DD (for example {})."
+
+#: src/interfaz/ordenes.rs
+msgid "Ya hay una orden llamada «{}»: elija otro nombre."
+msgstr "There is already an order called «{}»: choose another name."
+
+#: src/interfaz/pauta.rs
+msgid "No se pudo crear la ventana de la pauta: {error}"
+msgstr "Could not create the schedule window: {error}"
+
+#: src/interfaz/pauta.rs
+msgid "¿Quitar la tanda «{nombre}» de la programacion?\n\nLo que ya se encolo en la lista queda."
+msgstr "Remove the break «{nombre}» from the schedule?\n\nWhat was already queued in the playlist stays."
+
+#: src/interfaz/pauta.rs
+msgid "sin proximas"
+msgstr "none upcoming"
+
+#: src/interfaz/pauta.rs
+msgid "Exacta ({tolerancia})"
+msgstr "Exact ({tolerancia})"
+
+#: src/interfaz/pauta.rs
+msgid "Tanda nueva: complete el nombre, el primer horario y los avisos, y pulse Programar tanda."
+msgstr "New break: fill in the name, the first time and the spots, and press Schedule break."
+
+#: src/interfaz/pauta.rs src/interfaz/tandas.rs
+msgid "Indique el nombre de la tanda."
+msgstr "Enter the break name."
+
+#: src/interfaz/pauta.rs
+msgid "Ya hay una tanda llamada «{}»: elija otro nombre."
+msgstr "There is already a break called «{}»: choose another name."
+
+#: src/interfaz/pauta.rs
+msgid "Tanda «{nombre}» {}"
+msgstr "Break «{nombre}» {}"
+
+#: src/interfaz/pauta.rs
+msgid "activada"
+msgstr "activated"
+
+#: src/interfaz/pauta.rs
+msgid "desactivada: no sale hasta volver a activarla"
+msgstr "deactivated: it does not air until it is activated again"
+
+#: src/interfaz/pauta.rs
+msgid "{}: tipo {}"
+msgstr "{}: type {}"
+
+#: src/interfaz/pauta.rs
+msgid "No existe el archivo"
+msgstr "The file does not exist"
+
+#: src/interfaz/salida_de_preescucha.rs
+msgid "{} (no conectada)"
+msgstr "{} (not connected)"
+
+#: src/interfaz/salida_de_preescucha.rs
+msgid "{} (es la de la musica)"
+msgstr "{} (it is the music one)"
+
+#: src/interfaz/salida_de_preescucha.rs
+msgid "La salida {nombre} no esta conectada: la preescucha usa la de la musica."
+msgstr "Output {nombre} is not connected: the preview uses the music one."
+
+#: src/interfaz/salida_de_preescucha.rs
+msgid "{nombre} es la salida de la musica: la preescucha la comparte, con la musica detenida."
+msgstr "{nombre} is the music output: the preview shares it, with the music stopped."
+
+#: src/interfaz/salida_de_preescucha.rs
+msgid "No se pudo abrir la salida {nombre} ({error}): la preescucha usa la de la musica."
+msgstr "Could not open output {nombre} ({error}): the preview uses the music one."
+
+#: src/interfaz/salida_de_preescucha.rs
+msgid "Se desconecto la salida {}: la preescucha vuelve a la de la musica."
+msgstr "Output {} was disconnected: the preview goes back to the music one."
+
+#: src/interfaz/salida_de_preescucha.rs
+msgid "{} paso a ser la salida de la musica: la preescucha la comparte, con la musica detenida."
+msgstr "{} became the music output: the preview shares it, with the music stopped."
+
+#: src/interfaz/tandas.rs
+msgid "entra a las {} ({})"
+msgstr "goes in at {} ({})"
+
+#: src/interfaz/tandas.rs
+msgid "a horario"
+msgstr "on time"
+
+#: src/interfaz/tandas.rs
+msgid "{} min {} s"
+msgstr "{} min {} s"
+
+#: src/interfaz/tandas.rs
+msgid "la de las {}"
+msgstr "the one at {}"
+
+#: src/interfaz/tandas.rs
+msgid "{cantidad}, la ultima a las {}"
+msgstr "{cantidad}, the last one at {}"
+
+#: src/interfaz/tandas.rs
+msgid "Tanda «{nombre}»: no salio {cuales} (no sonaba nada en su horario)"
+msgstr "Break «{nombre}»: {cuales} did not air (nothing was playing at its time)"
+
+#: src/interfaz/tandas.rs
+msgid "{}; no se corta lo que suena (aviso o bloque fijo)"
+msgstr "{}; what is playing is not cut (spot or locked block)"
+
+#: src/interfaz/tandas.rs
+msgid "corta lo que suena a las {} con fundido de {} s"
+msgstr "cuts what is playing at {} with a {} s fade"
+
+#: src/interfaz/tandas.rs
+msgid "Tanda «{}»: no salio la de las {} (no sonaba nada en su horario)"
+msgstr "Break «{}»: the one at {} did not air (nothing was playing at its time)"
+
+#: src/interfaz/tandas.rs
+msgid "Tanda «{}» de las {hora}: no salio, no se encontro ninguno de sus {total} archivo(s)"
+msgstr "Break «{}» at {hora}: it did not air, none of its {total} file(s) was found"
+
+#: src/interfaz/tandas.rs
+msgid "Tanda «{}» de las {hora} encolada: {cantidad} aviso(s) a partir de la posicion {}; {entra}"
+msgstr "Break «{}» at {hora} queued: {cantidad} spot(s) from position {}; {entra}"
+
+#: src/interfaz/tandas.rs
+msgid " ({} de ordenes)"
+msgstr " ({} from orders)"
+
+#: src/interfaz/tandas.rs
+msgid "; faltan {} archivo(s)"
+msgstr "; {} file(s) missing"
+
+#: src/interfaz/tandas.rs
+msgid "Tanda «{}» de las {}: fundido de {} s y entra a hora exacta"
+msgstr "Break «{}» at {}: {} s fade and it goes in at the exact time"
+
+#: src/interfaz/tandas.rs
+msgid "No hay una tanda llamada «{nombre}»."
+msgstr "There is no break called «{nombre}»."
+
+#: src/interfaz/tandas.rs
+msgid " (a horario)"
+msgstr " (on time)"
+
+#: src/interfaz/tandas.rs
+msgid "entra al reproducirla"
+msgstr "goes in when played"
+
+#: src/interfaz/tandas.rs
+msgid "{} (a mano)"
+msgstr "{} (by hand)"
+
+#: src/interfaz/tandas.rs
+msgid "La tanda «{}» no tiene avisos fijos que existan."
+msgstr "Break «{}» has no fixed spots that exist."
+
+#: src/interfaz/tandas.rs
+msgid "Tanda «{}» encolada a mano: {entra}"
+msgstr "Break «{}» queued by hand: {entra}"
+
+#: src/interfaz/tandas.rs
+msgid "Tanda «{}» {}: corta en {}"
+msgstr "Break «{}» {}: cuts in {}"
+
+#: src/interfaz/tandas.rs
+msgid "Proxima tanda: «{nombre}» {}{exacta}"
+msgstr "Next break: «{nombre}» {}{exacta}"
+
+#: src/interfaz/tandas.rs
+msgid "Proxima tanda: «{nombre}» {}{exacta} (en {})"
+msgstr "Next break: «{nombre}» {}{exacta} (in {})"
+
+#: src/interfaz/tandas.rs
+msgid "{nombre}: no tiene tipo; asignele Comercial, Publicidad o Anuncio"
+msgstr "{nombre}: it has no type; assign Commercial, Advertising or Announcement"
+
+#: src/interfaz/tandas.rs
+msgid "{nombre}: es un Efecto (solo va en la botonera)"
+msgstr "{nombre}: it is an Effect (it only goes in the effects panel)"
+
+#: src/interfaz/tandas.rs
+msgid "{nombre}: es de tipo {}; en una tanda van Comercial, Publicidad, Anuncio, Podcast o Seco"
+msgstr "{nombre}: its type is {}; a break takes Commercial, Advertising, Announcement, Podcast or Dry voice"
+
+#: src/interfaz/tandas.rs
+msgid "La tanda no se programo. {}."
+msgstr "The break was not scheduled. {}."
+
+#: src/interfaz/tandas.rs
+msgid "Tanda reprogramada: {resumen}"
+msgstr "Break rescheduled: {resumen}"
+
+#: src/interfaz/tandas.rs
+msgid "Tanda programada: {resumen}"
+msgstr "Break scheduled: {resumen}"
+
+#: src/interfaz/tandas.rs
+msgid "Tanda «{}» quitada de la programacion (lo ya encolado queda en la lista)"
+msgstr "Break «{}» removed from the schedule (what was already queued stays in the playlist)"
+
+#: src/interfaz/tandas.rs
+msgid "«{}»{}: {}; {}, entra hasta {} antes o {} despues; prioridad {} | {} aviso(s), {}"
+msgstr "«{}»{}: {}; {}, goes in up to {} before or {} after; priority {} | {} spot(s), {}"
+
+#: src/interfaz/tandas.rs
+msgid " ({faltan} SIN ARCHIVO)"
+msgstr " ({faltan} WITHOUT A FILE)"
+
+#: src/interfaz/tandas.rs
+msgid " | proxima: {}"
+msgstr " | next: {}"
+
+#: src/interfaz/tandas.rs
+msgid " | sin proximas salidas"
+msgstr " | no upcoming airings"
+
+#: src/interfaz/tandas.rs
+msgid " | ultima atendida: {}"
+msgstr " | last handled: {}"
+
+#: src/interfaz/tandas.rs
+msgid "No hay tandas programadas."
+msgstr "There are no scheduled breaks."
+
+#: src/interfaz/tandas.rs
+msgid "{} tanda(s) programada(s):\n"
+msgstr "{} scheduled break(s):\n"
+
+#: src/interfaz/tandas.rs
+msgid " (SIN ARCHIVO)"
+msgstr " (NO FILE)"
+
+#: src/interfaz/tandas.rs
+msgid "No hay salidas al aire registradas del {desde} al {hasta}."
+msgstr "There are no logged airings from {desde} to {hasta}."
+
+#: src/interfaz/tandas.rs
+msgid "{} salida(s) del {desde} al {hasta}: {completas} completa(s), {} cortada(s); {} al aire.\n"
+msgstr "{} airing(s) from {desde} to {hasta}: {completas} complete, {} cut; {} on air.\n"
+
+#: src/interfaz/tandas.rs
+msgid " | tanda {}"
+msgstr " | break {}"
+
+#: src/interfaz/tandas.rs
+msgid " | orden {}"
+msgstr " | order {}"
+
+#: src/interfaz/tandas.rs
+msgid "(se detallan las ultimas {EMISIONES_A_DETALLAR})\n"
+msgstr "(the last {EMISIONES_A_DETALLAR} are detailed)\n"
+
+#: src/interfaz/ubicacion.rs
+msgid "No se pudo abrir la ventana: {error}"
+msgstr "Could not open the window: {error}"
+
+#: src/interfaz/ubicacion.rs
+msgid "No hay otras ventanas abiertas."
+msgstr "There are no other open windows."
+
+#: src/interfaz/ubicacion.rs
+msgid "{traidas} ventana(s) centrada(s) sobre la ventana principal."
+msgstr "{traidas} window(s) centered over the main window."
+
+#: src/interfaz.rs
+msgid "No se pudo crear el editor de pistas: {error}"
+msgstr "Could not create the track editor: {error}"
+
+#: src/interfaz.rs
+msgid "No se pudo crear la ventana de mantenimiento del catalogo: {error}"
+msgstr "Could not create the catalog maintenance window: {error}"
+
+#: src/interfaz.rs
+msgid "Idioma de la interfaz: {}"
+msgstr "Interface language: {}"
+
+#: src/interfaz.rs
+msgid "Error de la aplicacion"
+msgstr "Application error"
+
+#: src/interfaz.rs
+msgid "Ocurrio un problema inesperado\n\n{mensaje}"
+msgstr "An unexpected problem occurred\n\n{mensaje}"
+
+#: src/interfaz.rs
+msgid "La interfaz no esta disponible: {error}"
+msgstr "The interface is not available: {error}"
+
+#: src/interfaz.rs
+msgid "La interfaz no respondio a tiempo"
+msgstr "The interface did not respond in time"
+
+#: src/interfaz.rs
+msgid "Salir de MCP Raptor Player"
+msgstr "Exit MCP Raptor Player"
+
+#: src/interfaz.rs
+msgid "Hay musica sonando. ¿Desea salir del programa?"
+msgstr "Music is playing. Do you want to exit the program?"
+
+#: src/interfaz.rs
+msgid "No se pudo crear la ventana Acerca de: {error}"
+msgstr "Could not create the About window: {error}"
+
+#: src/interfaz.rs
+msgid "Sacar del bloque fijo"
+msgstr "Take out of the locked block"
+
+#: src/interfaz.rs
+msgid "Encolar cancelado: el tema sigue en su bloque fijo"
+msgstr "Queue canceled: the song stays in its locked block"
+
+#: src/interfaz.rs
+msgid "Audio ({})"
+msgstr "Audio ({})"
+
+#: src/interfaz.rs
+msgid "Seleccionar archivos de audio"
+msgstr "Select audio files"
+
+#: src/interfaz.rs
+msgid "Seleccione una pista para quitarla"
+msgstr "Select a track to remove it"
+
+#: src/interfaz.rs
+msgid "No se encontro {MANUAL}. Copielo junto a MCPRaptorPlayer.exe. Se busco en:\n{}"
+msgstr "{MANUAL} was not found. Copy it next to MCPRaptorPlayer.exe. It was looked for in:\n{}"
+
+#: src/interfaz.rs
+msgid "No se pudo abrir {}: {error}"
+msgstr "Could not open {}: {error}"
+
+#: src/interfaz.rs
+msgid "Quitar hoja de efectos"
+msgstr "Remove effects page"
+
+#: src/interfaz.rs
+msgid "La hoja {} tiene {asignados} efecto(s) asignado(s). ¿Quitarla? Los archivos no se borran."
+msgstr "Page {} has {asignados} effect(s) assigned. Remove it? The files are not deleted."
+
+#: src/interfaz.rs
+msgid "Archivo de sonido para el boton {indice}"
+msgstr "Sound file for button {indice}"
+
+#: src/interfaz.rs
+msgid "Efecto repetido"
+msgstr "Repeated effect"
+
+#: src/interfaz.rs
+msgid "{motivo}\nCada efecto puede estar en un solo boton de la hoja."
+msgstr "{motivo}\nEach effect can be on only one button of the page."
+
+#: src/interfaz.rs
+msgid "Lista de MCP Raptor Player"
+msgstr "MCP Raptor Player playlist"
+
+#: src/interfaz.rs
+msgid "Lista M3U"
+msgstr "M3U playlist"
+
+#: src/interfaz.rs
+msgid "Nueva lista.json"
+msgstr "New playlist.json"
+
+#: src/interfaz.rs
+msgid "Guardar lista como"
+msgstr "Save playlist as"
+
+#: src/interfaz.rs
+msgid "Guardar lista"
+msgstr "Save playlist"
+
+#: src/interfaz.rs
+msgid "Cargar lista"
+msgstr "Open playlist"
+
+#: src/interfaz.rs
+msgid "La lista actual tiene cambios sin guardar. ¿Guardarla antes de cargar otra?"
+msgstr "The current playlist has unsaved changes. Save it before opening another one?"
+
+#: src/interfaz.rs
+msgid "¿Quitar {} pistas de la lista? Los archivos y sus datos guardados no se borran."
+msgstr "Remove {} tracks from the playlist? The files and their saved data are not deleted."
+
+#: src/interfaz.rs
+msgid "Se quitaron {} pista(s); la que suena quedo en la lista ({} pista(s))"
+msgstr "{} track(s) were removed; the playing one stayed in the playlist ({} track(s))"
+
+#: src/interfaz.rs
+msgid "todos los archivos existen"
+msgstr "all the files exist"
+
+#: src/interfaz.rs
+msgid "{cantidad} archivo(s) inexistente(s), {quitadas_por_faltar} quitado(s)"
+msgstr "{cantidad} missing file(s), {quitadas_por_faltar} removed"
+
+#: src/interfaz.rs
+msgid "sin temas repetidos"
+msgstr "no repeated songs"
+
+#: src/interfaz.rs
+msgid "{cantidad} tema(s) repetido(s), {} quitado(s)"
+msgstr "{cantidad} repeated song(s), {} removed"
+
+#: src/interfaz.rs
+msgid " (revision cancelada)"
+msgstr " (check canceled)"
+
+#: src/interfaz.rs
+msgid "Lista validada: {archivos}; {repetidos}{cancelada}"
+msgstr "Playlist validated: {archivos}; {repetidos}{cancelada}"
+
+#: src/interfaz.rs
+msgid "Carpeta para agregar a la lista (con sus subcarpetas)"
+msgstr "Folder to add to the playlist (with its subfolders)"
+
+#: src/interfaz.rs
+msgid "Buscando archivos de audio en {} y sus subcarpetas..."
+msgstr "Looking for audio files in {} and its subfolders..."
+
+#: src/interfaz.rs
+msgid "No se pudo recorrer la carpeta: {error}"
+msgstr "Could not scan the folder: {error}"
+
+#: src/interfaz.rs
+msgid "No se pudo leer la carpeta"
+msgstr "Could not read the folder"
+
+#: src/interfaz.rs
+msgid "No se pudo leer la carpeta {}: {error}"
+msgstr "Could not read the folder {}: {error}"
+
+#: src/interfaz.rs
+msgid "\n\n{cantidad} subcarpeta(s) no se pudieron leer y se saltearon."
+msgstr "\n\n{cantidad} subfolder(s) could not be read and were skipped."
+
+#: src/interfaz.rs
+msgid "Agregar carpeta"
+msgstr "Add folder"
+
+#: src/interfaz.rs
+msgid "No hay archivos de audio en {}"
+msgstr "There are no audio files in {}"
+
+#: src/interfaz.rs
+msgid "No se encontraron archivos de audio en {} ni en sus {subcarpetas} subcarpeta(s).{ilegibles}"
+msgstr "No audio files were found in {} or in its {subcarpetas} subfolder(s).{ilegibles}"
+
+#: src/interfaz.rs
+msgid "No se agrego la carpeta"
+msgstr "The folder was not added"
+
+#: src/interfaz.rs
+msgid "{} tema(s) agregado(s) ya estaban en la lista; {} quitado(s)"
+msgstr "{} added song(s) were already in the playlist; {} removed"
+
+#: src/interfaz.rs
+msgid "Tema repetido"
+msgstr "Repeated song"
+
+#: src/interfaz.rs
+msgid "... y {} mas"
+msgstr "... and {} more"
+
+#: src/interfaz.rs
+msgid "Archivos inexistentes"
+msgstr "Missing files"
+
+#: src/interfaz.rs
+msgid "{} archivo(s) de la lista ya no existe(n):\n\n{}\n\n¿Quitarlos de la lista?"
+msgstr "{} playlist file(s) no longer exist:\n\n{}\n\nRemove them from the playlist?"
+
+#: src/interfaz.rs
+msgid "Hace {} y {ultima}"
+msgstr "{} ago and {ultima}"
+
+#: src/interfaz.rs
+msgid "Lunes"
+msgstr "Monday"
+
+#: src/interfaz.rs
+msgid "Martes"
+msgstr "Tuesday"
+
+#: src/interfaz.rs
+msgid "Miércoles"
+msgstr "Wednesday"
+
+#: src/interfaz.rs
+msgid "Jueves"
+msgstr "Thursday"
+
+#: src/interfaz.rs
+msgid "Viernes"
+msgstr "Friday"
+
+#: src/interfaz.rs
+msgid "Sábado"
+msgstr "Saturday"
+
+#: src/interfaz.rs
+msgid "Domingo"
+msgstr "Sunday"
+
+#: src/interfaz.rs
+msgid "El aviso de la orden «{orden}» salio cortado: se repone en la proxima tanda posible"
+msgstr "The spot of order «{orden}» aired cut: it is replaced in the next possible break"
+
+#: src/interfaz.rs
+msgid "Se recupero la lista anterior{nombre}: {} pista(s)"
+msgstr "The previous playlist{nombre} was restored: {} track(s)"
+
+#: src/interfaz.rs
+msgid " ({faltan} archivo(s) ya no existen)"
+msgstr " ({faltan} file(s) no longer exist)"
+
+#: src/interfaz.rs
+msgid "Lista {} cargada: {} pista(s)"
+msgstr "Playlist {} opened: {} track(s)"
+
+#: src/interfaz.rs
+msgid "Lista guardada en {}"
+msgstr "Playlist saved in {}"
+
+#: src/interfaz.rs
+msgid "No hay una pista en reproduccion"
+msgstr "No track is playing"
+
+#: src/interfaz.rs
+msgid "Selector en {}"
+msgstr "Selector at {}"
+
+#: src/interfaz.rs
+msgid "Hoja de efectos {} de {}."
+msgstr "Effects page {} of {}."
+
+#: src/interfaz.rs src/persistencia.rs
+msgid "No existe la hoja {} (hay {})."
+msgstr "Page {} does not exist (there are {})."
+
+#: src/interfaz.rs
+msgid "Se agrego la hoja de efectos {}."
+msgstr "Effects page {} was added."
+
+#: src/interfaz.rs
+msgid "Se quito la hoja {}; quedan {}."
+msgstr "Page {} was removed; {} left."
+
+#: src/interfaz.rs
+msgid "  ·  Restante {}"
+msgstr "  ·  Remaining {}"
+
+#: src/interfaz.rs
+msgid "  (+{sin_duracion} sin duracion)"
+msgstr "  (+{sin_duracion} without length)"
+
+#: src/interfaz.rs
+msgid "Sin pista seleccionada"
+msgstr "No track selected"
+
+#: src/interfaz.rs
+msgid "nunca"
+msgstr "never"
+
+#: src/interfaz.rs
+msgid "Seleccione una o mas pistas para moverlas"
+msgstr "Select one or more tracks to move them"
+
+#: src/interfaz.rs
+msgid "Ya esta al final de la lista"
+msgstr "It is already at the end of the playlist"
+
+#: src/interfaz.rs
+msgid "Ya esta al principio de la lista"
+msgstr "It is already at the start of the playlist"
+
+#: src/interfaz.rs
+msgid "{} (antes # {})"
+msgstr "{} (was # {})"
+
+#: src/interfaz.rs
+msgid "{} pistas movidas {}"
+msgstr "{} tracks moved {}"
+
+#: src/interfaz.rs
+msgid "Posicion fuera de la lista (1 a {})."
+msgstr "Position outside the playlist (1 to {})."
+
+#: src/interfaz.rs
+msgid "Los marcadores de bloque fijo no se encolan."
+msgstr "Locked block markers are not queued."
+
+#: src/interfaz.rs
+msgid "{} es la pista actual."
+msgstr "{} is the current track."
+
+#: src/interfaz.rs
+msgid "sin mezcla (no es un Tema)"
+msgstr "without mixing (it is not a Song)"
+
+#: src/interfaz.rs
+msgid "mezclada con el final de la actual"
+msgstr "mixed with the end of the current one"
+
+#: src/interfaz.rs
+msgid "a continuacion"
+msgstr "right after"
+
+#: src/interfaz.rs
+msgid "{nombre} ya es la siguiente: suena {como}"
+msgstr "{nombre} is already next: it plays {como}"
+
+#: src/interfaz.rs
+msgid "{nombre} encolada (antes # {}): suena {como}"
+msgstr "{nombre} queued (was # {}): it plays {como}"
+
+#: src/interfaz.rs
+msgid "Posicion fuera de la lista (1 a {tamano})."
+msgstr "Position outside the playlist (1 to {tamano})."
+
+#: src/interfaz.rs
+msgid "No hay al menos dos pistas para mezclar fuera de los bloques fijos."
+msgstr "There are not at least two tracks to shuffle outside the locked blocks."
+
+#: src/interfaz.rs
+msgid "Hacen falta al menos dos pistas para mezclar la lista."
+msgstr "At least two tracks are needed to shuffle the playlist."
+
+#: src/interfaz.rs
+msgid "{} pistas seleccionadas mezcladas al azar"
+msgstr "{} selected tracks shuffled"
+
+#: src/interfaz.rs
+msgid "Lista mezclada al azar"
+msgstr "Playlist shuffled"
+
+#: src/interfaz.rs
+msgid " ({fijas} tema(s) en bloques fijos, sin cambios)"
+msgstr " ({fijas} song(s) in locked blocks, unchanged)"
+
+#: src/interfaz.rs
+msgid "No hay al menos dos pistas para ordenar fuera de los bloques fijos."
+msgstr "There are not at least two tracks to sort outside the locked blocks."
+
+#: src/interfaz.rs
+msgid "Hacen falta al menos dos pistas para ordenar la lista."
+msgstr "At least two tracks are needed to sort the playlist."
+
+#: src/interfaz.rs
+msgid "{} pistas seleccionadas ordenadas por BPM, de menor a mayor (a igual tempo, por ranking)"
+msgstr "{} selected tracks sorted by BPM, from lowest to highest (at the same tempo, by rating)"
+
+#: src/interfaz.rs
+msgid "Lista ordenada por BPM, de menor a mayor (a igual tempo, por ranking)"
+msgstr "Playlist sorted by BPM, from lowest to highest (at the same tempo, by rating)"
+
+#: src/interfaz.rs
+msgid " ({sin_tempo} sin tempo, al final)"
+msgstr " ({sin_tempo} without tempo, at the end)"
+
+#: src/interfaz.rs
+msgid "Se salteo {} porque el archivo no existe (Validar ofrece quitarlo de la lista)"
+msgstr "{} was skipped because the file does not exist (Validate offers to remove it from the playlist)"
+
+#: src/interfaz.rs
+msgid "Crossfade inteligente: saltea silencios, adapta la duracion, usa curvas de potencia y alinea los golpes"
+msgstr "Smart crossfade: skips silences, adapts the length, uses power curves and aligns the beats"
+
+#: src/interfaz.rs
+msgid "Crossfade inteligente desactivado: se mezclan los segundos de intro y outro"
+msgstr "Smart crossfade off: the intro and outro seconds are mixed"
+
+#: src/interfaz.rs
+msgid "Nivelar volumen: cada tema se lleva a {}"
+msgstr "Level volume: each song is brought to {}"
+
+#: src/interfaz.rs
+msgid "Nivelar volumen desactivado"
+msgstr "Level volume off"
+
+#: src/interfaz.rs
+msgid "Objetivo de nivelacion: {} LUFS (active Nivelar volumen para aplicarlo)"
+msgstr "Leveling target: {} LUFS (turn on Level volume to apply it)"
+
+#: src/interfaz.rs
+msgid "Analizando {pendientes} tema(s)..."
+msgstr "Analyzing {pendientes} song(s)..."
+
+#: src/interfaz.rs
+msgid "{} pista(s) en la lista"
+msgstr "{} track(s) in the playlist"
+
+#: src/interfaz.rs
+msgid "; {} archivo(s) de tipo Efecto quedaron afuera (solo van en la botonera)"
+msgstr "; {} Effect file(s) were left out (they only go in the effects panel)"
+
+#: src/interfaz.rs
+msgid "Se agregaron {} de {total} archivo(s){origen}"
+msgstr "{} of {total} file(s) were added{origen}"
+
+#: src/interfaz.rs
+msgid "{ya_estaban} ya estaban en la lista"
+msgstr "{ya_estaban} were already in the playlist"
+
+#: src/interfaz.rs
+msgid "{efectos} de tipo Efecto (solo van en la botonera)"
+msgstr "{efectos} of type Effect (they only go in the effects panel)"
+
+#: src/interfaz.rs
+msgid "Se quitaron {quitadas} pista(s) de tipo Efecto: solo pueden estar en la botonera."
+msgstr "{quitadas} Effect track(s) were removed: they can only be in the effects panel."
+
+#: src/interfaz.rs
+msgid "El anuncio de hora, temperatura y humedad se arma solo al salir al aire: no tiene datos ni puntos que editar."
+msgstr "The time, temperature and humidity announcement is built when it goes on air: it has no data or points to edit."
+
+#: src/interfaz.rs
+msgid "{} esta en la lista y el tipo Efecto es solo para la botonera: quitelo de la lista antes de darle ese tipo."
+msgstr "{} is in the playlist and the Effect type is only for the effects panel: remove it from the playlist before giving it that type."
+
+#: src/interfaz.rs
+msgid "duracion desconocida"
+msgstr "unknown length"
+
+#: src/interfaz.rs
+msgid "Ya estaba"
+msgstr "Already there"
+
+#: src/interfaz.rs
+msgid "Recien agregada"
+msgstr "Just added"
+
+#: src/interfaz.rs
+msgid "¿Quitar de la lista la pista recien agregada?"
+msgstr "Remove the just added track from the playlist?"
+
+#: src/interfaz.rs
+msgid "Se conserva"
+msgstr "Kept"
+
+#: src/interfaz.rs
+msgid "Repetida"
+msgstr "Repeated"
+
+#: src/interfaz.rs
+msgid "¿Quitar de la lista la pista repetida?"
+msgstr "Remove the repeated track from the playlist?"
+
+#: src/interfaz.rs
+msgid "\"{titulo}\"{artista} esta mas de una vez en la lista.\n\n{rotulo_conservar}: {conservar}\n{rotulo_quitar}: {quitar}\n\n{pregunta}\n(Cancelar termina la revision.)"
+msgstr "\"{titulo}\"{artista} is in the playlist more than once.\n\n{rotulo_conservar}: {conservar}\n{rotulo_quitar}: {quitar}\n\n{pregunta}\n(Cancel ends the check.)"
+
+#: src/interfaz.rs
+msgid "{} es de tipo Efecto: solo puede estar en la botonera"
+msgstr "{} is of type Effect: it can only be in the effects panel"
+
+#: src/interfaz.rs
+msgid "{} ya esta en la lista"
+msgstr "{} is already in the playlist"
+
+#: src/interfaz.rs
+msgid "La pista que suena no se quita: detengala o pase a otra antes"
+msgstr "The playing track is not removed: stop it or move to another one first"
+
+#: src/interfaz.rs
+msgid "{}: intro {}, outro {}, overlay {}"
+msgstr "{}: intro {}, outro {}, overlay {}"
+
+#: src/interfaz.rs
+msgid "{} es la pista actual; Siguiente sigue el orden de la lista."
+msgstr "{} is the current track; Next follows the playlist order."
+
+#: src/interfaz.rs
+msgid "deteniendo con fundido"
+msgstr "stopping with fade"
+
+#: src/interfaz.rs
+msgid "reproduciendo"
+msgstr "playing"
+
+#: src/interfaz.rs
+msgid "pausado"
+msgstr "paused"
+
+#: src/interfaz.rs
+msgid "detenido"
+msgstr "stopped"
+
+#: src/interfaz.rs
+msgid "Estado: {estado}\n"
+msgstr "Status: {estado}\n"
+
+#: src/interfaz.rs
+msgid "Ultima pista: {} (detenida)\n"
+msgstr "Last track: {} (stopped)\n"
+
+#: src/interfaz.rs
+msgid "Pista actual: {} ({} / {})\n"
+msgstr "Current track: {} ({} / {})\n"
+
+#: src/interfaz.rs
+msgid "Pista actual: ninguna\n"
+msgstr "Current track: none\n"
+
+#: src/interfaz.rs
+msgid "Mezcla en curso: si\n"
+msgstr "Mix in progress: yes\n"
+
+#: src/interfaz.rs
+msgid "Mezcla en curso: {detalle}\n"
+msgstr "Mix in progress: {detalle}\n"
+
+#: src/interfaz.rs
+msgid "Proxima con Siguiente (selector): {}\n"
+msgstr "Next with Next (selector): {}\n"
+
+#: src/interfaz.rs
+msgid "Proxima con Siguiente: {natural}\n"
+msgstr "Next with Next: {natural}\n"
+
+#: src/interfaz.rs
+msgid "Duracion total de la lista: {} | Restante: {}{}\n"
+msgstr "Total playlist length: {} | Remaining: {}{}\n"
+
+#: src/interfaz.rs
+msgid "Volumen: {} % | Fader: {} s | Repetir lista: {} | Pistas en la lista: {}\n"
+msgstr "Volume: {} % | Fader: {} s | Repeat playlist: {} | Tracks in the playlist: {}\n"
+
+#: src/interfaz.rs
+msgid "Crossfade inteligente: {} | Nivelar volumen: {} (a {} LUFS){}\n"
+msgstr "Smart crossfade: {} | Level volume: {} (to {} LUFS){}\n"
+
+#: src/interfaz.rs
+msgid " | Analizando {pendientes} tema(s)"
+msgstr " | Analyzing {pendientes} song(s)"
+
+#: src/interfaz.rs
+msgid "Botonera visible: {} | Modo libre: {} | Volumen de los efectos: {:+.1} dB | Bajar la musica durante el efecto: {} | Ajuste inteligente: {} | Musica al {} % (sin ajuste inteligente) | Atenua en: {:.2} s | Recuperacion: {:.1} s\n"
+msgstr "Effects panel visible: {} | Free mode: {} | Effects volume: {:+.1} dB | Duck the music during the effect: {} | Smart adjustment: {} | Music at {} % (without smart adjustment) | Ducks in: {:.2} s | Recovery: {:.1} s\n"
+
+#: src/interfaz.rs
+msgid "Ultimo efecto: {}\n"
+msgstr "Last effect: {}\n"
+
+#: src/interfaz.rs
+msgid "Hoja de efectos a la vista: {} de {}\n"
+msgstr "Effects page in view: {} of {}\n"
+
+#: src/interfaz.rs
+msgid "  Hoja {}: {detalle}\n"
+msgstr "  Page {}: {detalle}\n"
+
+#: src/interfaz.rs
+msgid "Botones de la hoja {}:\n"
+msgstr "Buttons of page {}:\n"
+
+#: src/interfaz.rs
+msgid "Editor abierto con: {}\n"
+msgstr "Editor opened with: {}\n"
+
+#: src/interfaz.rs
+msgid "Barra de estado: {}"
+msgstr "Status bar: {}"
+
+#: src/interfaz.rs
+msgid "Los marcadores de bloque fijo no se descatalogan: use Quitar de la lista."
+msgstr "Locked block markers are not removed from the catalog: use Remove from the playlist."
+
+#: src/interfaz.rs
+msgid "Los anuncios y bases HTH no se descatalogan: use Quitar de la lista."
+msgstr "TTH announcements and beds are not removed from the catalog: use Remove from the playlist."
+
+#: src/interfaz.rs
+msgid "{nombre} descatalogada: se quito de la lista y se borraron sus datos"
+msgstr "{nombre} removed from the catalog: it was removed from the playlist and its data deleted"
+
+#: src/interfaz.rs
+msgid "{nombre} se quito de la lista (no tenia datos guardados)"
+msgstr "{nombre} was removed from the playlist (it had no saved data)"
+
+#: src/interfaz.rs
+msgid "Lista vacia"
+msgstr "Empty playlist"
+
+#: src/interfaz.rs
+msgid "sin mezcla"
+msgstr "no mix"
+
+#: src/interfaz.rs
+msgid "mezcla de {segundos} s"
+msgstr "{segundos} s mix"
+
+#: src/interfaz.rs
+msgid "Proxima con Siguiente: {} ({como})"
+msgstr "Next with Next: {} ({como})"
+
+#: src/interfaz.rs
+msgid "No hay pista siguiente"
+msgstr "There is no next track"
+
+#: src/interfaz.rs
+msgid "No hay pista siguiente: los archivos que siguen en la lista no existen"
+msgstr "There is no next track: the following files in the playlist do not exist"
+
+#: src/interfaz.rs
+msgid "No se puede pasar a un marcador de bloque fijo: no suena. Marque un tema."
+msgstr "Cannot move to a locked block marker: it does not play. Mark a song."
+
+#: src/interfaz.rs
+msgid "No se puede pasar a {}: el archivo no existe"
+msgstr "Cannot move to {}: the file does not exist"
+
+#: src/interfaz.rs
+msgid "Fundido de salida de {} s y despues {} (tipo sin mezcla: sin mezcla)"
+msgstr "{} s fade-out and then {} (type without mixing: no mix)"
+
+#: src/interfaz.rs
+msgid "Mezclando hacia {} ({} s)"
+msgstr "Mixing into {} ({} s)"
+
+#: src/interfaz.rs
+msgid "Pista invalida: {error}"
+msgstr "Invalid track: {error}"
+
+#: src/interfaz.rs
+msgid "No hay pista anterior"
+msgstr "There is no previous track"
+
+#: src/interfaz.rs
+msgid "Deteniendo con fundido de {} s (Detener otra vez corta ya)"
+msgstr "Stopping with a {} s fade (Stop again cuts right away)"
+
+#: src/interfaz.rs
+msgid "Reproduccion detenida"
+msgstr "Playback stopped"
+
+#: src/interfaz.rs
+msgid "Secuencia finalizada"
+msgstr "Sequence finished"
+
+#: src/interfaz.rs
+msgid "Secuencia finalizada: los archivos que seguian en la lista no existen"
+msgstr "Sequence finished: the following files in the playlist do not exist"
+
+#: src/interfaz.rs
+msgid "Mezclando hacia {}{detalle}"
+msgstr "Mixing into {}{detalle}"
+
+#: src/interfaz.rs
+msgid "Los marcadores de bloque fijo no suenan y no hay temas despues"
+msgstr "Locked block markers do not play and there are no songs after"
+
+#: src/interfaz.rs
+msgid "No se puede reproducir {}: el archivo no existe (Validar ofrece quitarlo de la lista)"
+msgstr "Cannot play {}: the file does not exist (Validate offers to remove it from the playlist)"
+
+#: src/interfaz.rs
+msgid "Reproduciendo en secuencia"
+msgstr "Playing in sequence"
+
+#: src/interfaz.rs
+msgid "Reanudar"
+msgstr "Resume"
+
+#: src/interfaz.rs
+msgid "HTH · {titulo}"
+msgstr "TTH · {titulo}"
+
+#: src/interfaz.rs
+msgid "El boton {indice} de la hoja {} esta vacio."
+msgstr "Button {indice} of page {} is empty."
+
+#: src/interfaz.rs
+msgid "Se cancelo el efecto en espera del boton {indice}."
+msgstr "The waiting effect of button {indice} was canceled."
+
+#: src/interfaz.rs
+msgid "No se encuentra {}"
+msgstr "{} cannot be found"
+
+#: src/interfaz.rs
+msgid "{} no es un Tema y no admite efectos (solo en modo libre)."
+msgstr "{} is not a Song and takes no effects (only in free mode)."
+
+#: src/interfaz.rs
+msgid "hoja {}: {}"
+msgstr "page {}: {}"
+
+#: src/interfaz.rs
+msgid "Boton {indice}: {nombre} espera la ventana de overlay (faltan {:.1} s)."
+msgstr "Button {indice}: {nombre} waits for the overlay window ({:.1} s to go)."
+
+#: src/interfaz.rs
+msgid "Boton {indice}: {nombre} ya no cabe en la ventana; espera la de la proxima pista."
+msgstr "Button {indice}: {nombre} no longer fits in the window; it waits for the next track's."
+
+#: src/interfaz.rs
+msgid "Boton {indice}: sonando {nombre}{plan}."
+msgstr "Button {indice}: playing {nombre}{plan}."
+
+#: src/interfaz.rs
+msgid "No se encuentra el efecto fijado {}"
+msgstr "The pinned effect {} cannot be found"
+
+#: src/interfaz.rs
+msgid "Clic para asignar un archivo de sonido"
+msgstr "Click to assign a sound file"
+
+#: src/interfaz.rs
+msgid "Nota: {nota}\n\n{}"
+msgstr "Note: {nota}\n\n{}"
+
+#: src/interfaz.rs
+msgid "Hoja {} de {hojas}"
+msgstr "Page {} of {hojas}"
+
+#: src/interfaz.rs
+msgid " (faltan {:.0} s)"
+msgstr " ({:.0} s to go)"
+
+#: src/interfaz.rs
+msgid " (espera la ventana de la proxima pista)"
+msgstr " (waits for the next track's window)"
+
+#: src/interfaz.rs
+msgid "En espera: {}{detalle}"
+msgstr "Waiting: {}{detalle}"
+
+#: src/interfaz.rs
+msgid "Clic derecho en un boton para cambiar su archivo"
+msgstr "Right-click a button to change its file"
+
+#: src/interfaz.rs
+msgid "Sin forma de onda"
+msgstr "No waveform"
+
+#: src/interfaz.rs
+msgid "Cargando la forma de onda..."
+msgstr "Loading the waveform..."
+
+#: src/interfaz.rs
+msgid "Analizando el tema: la forma de onda aparece al terminar."
+msgstr "Analyzing the song: the waveform appears when it finishes."
+
+#: src/main.rs
+msgid "No hay una salida de audio disponible. {error}"
+msgstr "There is no audio output available. {error}"
+
+#: src/main.rs
+msgid "No se pudo crear la ventana: {error}"
+msgstr "Could not create the window: {error}"
+
+#: src/main.rs
+msgid "Fallo la ventana: {error}"
+msgstr "The window failed: {error}"
+
+#: src/persistencia.rs
+msgid "falta la intro de {audio}"
+msgstr "the intro of {audio} is missing"
+
+#: src/persistencia.rs
+msgid "falta la outro de {audio}"
+msgstr "the outro of {audio} is missing"
+
+#: src/persistencia.rs
+msgid "se esperaba un objeto JSON"
+msgstr "a JSON object was expected"
+
+#: src/persistencia.rs
+msgid "La fecha inicial es posterior a la final."
+msgstr "The start date is after the end date."
+
+#: src/persistencia.rs
+msgid "No se pudo leer {}: {error}"
+msgstr "Could not read {}: {error}"
+
+#: src/persistencia.rs
+msgid "falta la lista 'tandas'"
+msgstr "the 'tandas' list is missing"
+
+#: src/persistencia.rs
+msgid "una tanda no tiene nombre"
+msgstr "a break has no name"
+
+#: src/persistencia.rs
+msgid "la tanda {nombre} no tiene 'inicio'"
+msgstr "break {nombre} has no 'inicio'"
+
+#: src/persistencia.rs
+msgid "tanda {nombre}: {error}"
+msgstr "break {nombre}: {error}"
+
+#: src/persistencia.rs
+msgid "falta la lista 'anunciantes'"
+msgstr "the 'anunciantes' list is missing"
+
+#: src/persistencia.rs
+msgid "falta la lista 'ordenes'"
+msgstr "the 'ordenes' list is missing"
+
+#: src/persistencia.rs
+msgid "orden {nombre}: '{clave}' no es una fecha AAAA-MM-DD"
+msgstr "order {nombre}: '{clave}' is not a YYYY-MM-DD date"
+
+#: src/persistencia.rs
+msgid "orden {nombre}: falta 'frecuencia'"
+msgstr "order {nombre}: 'frecuencia' is missing"
+
+#: src/persistencia.rs
+msgid "orden {nombre}: {error}"
+msgstr "order {nombre}: {error}"
+
+#: src/persistencia.rs
+msgid "No se pudo escribir el certificado {}: {error}"
+msgstr "Could not write the certificate {}: {error}"
+
+#: src/persistencia.rs
+msgid "Tiene que quedar al menos una hoja de efectos."
+msgstr "At least one effects page must remain."
+
+#: src/persistencia.rs
+msgid "No existe la hoja {}."
+msgstr "Page {} does not exist."
+
+#: src/persistencia.rs
+msgid "{} ya esta asignado al boton {repetido} de la hoja {}."
+msgstr "{} is already assigned to button {repetido} of page {}."
+
+#: src/persistencia.rs
+msgid "No existe el boton {boton}."
+msgstr "Button {boton} does not exist."
+
+#: src/persistencia.rs
+msgid "modo desconocido: {modo}"
+msgstr "unknown mode: {modo}"
+
+#: src/persistencia.rs
+msgid "{clave} debe ser booleano"
+msgstr "{clave} must be a boolean"
+
+#: src/persistencia.rs
+msgid "{clave} debe ser numerico"
+msgstr "{clave} must be a number"
+
+#: src/persistencia.rs
+msgid "hojas invalidas: {otro}"
+msgstr "invalid pages: {otro}"
+
+#: src/persistencia.rs
+msgid "cada hoja debe ser una lista"
+msgstr "each page must be a list"
+
+#: src/persistencia.rs
+msgid "boton invalido: {otro}"
+msgstr "invalid button: {otro}"
+
+#: src/persistencia.rs
+msgid "{} no es una lista valida: {error}"
+msgstr "{} is not a valid playlist: {error}"
+
+#: src/persistencia.rs
+msgid "{} no es una lista del reproductor (falta \"pistas\")"
+msgstr "{} is not a player playlist (\"pistas\" is missing)"
+
+#: src/persistencia.rs
+msgid "No se pudo guardar la lista en {}: {error}"
+msgstr "Could not save the playlist in {}: {error}"
+
+#: src/servicio/anuncio_hth.rs
+msgid "{hora:02}:{minutos:02}, {} °C, {} % de humedad"
+msgstr "{hora:02}:{minutos:02}, {} °C, {} % humidity"
+
+#: src/servicio/anuncio_hth.rs
+msgid "{hora:02}:{minutos:02} (sin datos del clima)"
+msgstr "{hora:02}:{minutos:02} (no weather data)"
+
+#: src/servicio/anuncio_hth.rs
+msgid "Falta la locucion {}/{}.mp3 en {}"
+msgstr "The voice clip {}/{}.mp3 is missing in {}"
+
+#: src/servicio/anuncio_hth.rs
+msgid "{} esta a {frecuencia_de_la_toma} Hz y las demas locuciones a {frecuencia} Hz"
+msgstr "{} is at {frecuencia_de_la_toma} Hz and the other voice clips at {frecuencia} Hz"
+
+#: src/servicio/anuncio_hth.rs
+msgid "El anuncio no tiene ninguna pieza"
+msgstr "The announcement has no parts"
+
+#: src/servicio/anuncio_hth.rs
+msgid "{} no tiene audio"
+msgstr "{} has no audio"
+
+#: src/servicio/anuncio_hth.rs
+msgid "Anuncio demasiado largo"
+msgstr "Announcement too long"
+
+#: src/servicio/anuncio_hth.rs
+msgid "No se pudo escribir {}: {error}"
+msgstr "Could not write {}: {error}"
+
+#: src/servicio/anuncio_hth.rs
+msgid "No se pudo guardar {}: {error}"
+msgstr "Could not save {}: {error}"
+
+#: src/servicio/clima.rs
+msgid "Respuesta de la busqueda de localidades ilegible: {error}"
+msgstr "Unreadable location search response: {error}"
+
+#: src/servicio/clima.rs
+msgid "La busqueda de localidades fallo: {motivo}"
+msgstr "The location search failed: {motivo}"
+
+#: src/servicio/clima.rs
+msgid "No se pudo buscar la localidad: {error}"
+msgstr "Could not search for the location: {error}"
+
+#: src/servicio/clima.rs
+msgid "No se pudo leer la busqueda de localidades: {error}"
+msgstr "Could not read the location search: {error}"
+
+#: src/servicio/clima.rs
+msgid "Respuesta del clima ilegible: {error}"
+msgstr "Unreadable weather response: {error}"
+
+#: src/servicio/clima.rs
+msgid "La respuesta del clima no trae el dato actual"
+msgstr "The weather response has no current data"
+
+#: src/servicio/clima.rs
+msgid "La respuesta del clima no trae la temperatura"
+msgstr "The weather response has no temperature"
+
+#: src/servicio/clima.rs
+msgid "La respuesta del clima no trae la humedad"
+msgstr "The weather response has no humidity"
+
+#: src/servicio/clima.rs
+msgid "No se pudo consultar el clima: {error}"
+msgstr "Could not check the weather: {error}"
+
+#: src/servicio/clima.rs
+msgid "No se pudo leer la respuesta del clima: {error}"
+msgstr "Could not read the weather response: {error}"
+
+#: src/servicio/mezcla_de_efectos.rs
+msgid "efecto {:+.1} dB"
+msgstr "effect {:+.1} dB"
+
+#: src/servicio/mezcla_de_efectos.rs
+msgid ", musica -{:.1} dB en {:.0} ms, vuelve en {:.1} s"
+msgstr ", music -{:.1} dB in {:.0} ms, returns in {:.1} s"
+
+#: src/servicio/mezcla_inteligente.rs
+msgid "picos hasta +1.5 dBTP, redondeados por el recorte suave"
+msgstr "peaks up to +1.5 dBTP, rounded by the soft clipper"
+
+#: src/servicio/mezcla_inteligente.rs
+msgid "sin pasar de {TECHO_DE_PICO_REAL_DB} dBTP"
+msgstr "without exceeding {TECHO_DE_PICO_REAL_DB} dBTP"
+
+#: src/servicio/mezcla_inteligente.rs
+msgid "{} LUFS (hasta {} dB arriba y {} dB abajo, {techo})"
+msgstr "{} LUFS (up to {} dB up and {} dB down, {techo})"
+
+#: src/servicio/mezcla_inteligente.rs
+msgid "mezcla inteligente de {segundos:.1} s"
+msgstr "{segundos:.1} s smart mix"
+
+#: src/servicio/mezcla_inteligente.rs
+msgid ", golpes alineados a {bpm:.0} BPM"
+msgstr ", beats aligned at {bpm:.0} BPM"
+
+#: src/servicio/musicbrainz.rs
+msgid "No se pudo consultar MusicBrainz: {error}"
+msgstr "Could not query MusicBrainz: {error}"
+
+#: src/servicio/musicbrainz.rs
+msgid "No se pudo leer la respuesta de MusicBrainz: {error}"
+msgstr "Could not read the MusicBrainz response: {error}"
+
+#: src/servicio/musicbrainz.rs
+msgid "Respuesta de MusicBrainz ilegible: {error}"
+msgstr "Unreadable MusicBrainz response: {error}"
+
+#: src/servicio/sugerencia_de_overlay.rs
+msgid "intro instrumental"
+msgstr "instrumental intro"
+
+#: src/servicio/sugerencia_de_overlay.rs
+msgid "puente instrumental"
+msgstr "instrumental bridge"
+
+#: src/servicio/sugerencia_de_overlay.rs
+msgid "final instrumental"
+msgstr "instrumental ending"

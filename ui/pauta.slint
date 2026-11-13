@@ -1,0 +1,414 @@
+import { Button, CheckBox, ComboBox, LineEdit, ListView, SpinBox, Palette } from "std-widgets.slint";
+import { CeldaConIcono as Celda, EncabezadoConIcono, Iconografia } from "iconografia.slint";
+
+// Una tanda programada en la tabla de la pauta.
+export struct FilaDeTanda {
+    nombre: string,
+    // "10:30 y cada 30 min hasta 20:00, lun a vie".
+    regla: string,
+    // "Tolerancia -3/+2 min" o "Exacta".
+    entrada: string,
+    // "4 avisos, 1:45".
+    avisos: string,
+    // "vie 06/11 10:30 (en 4:12)" o vacio si esta inactiva.
+    proxima: string,
+    activa: bool,
+    // Tiene archivos que faltan o que no pueden ir en una tanda.
+    problema: bool,
+    seleccionada: bool,
+}
+
+// Un aviso de la tanda que se esta editando.
+export struct AvisoDeTanda {
+    nombre: string,
+    // Comercial, Publicidad... o "sin tipo".
+    tipo: string,
+    duracion: string,
+    ruta: string,
+    // Por que no puede ir en la tanda (vacio si puede).
+    problema: string,
+    seleccionado: bool,
+}
+
+
+component Etiqueta inherits Text {
+    vertical-alignment: center;
+    horizontal-alignment: right;
+}
+
+// Pauta de tandas: las tandas programadas y el formulario para crearlas o
+// cambiarlas (avisos, horarios, dias, tolerancia, modo y prioridad).
+export component PautaDeTandas inherits Window {
+    title: @tr("Pauta de tandas - MCP Raptor Player");
+    icon: @image-url("iconos/ventana-raptor.svg");
+    preferred-width: 1180px;
+    preferred-height: 760px;
+    min-width: 960px;
+    min-height: 640px;
+    background: Palette.background;
+
+    in property <[FilaDeTanda]> tandas;
+    in property <[AvisoDeTanda]> avisos;
+    // Hay una tanda elegida (o una nueva) en el formulario.
+    in property <bool> editando;
+    in property <bool> es-nueva;
+    in property <bool> hay-aviso-elegido;
+    in property <string> aviso;
+    in property <bool> aviso-es-error;
+
+    in-out property <string> nombre;
+    in-out property <string> inicio;
+    in-out property <int> cada-minutos;
+    in-out property <string> hasta;
+    in-out property <bool> lun;
+    in-out property <bool> mar;
+    in-out property <bool> mie;
+    in-out property <bool> jue;
+    in-out property <bool> vie;
+    in-out property <bool> sab;
+    in-out property <bool> dom;
+    in-out property <int> antes-minutos;
+    in-out property <int> despues-minutos;
+    // 0: con tolerancia (espera el final del tema); 1: a hora exacta.
+    in-out property <int> modo;
+    in-out property <int> prioridad;
+    in-out property <bool> activa;
+    // Segundos que puede durar con los avisos de las ordenes (0: sin limite).
+    in-out property <int> duracion-maxima;
+    in-out property <int> tipo-a-asignar;
+
+    callback elegir-tanda(indice: int);
+    callback alternar-activa(indice: int);
+    callback nueva();
+    callback quitar();
+    callback encolar-ahora();
+    callback guardar();
+    callback descartar();
+    callback agregar-avisos();
+    callback elegir-aviso(indice: int);
+    callback quitar-aviso();
+    callback subir-aviso();
+    callback bajar-aviso();
+    callback asignar-tipo();
+    callback cerrar();
+
+    property <length> ancho-activa: 84px;
+    property <length> ancho-entrada: 150px;
+    property <length> ancho-avisos: 120px;
+    property <length> ancho-proxima: 190px;
+
+    pure function tono-de(fila: FilaDeTanda) -> color {
+        if fila.seleccionada {
+            return Palette.selection-foreground;
+        }
+        return fila.activa ? Palette.foreground : Palette.foreground.transparentize(50%);
+    }
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 8px;
+
+        Text {
+            text: @tr("Cada tanda entra en el corte entre temas mas cercano a su hora, como bloque fijo. Sin un corte dentro de la tolerancia, espera el final del tema o, a hora exacta, baja lo que suena con el fader.");
+            wrap: word-wrap;
+            font-size: 12px;
+            color: Palette.foreground.transparentize(25%);
+        }
+
+        // Tabla de tandas.
+        HorizontalLayout {
+            height: 24px;
+            EncabezadoConIcono { width: root.ancho-activa; texto: @tr("Activa"); icono: @image-url("iconos/dato-activa.svg"); alineacion: center; ayuda: @tr("Una tanda inactiva conserva su programación pero no sale"); }
+            EncabezadoConIcono { width: 180px; texto: @tr("Tanda"); icono: @image-url("iconos/dato-titulo.svg"); }
+            EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Horarios"); icono: @image-url("iconos/pauta.svg"); }
+            EncabezadoConIcono { width: root.ancho-entrada; texto: @tr("Entrada"); icono: @image-url("iconos/dato-entrada.svg"); ayuda: @tr("Cómo entra si no hay un corte a tiempo: con tolerancia o a hora exacta"); }
+            EncabezadoConIcono { width: root.ancho-avisos; texto: @tr("Avisos"); icono: @image-url("iconos/dato-avisos.svg"); }
+            EncabezadoConIcono { width: root.ancho-proxima; texto: @tr("Próxima salida"); icono: @image-url("iconos/dato-proxima.svg"); }
+        }
+        Rectangle {
+            vertical-stretch: 1;
+            min-height: 100px;
+            border-width: 1px;
+            border-color: Palette.border;
+            border-radius: 4px;
+            ListView {
+                for fila[indice] in root.tandas: Rectangle {
+                    height: 30px;
+                    background: fila.seleccionada ? Palette.selection-background
+                        : Math.mod(indice, 2) == 1 ? Palette.alternate-background : transparent;
+                    TouchArea {
+                        clicked => { root.elegir-tanda(indice); }
+                        HorizontalLayout {
+                            Rectangle {
+                                width: root.ancho-activa;
+                                CheckBox {
+                                    checked: fila.activa;
+                                    toggled => { root.alternar-activa(indice); }
+                                }
+                            }
+                            Celda { width: 180px; texto: fila.nombre; tono: root.tono-de(fila); peso: 600; }
+                            Celda { horizontal-stretch: 1; texto: fila.regla; tono: root.tono-de(fila); }
+                            Celda { width: root.ancho-entrada; texto: fila.entrada; tono: root.tono-de(fila); }
+                            Celda {
+                                width: root.ancho-avisos;
+                                texto: fila.avisos;
+                                tono: fila.seleccionada ? Palette.selection-foreground : fila.problema ? #ff8787 : root.tono-de(fila);
+                            }
+                            Celda { width: root.ancho-proxima; texto: fila.proxima; tono: root.tono-de(fila); }
+                        }
+                    }
+                }
+            }
+            if root.tandas.length == 0: Text {
+                text: @tr("No hay tandas programadas: use Nueva tanda.");
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                color: Palette.foreground.transparentize(35%);
+            }
+        }
+        HorizontalLayout {
+            spacing: 8px;
+            Button {
+                icon: @image-url("iconos/agregar.svg");
+                colorize-icon: true;
+                text: @tr("Nueva tanda");
+                clicked => { root.nueva(); }
+            }
+            Button {
+                icon: @image-url("iconos/quitar.svg");
+                colorize-icon: true;
+                text: @tr("Quitar tanda");
+                enabled: root.editando && !root.es-nueva;
+                clicked => { root.quitar(); }
+            }
+            Button {
+                icon: @image-url("iconos/siguiente.svg");
+                colorize-icon: true;
+                text: @tr("Encolar ahora");
+                enabled: root.editando && !root.es-nueva;
+                clicked => { root.encolar-ahora(); }
+                Tooltip { text: @markdown("\{@tr("Encola la tanda ya, en el proximo corte entre temas, fuera de su horario (no cambia su programacion)")}"); }
+            }
+            Rectangle { horizontal-stretch: 1; }
+        }
+
+        // Formulario de la tanda elegida.
+        Rectangle {
+            border-width: 1px;
+            border-color: Palette.border;
+            border-radius: 4px;
+            background: Palette.alternate-background;
+            HorizontalLayout {
+                padding: 10px;
+                spacing: 16px;
+
+                GridLayout {
+                    width: 480px;
+                    spacing: 6px;
+                    Row {
+                        Etiqueta { text: @tr("Nombre"); }
+                        LineEdit { colspan: 3; text <=> root.nombre; placeholder-text: @tr("Tanda A"); enabled: root.editando; }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Primer horario"); }
+                        LineEdit { width: 90px; text <=> root.inicio; placeholder-text: "10:30"; enabled: root.editando; }
+                        Etiqueta { text: @tr("Hasta"); }
+                        LineEdit {
+                            text <=> root.hasta;
+                            placeholder-text: root.cada-minutos > 0 ? @tr("fin del dia") : @tr("(solo con repeticion)");
+                            enabled: root.editando && root.cada-minutos > 0;
+                        }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Repetir cada"); }
+                        SpinBox { width: 90px; minimum: 0; maximum: 1440; value <=> root.cada-minutos; enabled: root.editando; }
+                        Text {
+                            colspan: 2;
+                            text: root.cada-minutos > 0 ? @tr("minutos") : @tr("minutos (0: una vez por dia)");
+                            vertical-alignment: center;
+                        }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Días"); }
+                        HorizontalLayout {
+                            colspan: 3;
+                            spacing: 2px;
+                            CheckBox { text: @tr("Lun"); checked <=> root.lun; enabled: root.editando; }
+                            CheckBox { text: @tr("Mar"); checked <=> root.mar; enabled: root.editando; }
+                            CheckBox { text: @tr("Mie"); checked <=> root.mie; enabled: root.editando; }
+                            CheckBox { text: @tr("Jue"); checked <=> root.jue; enabled: root.editando; }
+                            CheckBox { text: @tr("Vie"); checked <=> root.vie; enabled: root.editando; }
+                            CheckBox { text: @tr("Sab"); checked <=> root.sab; enabled: root.editando; }
+                            CheckBox { text: @tr("Dom"); checked <=> root.dom; enabled: root.editando; }
+                        }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Tolerancia (min)"); }
+                        HorizontalLayout {
+                            colspan: 3;
+                            spacing: 6px;
+                            SpinBox { width: 80px; minimum: 0; maximum: 60; value <=> root.antes-minutos; enabled: root.editando; }
+                            Text { text: @tr("antes"); vertical-alignment: center; }
+                            SpinBox { width: 80px; minimum: 0; maximum: 60; value <=> root.despues-minutos; enabled: root.editando; }
+                            Text { text: @tr("despues de la hora"); vertical-alignment: center; }
+                        }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Sin corte a tiempo"); }
+                        ComboBox {
+                            colspan: 3;
+                            model: [@tr("Esperar el final del tema (sale tarde)"), @tr("Bajar lo que suena a la hora exacta")];
+                            current-index <=> root.modo;
+                            enabled: root.editando;
+                        }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Duración máxima"); }
+                        SpinBox { width: 90px; minimum: 0; maximum: 1800; step-size: 15; value <=> root.duracion-maxima; enabled: root.editando; }
+                        Text {
+                            colspan: 2;
+                            text: root.duracion-maxima > 0 ? @tr("segundos, con los avisos de las ordenes") : @tr("segundos (0: sin limite)");
+                            vertical-alignment: center;
+                        }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Prioridad"); }
+                        SpinBox { width: 90px; minimum: 1; maximum: 9; value <=> root.prioridad; enabled: root.editando; }
+                        CheckBox { colspan: 2; text: @tr("Activa"); checked <=> root.activa; enabled: root.editando; }
+                    }
+                }
+
+                // Avisos de la tanda, en el orden en que salen.
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    spacing: 6px;
+                    Text { text: @tr("Avisos (en el orden en que salen)"); font-weight: 700; }
+                    Rectangle {
+                        vertical-stretch: 1;
+                        min-height: 150px;
+                        border-width: 1px;
+                        border-color: Palette.border;
+                        border-radius: 4px;
+                        background: Palette.background;
+                        ListView {
+                            for aviso[indice] in root.avisos: Rectangle {
+                                height: 26px;
+                                background: aviso.seleccionado ? Palette.selection-background : transparent;
+                                TouchArea {
+                                    clicked => { root.elegir-aviso(indice); }
+                                    HorizontalLayout {
+                                        Celda {
+                                            horizontal-stretch: 1;
+                                            texto: (indice + 1) + ". " + aviso.nombre;
+                                            tono: aviso.seleccionado ? Palette.selection-foreground : aviso.problema != "" ? #ff8787 : Palette.foreground;
+                                        }
+                                        Celda {
+                                            width: 120px;
+                                            texto: Iconografia.nombre-de-tipo(aviso.tipo);
+                                            tono: aviso.seleccionado ? Palette.selection-foreground : Palette.foreground;
+                                            icono: Iconografia.icono-de-tipo(aviso.tipo);
+                                            tono-del-icono: Iconografia.color-de-tipo(aviso.tipo, self.tono);
+                                        }
+                                        Celda { width: 70px; texto: aviso.duracion; alineacion: right; tono: aviso.seleccionado ? Palette.selection-foreground : Palette.foreground; }
+                                    }
+                                    Tooltip { text: @markdown("\{aviso.ruta}\{aviso.problema != "" ? "\n\n" + aviso.problema : ""}"); }
+                                }
+                            }
+                        }
+                        if root.avisos.length == 0: Text {
+                            text: @tr("Agregue los avisos de la tanda.");
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: Palette.foreground.transparentize(35%);
+                        }
+                    }
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Button {
+                            icon: @image-url("iconos/agregar.svg");
+                            colorize-icon: true;
+                            text: @tr("Agregar del catálogo...");
+                            enabled: root.editando;
+                            clicked => { root.agregar-avisos(); }
+                            Tooltip { text: @markdown("\{@tr("Busca los avisos en el catalogo de la emisora (Comercial, Publicidad, Anuncio, Podcast o Seco); desde ahi tambien se asigna el tipo a los que no lo tienen o se agrega un archivo nuevo")}"); }
+                        }
+                        Button {
+                            icon: @image-url("iconos/quitar.svg");
+                            colorize-icon: true;
+                            enabled: root.hay-aviso-elegido;
+                            clicked => { root.quitar-aviso(); }
+                            Tooltip { text: @markdown("\{@tr("Quitar el aviso de la tanda")}"); }
+                        }
+                        Button {
+                            icon: @image-url("iconos/subir.svg");
+                            colorize-icon: true;
+                            enabled: root.hay-aviso-elegido;
+                            clicked => { root.subir-aviso(); }
+                            Tooltip { text: @markdown("\{@tr("Subir el aviso")}"); }
+                        }
+                        Button {
+                            icon: @image-url("iconos/bajar.svg");
+                            colorize-icon: true;
+                            enabled: root.hay-aviso-elegido;
+                            clicked => { root.bajar-aviso(); }
+                            Tooltip { text: @markdown("\{@tr("Bajar el aviso")}"); }
+                        }
+                    }
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Text {
+                            text: @tr("Tipo del aviso elegido");
+                            vertical-alignment: center;
+                        }
+                        ComboBox {
+                            width: 130px;
+                            model: [@tr("Comercial"), @tr("Publicidad"), @tr("Anuncio"), @tr("Podcast")];
+                            current-index <=> root.tipo-a-asignar;
+                            enabled: root.hay-aviso-elegido;
+                        }
+                        Button {
+                            text: @tr("Asignar tipo");
+                            enabled: root.hay-aviso-elegido;
+                            clicked => { root.asignar-tipo(); }
+                            Tooltip { text: @markdown("\{@tr("En una tanda solo van Comercial, Publicidad, Anuncio, Podcast o Seco. Se guarda en el catalogo, no en el archivo")}"); }
+                        }
+                        Rectangle { horizontal-stretch: 1; }
+                    }
+                }
+            }
+        }
+
+        Text {
+            text: root.aviso;
+            wrap: word-wrap;
+            font-size: 12px;
+            color: root.aviso-es-error ? #ff8787 : Palette.foreground.transparentize(20%);
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+            Button {
+                icon: @image-url("iconos/guardar.svg");
+                colorize-icon: true;
+                text: root.es-nueva ? @tr("Programar tanda") : @tr("Guardar cambios");
+                primary: true;
+                enabled: root.editando;
+                clicked => { root.guardar(); }
+            }
+            Button {
+                icon: @image-url("iconos/deshacer.svg");
+                colorize-icon: true;
+                text: @tr("Descartar cambios");
+                enabled: root.editando;
+                clicked => { root.descartar(); }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            Button {
+                icon: @image-url("iconos/cancelar.svg");
+                colorize-icon: true;
+                text: @tr("Cerrar");
+                clicked => { root.cerrar(); }
+            }
+        }
+    }
+}

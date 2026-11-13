@@ -1,0 +1,122 @@
+import { AboutSlint, Button, Palette } from "std-widgets.slint";
+
+// Ventana "Acerca de", con la imagen acerca_de.jpg de fondo (se incluye en
+// el ejecutable al compilar). La imagen mide el doble que la ventana (1280 x
+// 1400), para verse nitida hasta con la escala de Windows al 200 %.
+export component AcercaDe inherits Window {
+    title: @tr("Acerca de MCP Raptor Player");
+    icon: @image-url("iconos/ventana-raptor.svg");
+    // Entra en Full HD al 150 % (unos 690 px logicos de alto, con la barra
+    // de tareas y la de titulo).
+    width: 560px;
+    height: 600px;
+    background: #f2f0ec;
+
+    in property <string> version;
+    // Correo de contacto; con un clic se abre el programa de correo.
+    in property <string> correo;
+    callback cerrar();
+    callback escribir-al-autor();
+
+    Image {
+        width: parent.width;
+        height: parent.height;
+        source: @image-url("../acerca_de.jpg");
+        image-fit: cover;
+    }
+
+    // Panel oscuro semitransparente para que el texto se lea sobre la imagen.
+    Rectangle {
+        x: 40px;
+        y: parent.height - self.height - 24px;
+        width: parent.width - 80px;
+        height: contenido.preferred-height;
+        border-radius: 10px;
+        background: #101010.with-alpha(0.82);
+
+        contenido := VerticalLayout {
+            padding: 18px;
+            spacing: 4px;
+            alignment: center;
+
+            Text {
+                text: @tr("Raptor III");
+                font-size: 40px;
+                font-weight: 800;
+                horizontal-alignment: center;
+                color: Palette.accent-background;
+            }
+            Text {
+                text: @tr("Edición 30 Aniversario");
+                font-size: 20px;
+                font-weight: 600;
+                horizontal-alignment: center;
+                color: #f5f5f5;
+            }
+            Text {
+                text: "1997 - 2027";
+                font-size: 16px;
+                horizontal-alignment: center;
+                color: #f5f5f5;
+            }
+            Text {
+                text: @tr("Por Aníbal H. Flores, «el Inyenieri»");
+                font-size: 15px;
+                horizontal-alignment: center;
+                color: #f5f5f5;
+            }
+            // Contacto: un enlace que abre el programa de correo.
+            HorizontalLayout {
+                alignment: center;
+                enlace := Text {
+                    text: root.correo;
+                    font-size: 14px;
+                    color: area-del-enlace.has-hover ? Palette.accent-background.brighter(30%) : Palette.accent-background;
+                    accessible-role: button;
+                    accessible-label: @tr("Escribir a {}", root.correo);
+                    accessible-action-default => { root.escribir-al-autor(); }
+                    area-del-enlace := TouchArea {
+                        mouse-cursor: pointer;
+                        clicked => { root.escribir-al-autor(); }
+                    }
+                }
+            }
+            Text {
+                text: "MCP Raptor Player " + root.version;
+                font-size: 12px;
+                horizontal-alignment: center;
+                color: #f5f5f5.with-alpha(0.65);
+            }
+            Rectangle { height: 4px; }
+            Text {
+                text: @tr("Software gratuito, sin garantía ni soporte. Úselo bajo su propio riesgo.");
+                font-size: 12px;
+                horizontal-alignment: center;
+                wrap: word-wrap;
+                color: #f5f5f5.with-alpha(0.8);
+            }
+            Text {
+                text: @tr("Iconos: Tabler Icons (licencia MIT).");
+                font-size: 11px;
+                horizontal-alignment: center;
+                color: #f5f5f5.with-alpha(0.65);
+            }
+            // Atribucion de la biblioteca de la interfaz.
+            HorizontalLayout {
+                alignment: center;
+                AboutSlint {
+                    max-width: 160px;
+                    max-height: 80px;
+                }
+            }
+            HorizontalLayout {
+                alignment: center;
+                Button {
+                    text: @tr("Cerrar");
+                    primary: true;
+                    clicked => { root.cerrar(); }
+                }
+            }
+        }
+    }
+}

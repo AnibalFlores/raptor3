@@ -1,0 +1,208 @@
+import { Button, CheckBox, ListView, Palette } from "std-widgets.slint";
+import { EncabezadoConIcono } from "iconografia.slint";
+
+// Ficha del catalogo cuyo archivo ya no existe.
+export struct FichaSinArchivo {
+    elegida: bool,
+    // Titulo y artista, o el nombre del archivo.
+    tema: string,
+    // Ruta que tenia el archivo.
+    ruta: string,
+    // Resultado de la busqueda: "Sin buscar", la ruta encontrada, etc.
+    hallazgo: string,
+    encontrado: bool,
+}
+
+// Celda de texto que se recorta con "..." y muestra el texto completo en un
+// tooltip cuando no entra.
+component Celda inherits Rectangle {
+    in property <string> texto;
+    in property <color> tono: Palette.foreground;
+    rotulo := Text {
+        x: 0;
+        width: parent.width;
+        text: root.texto;
+        color: root.tono;
+        overflow: elide;
+        vertical-alignment: center;
+    }
+    if rotulo.preferred-width > root.width: TouchArea {
+        Tooltip { text: @markdown("\{root.texto}"); }
+    }
+}
+
+// Mantenimiento del catalogo: fichas cuyo archivo se movio, se renombro o se
+// borro. Se pueden buscar en una carpeta y reubicar (sin perder sus datos) o
+// quitar del catalogo. Tambien limpia la cache de formas de onda.
+export component MantenimientoDelCatalogo inherits Window {
+    title: @tr("Mantenimiento del catalogo - MCP Raptor Player");
+    icon: @image-url("iconos/ventana-raptor.svg");
+    preferred-width: 1100px;
+    preferred-height: 600px;
+    min-width: 900px;
+    min-height: 420px;
+    background: Palette.background;
+
+    in property <string> resumen;
+    in property <[FichaSinArchivo]> fichas;
+    in property <int> encontradas;
+    in property <int> elegidas;
+    in property <bool> buscando;
+    in property <string> aviso;
+
+    callback buscar-en-carpeta();
+    callback reubicar-encontradas();
+    callback quitar-elegidas();
+    callback limpiar-ondas();
+    callback actualizar();
+    callback cerrar();
+    // Marca o desmarca una ficha (posicion) o todas (-1).
+    callback elegir(posicion: int, elegida: bool);
+
+    property <length> ancho-del-tema: 260px;
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 8px;
+
+        Text {
+            text: root.resumen;
+            font-size: 15px;
+            font-weight: 700;
+            wrap: word-wrap;
+        }
+        Text {
+            text: @tr("El catalogo reconoce cada archivo por su ruta. Si se movio una carpeta, use Buscar en carpeta: se buscan los archivos por nombre (si hay varios iguales, por duracion) y Reubicar pasa cada ficha a su nueva ruta sin perder sus datos; tambien se actualizan la lista, la botonera y los efectos fijados. Los archivos renombrados no se reconocen.");
+            wrap: word-wrap;
+            font-size: 12px;
+            color: Palette.foreground.transparentize(25%);
+        }
+
+        // Encabezado de la tabla.
+        HorizontalLayout {
+            spacing: 8px;
+            padding-left: 8px;
+            padding-right: 8px;
+            CheckBox {
+                checked: root.fichas.length > 0 && root.elegidas == root.fichas.length;
+                enabled: root.fichas.length > 0 && !root.buscando;
+                toggled => { root.elegir(-1, self.checked); }
+            }
+            EncabezadoConIcono {
+                width: root.ancho-del-tema;
+                margen: 0px;
+                texto: @tr("Tema");
+                icono: @image-url("iconos/tipo-tema.svg");
+            }
+            EncabezadoConIcono {
+                horizontal-stretch: 1;
+                margen: 0px;
+                texto: @tr("Ubicación anterior");
+                icono: @image-url("iconos/dato-ubicacion-anterior.svg");
+                ayuda: @tr("Ruta que tenía el archivo; ya no existe");
+            }
+            EncabezadoConIcono {
+                horizontal-stretch: 1;
+                margen: 0px;
+                texto: @tr("Nueva ubicación");
+                icono: @image-url("iconos/dato-ubicacion-nueva.svg");
+                ayuda: @tr("Dónde se encontró el archivo al buscar en una carpeta");
+            }
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+            border-width: 1px;
+            border-color: Palette.border;
+            border-radius: 4px;
+            ListView {
+                for ficha[indice] in root.fichas: Rectangle {
+                    height: 30px;
+                    background: Math.mod(indice, 2) == 1 ? Palette.alternate-background : transparent;
+                    HorizontalLayout {
+                        spacing: 8px;
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        CheckBox {
+                            checked: ficha.elegida;
+                            enabled: !root.buscando;
+                            toggled => { root.elegir(indice, self.checked); }
+                        }
+                        Celda {
+                            width: root.ancho-del-tema;
+                            texto: ficha.tema;
+                        }
+                        Celda {
+                            horizontal-stretch: 1;
+                            texto: ficha.ruta;
+                            tono: Palette.foreground.transparentize(25%);
+                        }
+                        Celda {
+                            horizontal-stretch: 1;
+                            texto: ficha.hallazgo;
+                            tono: ficha.encontrado ? #69db7c : Palette.foreground.transparentize(35%);
+                        }
+                    }
+                }
+            }
+            if root.fichas.length == 0: Text {
+                text: @tr("Todas las fichas del catalogo tienen su archivo.");
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                color: Palette.foreground.transparentize(35%);
+            }
+        }
+
+        // Resultado de la ultima accion.
+        Text {
+            text: root.aviso;
+            wrap: word-wrap;
+            color: Palette.foreground.transparentize(15%);
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+            Button {
+                icon: @image-url("iconos/buscar-salidas.svg");
+                colorize-icon: true;
+                text: root.buscando ? @tr("Buscando...") : @tr("Buscar en carpeta...");
+                enabled: root.fichas.length > 0 && !root.buscando;
+                clicked => { root.buscar-en-carpeta(); }
+            }
+            Button {
+                icon: @image-url("iconos/validar.svg");
+                colorize-icon: true;
+                text: @tr("Reubicar encontradas ({})", root.encontradas);
+                primary: true;
+                enabled: root.encontradas > 0 && !root.buscando;
+                clicked => { root.reubicar-encontradas(); }
+                Tooltip { text: @markdown("\{@tr("Pasa las fichas elegidas que se encontraron a su nueva ubicacion")}"); }
+            }
+            Button {
+                icon: @image-url("iconos/quitar.svg");
+                colorize-icon: true;
+                text: @tr("Quitar elegidas del catálogo");
+                enabled: root.elegidas > 0 && !root.buscando;
+                clicked => { root.quitar-elegidas(); }
+                Tooltip { text: @markdown("\{@tr("Borra las fichas elegidas: sus puntos de mezcla, datos, ranking y ultima reproduccion. No borra archivos.")}"); }
+            }
+            Rectangle {
+                horizontal-stretch: 1;
+            }
+            Button {
+                icon: @image-url("iconos/limpiar.svg");
+                colorize-icon: true;
+                text: @tr("Limpiar cache de ondas");
+                enabled: !root.buscando;
+                clicked => { root.limpiar-ondas(); }
+                Tooltip { text: @markdown("\{@tr("Borra las formas de onda guardadas de archivos que ya no existen, se movieron o cambiaron. Se vuelven a calcular si hacen falta.")}"); }
+            }
+            Button {
+                icon: @image-url("iconos/cancelar.svg");
+                colorize-icon: true;
+                text: @tr("Cerrar");
+                clicked => { root.cerrar(); }
+            }
+        }
+    }
+}

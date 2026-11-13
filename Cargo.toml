@@ -1,0 +1,58 @@
+[package]
+name = "mcp-raptor-player"
+version = "1.0.0"
+edition = "2024"
+description = "Reproductor de escritorio con lista de audio en secuencia, mezcla y servidor MCP"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/AnibalFlores/raptor3"
+readme = "README.md"
+
+[dependencies]
+# "realtime": el hilo del callback de audio pasa a prioridad de tiempo real
+# (MMCSS en Windows); si el sistema no lo permite, solo queda un aviso.
+cpal = { version = "0.18.2", features = ["realtime"] }
+dirs = "7.0.0"
+ebur128 = "0.1.11"
+env_logger = "0.11.11"
+jiff = "0.2.38"
+log = "0.4.34"
+rfd = { version = "0.17.2", default-features = false, features = ["gtk3"] }
+rtrb = "0.4.0"
+rubato = "5.0.1"
+serde_json = "1.0.154"
+# "unstable-winit-030" da acceso a los monitores (para ubicar el editor); al ser
+# inestable entre versiones de Slint, se fija la 1.18.
+slint = { version = "~1.18.1", features = ["raw-window-handle-06", "unstable-winit-030"] }
+symphonia = { version = "0.6.1", features = ["all"] }
+tiny_http = "0.12.0"
+# Consulta del clima (Open-Meteo) para el anuncio de hora, temperatura y humedad.
+ureq = { version = "3.5.1", default-features = false, features = ["rustls"] }
+
+# En Linux se usa el servidor PulseAudio (tambien el de WSLg) en lugar de ALSA directo.
+[target.'cfg(target_os = "linux")'.dependencies]
+cpal = { version = "0.18.2", features = ["pulseaudio", "realtime"] }
+# Prioridad (nice) de los hilos de decodificacion y de analisis.
+libc = "0.2.191"
+
+# Prioridad de los hilos de decodificacion y de analisis.
+[target.'cfg(windows)'.dependencies]
+# Idioma de la cuenta (para elegir el de la interfaz la primera vez).
+windows-sys = { version = "0.61.2", features = ["Win32_System_Threading", "Win32_Globalization"] }
+
+# Capturas de las ventanas fuera de pantalla (prueba que se pide a mano).
+[dev-dependencies]
+png = "0.18.1"
+# Genera recursos/raptor.ico a partir del SVG (la misma version que usa Slint).
+resvg = "0.48.1"
+slint = { version = "1.18.1", features = ["software-renderer-systemfonts"] }
+
+[build-dependencies]
+slint-build = "1.18.1"
+
+# Embebe el icono y los datos del programa en el .exe de Windows.
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1.34"
+
+[profile.release]
+lto = "thin"
+strip = true

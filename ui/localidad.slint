@@ -1,0 +1,158 @@
+import { Button, LineEdit, ListView, Palette } from "std-widgets.slint";
+
+// Localidad encontrada por nombre, con su region para distinguir las homonimas.
+export struct LocalidadEncontrada {
+    nombre: string,
+    // Partido o departamento, provincia y pais.
+    region: string,
+    coordenadas: string,
+}
+
+// Elige la localidad cuyo clima (temperatura y humedad) dice el anuncio HTH:
+// se busca por nombre en el servicio gratuito de Open-Meteo.
+export component SelectorDeLocalidad inherits Window {
+    title: @tr("Localidad del clima - MCP Raptor Player");
+    icon: @image-url("iconos/ventana-raptor.svg");
+    preferred-width: 680px;
+    preferred-height: 480px;
+    min-width: 520px;
+    min-height: 360px;
+    background: Palette.background;
+
+    // Localidad en uso y su clima, como se ve bajo el boton HTH.
+    in property <string> actual;
+    in-out property <string> texto;
+    in property <[LocalidadEncontrada]> localidades;
+    in-out property <int> elegida: -1;
+    in property <string> resumen;
+    in property <bool> buscando;
+
+    callback buscar();
+    // Usa la localidad de esa fila.
+    callback usar(indice: int);
+    callback cerrar();
+
+    public function enfocar() {
+        campo.focus();
+        campo.select-all();
+    }
+
+    forward-focus: campo;
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 8px;
+
+        Text {
+            text: @tr("En uso: {}", root.actual);
+            wrap: word-wrap;
+        }
+        HorizontalLayout {
+            spacing: 8px;
+            campo := LineEdit {
+                horizontal-stretch: 1;
+                placeholder-text: @tr("Nombre de la ciudad o localidad (por ejemplo: Rosario, Mar del Plata)");
+                text <=> root.texto;
+                accepted => { root.buscar(); }
+                key-pressed(evento) => {
+                    if evento.text == Key.Escape {
+                        root.cerrar();
+                        return accept;
+                    }
+                    return reject;
+                }
+            }
+            Button {
+                icon: @image-url("iconos/buscar-en-catalogo.svg");
+                colorize-icon: true;
+                text: root.buscando ? @tr("Buscando...") : @tr("Buscar");
+                enabled: !root.buscando && root.texto != "";
+                clicked => { root.buscar(); }
+            }
+        }
+        Text {
+            text: root.resumen;
+            wrap: word-wrap;
+            font-size: 12px;
+            color: Palette.foreground.transparentize(25%);
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+            border-width: 1px;
+            border-color: Palette.border;
+            border-radius: 4px;
+            ListView {
+                for localidad[indice] in root.localidades: fila := Rectangle {
+                    height: 44px;
+                    background: indice == root.elegida ? Palette.selection-background
+                        : Math.mod(indice, 2) == 1 ? Palette.alternate-background : transparent;
+                    property <color> tono: indice == root.elegida ? Palette.selection-foreground : Palette.foreground;
+                    TouchArea {
+                        clicked => { root.elegida = indice; }
+                        double-clicked => { root.usar(indice); }
+                    }
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        spacing: 8px;
+                        VerticalLayout {
+                            horizontal-stretch: 1;
+                            alignment: center;
+                            Text {
+                                text: localidad.nombre;
+                                font-weight: 700;
+                                color: fila.tono;
+                                overflow: elide;
+                            }
+                            Text {
+                                text: localidad.region;
+                                font-size: 12px;
+                                color: fila.tono.transparentize(25%);
+                                overflow: elide;
+                            }
+                        }
+                        Text {
+                            text: localidad.coordenadas;
+                            font-size: 12px;
+                            vertical-alignment: center;
+                            color: fila.tono.transparentize(25%);
+                        }
+                    }
+                }
+            }
+            if root.localidades.length == 0: Text {
+                text: root.buscando ? @tr("Buscando...") : @tr("Escriba el nombre y pulse Enter.");
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                color: Palette.foreground.transparentize(35%);
+            }
+        }
+
+        Text {
+            text: @tr("Clic para elegir; doble clic usa esa localidad. El clima se consulta cada 10 minutos en Open-Meteo, sin clave.");
+            wrap: word-wrap;
+            font-size: 12px;
+            color: Palette.foreground.transparentize(20%);
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+            Button {
+                icon: @image-url("iconos/validar.svg");
+                colorize-icon: true;
+                text: @tr("Usar esta localidad");
+                primary: true;
+                enabled: root.elegida >= 0 && root.elegida < root.localidades.length;
+                clicked => { root.usar(root.elegida); }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            Button {
+                icon: @image-url("iconos/cancelar.svg");
+                colorize-icon: true;
+                text: @tr("Cerrar");
+                clicked => { root.cerrar(); }
+            }
+        }
+    }
+}

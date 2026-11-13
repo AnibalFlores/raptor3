@@ -1,0 +1,240 @@
+import { Button, LineEdit, ListView, Palette } from "std-widgets.slint";
+import { IdiomaDeLaInterfaz } from "idioma.slint";
+import { CeldaConIcono, EncabezadoConIcono, Iconografia } from "iconografia.slint";
+
+// Tema del catalogo que coincide con la busqueda.
+export struct FichaDelCatalogo {
+    titulo: string,
+    artista: string,
+    tipo: string,
+    genero: string,
+    anio: string,
+    duracion: string,
+    // Fecha local de la ultima reproduccion (dd/mm/aaaa) o vacio.
+    sonado: string,
+    // Ruta del archivo, para el tooltip.
+    ruta: string,
+    // Ya esta en la lista de reproduccion.
+    en-lista: bool,
+    // El archivo ya no existe: no se puede insertar.
+    sin-archivo: bool,
+    seleccionada: bool,
+}
+
+// Celda de texto (con icono opcional) que se recorta con "..."; la fila
+// muestra la ruta en un tooltip.
+export component CeldaDelCatalogo inherits CeldaConIcono { }
+
+// Buscador del catalogo: encuentra temas ya conocidos (por titulo, artista,
+// genero, album o archivo) y los inserta en la lista.
+export component BuscadorDelCatalogo inherits Window {
+    title: @tr("Buscar en el catalogo - MCP Raptor Player");
+    icon: @image-url("iconos/ventana-raptor.svg");
+    preferred-width: 1000px;
+    preferred-height: 620px;
+    // Entran los cinco botones de abajo.
+    min-width: 900px;
+    min-height: 380px;
+    background: Palette.background;
+
+    in property <[FichaDelCatalogo]> fichas;
+    in property <string> resumen;
+    in property <string> aviso;
+    in property <int> seleccionadas;
+    in-out property <string> texto;
+
+    callback buscar(texto: string);
+    callback clic(indice: int, control: bool, mayusculas: bool);
+    // Inserta esa ficha (doble clic) o, con -1, las seleccionadas.
+    callback insertar(indice: int);
+    callback agregar-al-final();
+    // Actualizar los datos de los elegidos (o de todos los resultados).
+    callback releer-etiquetas();
+    callback completar-desde-musicbrainz();
+    callback cerrar();
+
+    property <length> ancho-del-anio: 64px;
+    property <length> ancho-de-la-duracion: 90px;
+    // Entra "Publicidad" con su icono.
+    property <length> ancho-del-tipo: 112px;
+    property <length> ancho-del-genero: 130px;
+    property <length> ancho-en-lista: 110px;
+    property <length> ancho-de-sonado: 100px;
+
+    pure function tono-de(ficha: FichaDelCatalogo) -> color {
+        if ficha.seleccionada {
+            return Palette.selection-foreground;
+        }
+        return ficha.sin-archivo ? Palette.foreground.transparentize(55%) : Palette.foreground;
+    }
+
+    public function enfocar() {
+        campo.focus();
+        campo.select-all();
+    }
+
+    forward-focus: campo;
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 8px;
+
+        HorizontalLayout {
+            spacing: 8px;
+            campo := LineEdit {
+                horizontal-stretch: 1;
+                placeholder-text: @tr("Palabras, o prefijos como artista:sanz ranking:>=4 sonado:>30d (pase el puntero para ver todos)");
+                text <=> root.texto;
+                edited(texto) => { root.buscar(texto); }
+                accepted => { root.insertar(-1); }
+                Tooltip { text: IdiomaDeLaInterfaz.ingles ? @markdown("Without a prefix it searches all the words in title, artist, type, genre, album or file name, ignoring accents. With prefixes:\n\n- **artist:sanz**, **title:**, **genre:**, **album:**, **type:**, **note:**, **file:** (phrases in quotes: genre:\"rock nacional\")\n- **rating:>=4**, **year:1990..1999**, **bpm:120-128**, **duration:<3:30** (=, >, >=, <, <= or ranges)\n- **played:today**, **yesterday**, **never**, **7d** (last 7 days), **>30d** (more than 30 ago), **2026-11-03**, **<01/10/2026**\n- A leading **-** negates: **-genre:cumbia**\n\nThe Spanish prefixes (artista:, titulo:, sonado:...) also work.") : @markdown("Sin prefijo busca todas las palabras en titulo, artista, tipo, genero, album o nombre de archivo, sin importar acentos. Con prefijos:\n\n- **artista:sanz**, **titulo:**, **genero:**, **album:**, **tipo:**, **nota:**, **archivo:** (frases entre comillas: genero:\"rock nacional\")\n- **ranking:>=4**, **anio:1990..1999**, **bpm:120-128**, **duracion:<3:30** (=, >, >=, <, <= o tramos)\n- **sonado:hoy**, **ayer**, **nunca**, **7d** (ultimos 7 dias), **>30d** (hace mas de 30), **2026-11-03**, **<01/10/2026**\n- Un **-** adelante niega: **-genero:cumbia**"); }
+                key-pressed(evento) => {
+                    if evento.text == Key.Escape {
+                        if self.text != "" {
+                            self.text = "";
+                            root.buscar("");
+                        } else {
+                            root.cerrar();
+                        }
+                        return accept;
+                    }
+                    return reject;
+                }
+            }
+        }
+        Text {
+            text: root.resumen;
+            font-size: 12px;
+            color: Palette.foreground.transparentize(25%);
+        }
+
+        // Encabezado de la tabla.
+        HorizontalLayout {
+            height: 24px;
+            padding-left: 1px;
+            padding-right: 1px;
+            EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Título"); icono: @image-url("iconos/dato-titulo.svg"); }
+            EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Artista"); icono: @image-url("iconos/dato-artista.svg"); }
+            EncabezadoConIcono { width: root.ancho-del-tipo; texto: @tr("Tipo"); icono: @image-url("iconos/dato-tipo.svg"); }
+            EncabezadoConIcono { width: root.ancho-del-genero; texto: @tr("Género"); icono: @image-url("iconos/dato-genero.svg"); }
+            EncabezadoConIcono { width: root.ancho-del-anio; texto: @tr("Año"); icono: @image-url("iconos/dato-anio.svg"); alineacion: right; }
+            EncabezadoConIcono { width: root.ancho-de-la-duracion; texto: @tr("Duración"); icono: @image-url("iconos/dato-duracion.svg"); alineacion: right; }
+            EncabezadoConIcono {
+                width: root.ancho-de-sonado;
+                texto: @tr("Sonó");
+                icono: @image-url("iconos/dato-sonado.svg");
+                alineacion: right;
+                ayuda: @tr("Día de la última reproducción (vacío: nunca sonó). Se busca con sonado:, por ejemplo sonado:>30d");
+            }
+            EncabezadoConIcono {
+                width: root.ancho-en-lista;
+                texto: @tr("En lista");
+                icono: @image-url("iconos/dato-en-lista.svg");
+                alineacion: center;
+                ayuda: @tr("Si el tema ya está en la lista de reproducción, o si falta su archivo");
+            }
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+            border-width: 1px;
+            border-color: Palette.border;
+            border-radius: 4px;
+            ListView {
+                for ficha[indice] in root.fichas: Rectangle {
+                    height: 28px;
+                    background: ficha.seleccionada ? Palette.selection-background
+                        : Math.mod(indice, 2) == 1 ? Palette.alternate-background : transparent;
+                    TouchArea {
+                        pointer-event(evento) => {
+                            if evento.kind == PointerEventKind.down && evento.button == PointerEventButton.left {
+                                root.clic(indice, evento.modifiers.control, evento.modifiers.shift);
+                            }
+                        }
+                        double-clicked => { root.insertar(indice); }
+                        HorizontalLayout {
+                            CeldaDelCatalogo { horizontal-stretch: 1; texto: ficha.titulo; tono: root.tono-de(ficha); }
+                            CeldaDelCatalogo { horizontal-stretch: 1; texto: ficha.artista; tono: root.tono-de(ficha); }
+                            CeldaDelCatalogo {
+                                width: root.ancho-del-tipo;
+                                texto: Iconografia.nombre-de-tipo(ficha.tipo);
+                                tono: root.tono-de(ficha);
+                                icono: Iconografia.icono-de-tipo(ficha.tipo);
+                                tono-del-icono: Iconografia.color-de-tipo(ficha.tipo, root.tono-de(ficha));
+                            }
+                            CeldaDelCatalogo { width: root.ancho-del-genero; texto: ficha.genero; tono: root.tono-de(ficha); }
+                            CeldaDelCatalogo { width: root.ancho-del-anio; texto: ficha.anio; tono: root.tono-de(ficha); alineacion: right; }
+                            CeldaDelCatalogo { width: root.ancho-de-la-duracion; texto: ficha.duracion; tono: root.tono-de(ficha); alineacion: right; }
+                            CeldaDelCatalogo { width: root.ancho-de-sonado; texto: ficha.sonado; tono: root.tono-de(ficha); alineacion: right; }
+                            CeldaDelCatalogo {
+                                width: root.ancho-en-lista;
+                                texto: ficha.sin-archivo ? @tr("sin archivo") : ficha.en-lista ? @tr("si") : "";
+                                tono: ficha.seleccionada ? Palette.selection-foreground
+                                    : ficha.sin-archivo ? #ff8787 : #69db7c;
+                                alineacion: center;
+                            }
+                        }
+                        Tooltip { text: @markdown("\{ficha.ruta}"); }
+                    }
+                }
+            }
+            if root.fichas.length == 0: Text {
+                text: root.texto == "" ? @tr("El catalogo esta vacio: los temas entran al agregarlos a la lista.") : @tr("Sin resultados.");
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                color: Palette.foreground.transparentize(35%);
+            }
+        }
+
+        Text {
+            text: root.aviso != "" ? root.aviso
+                : @tr("Clic, Ctrl+clic o Mayus+clic para elegir; doble clic o Enter inserta. Los que ya estan en la lista no se repiten.");
+            wrap: word-wrap;
+            font-size: 12px;
+            color: Palette.foreground.transparentize(20%);
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+            Button {
+                icon: @image-url("iconos/agregar.svg");
+                colorize-icon: true;
+                text: @tr("Insertar despues de la seleccionada ({})", root.seleccionadas);
+                primary: true;
+                enabled: root.seleccionadas > 0;
+                clicked => { root.insertar(-1); }
+                Tooltip { text: @markdown("\{@tr("Inserta los temas elegidos en la lista, despues de la pista seleccionada en la ventana principal (o al final si no hay)")}"); }
+            }
+            Button {
+                icon: @image-url("iconos/bajar.svg");
+                colorize-icon: true;
+                text: @tr("Agregar al final");
+                enabled: root.seleccionadas > 0;
+                clicked => { root.agregar-al-final(); }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            Button {
+                icon: @image-url("iconos/deshacer.svg");
+                colorize-icon: true;
+                text: @tr("Releer etiquetas");
+                enabled: root.fichas.length > 0;
+                clicked => { root.releer-etiquetas(); }
+                Tooltip { text: @markdown("\{@tr("Vuelve a leer las etiquetas de los archivos elegidos (o de todos los resultados, si no hay elegidos), por ejemplo despues de corregirlas con Picard, y muestra lo que cambiaria para elegirlo")}"); }
+            }
+            Button {
+                icon: @image-url("iconos/buscar-en-catalogo.svg");
+                colorize-icon: true;
+                text: @tr("MusicBrainz");
+                enabled: root.fichas.length > 0;
+                clicked => { root.completar-desde-musicbrainz(); }
+                Tooltip { text: @markdown("\{@tr("Busca los temas elegidos (o todos los resultados, si no hay elegidos) en MusicBrainz y propone completar album, año, genero, titulo y artista")}"); }
+            }
+            Button {
+                icon: @image-url("iconos/cancelar.svg");
+                colorize-icon: true;
+                text: @tr("Cerrar");
+                clicked => { root.cerrar(); }
+            }
+        }
+    }
+}

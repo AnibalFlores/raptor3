@@ -1,0 +1,930 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>MCP Raptor Player - Manual de usuario</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  :root {
+    --tinta: #1f2328; --suave: #57606a; --borde: #d0d7de; --fondo: #f6f8fa;
+    --acento: #fd7e14; --azul: #1971c2;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", "DejaVu Sans", Arial, sans-serif; font-size: 10.5pt; line-height: 1.5; color: var(--tinta); margin: 0; }
+  h1, h2, h3, h4 { line-height: 1.25; color: var(--tinta); }
+  h1 { font-size: 22pt; margin: 0 0 6mm; border-bottom: 3px solid var(--acento); padding-bottom: 3mm; page-break-before: always; }
+  h2 { font-size: 14.5pt; margin: 8mm 0 3mm; border-bottom: 1px solid var(--borde); padding-bottom: 1.5mm; }
+  h3 { font-size: 12pt; margin: 6mm 0 2mm; }
+  h4 { font-size: 10.5pt; margin: 4mm 0 1mm; }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin: 0 0 1mm; }
+  code, kbd { font-family: Consolas, "DejaVu Sans Mono", monospace; font-size: 9.5pt; }
+  code { background: var(--fondo); border: 1px solid var(--borde); border-radius: 3px; padding: 0 3px; }
+  kbd { background: #fff; border: 1px solid var(--borde); border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9.8pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--borde); padding: 1.6mm 2.2mm; text-align: left; vertical-align: top; }
+  th { background: var(--fondo); font-weight: 600; }
+  figure { margin: 3mm 0 5mm; page-break-inside: avoid; text-align: center; }
+  figure img { max-width: 100%; border: 1px solid var(--borde); border-radius: 4px; }
+  figure.diagrama svg { width: 100%; height: auto; }
+  figcaption { font-size: 9pt; color: var(--suave); margin-top: 1.5mm; }
+  .nota { border-left: 4px solid var(--azul); background: #eef5fc; padding: 2.5mm 3.5mm; margin: 3mm 0 4mm; page-break-inside: avoid; }
+  .aviso { border-left: 4px solid var(--acento); background: #fff4e6; padding: 2.5mm 3.5mm; margin: 3mm 0 4mm; page-break-inside: avoid; }
+  .franja { display: inline-block; width: 8px; height: 13px; border-radius: 1px; vertical-align: -2px; margin-right: 5px; }
+.icono { width: 15px; height: 15px; vertical-align: -3px; margin-right: 4px; }
+  .ui { font-weight: 600; }
+  .portada { height: 250mm; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+  .portada .logo { width: 34mm; height: 34mm; margin: 0 auto 8mm; }
+  .portada h1 { page-break-before: avoid; border: none; font-size: 32pt; margin: 0 0 3mm; }
+  .portada .sub { font-size: 15pt; color: var(--suave); margin-bottom: 18mm; }
+  .portada .datos { font-size: 10pt; color: var(--suave); }
+  .indice { columns: 2; column-gap: 10mm; }
+  .indice ol { padding-left: 5mm; }
+  .indice li { margin-bottom: 0.8mm; }
+  .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+</style>
+</head>
+<body>
+
+<section class="portada">
+  <svg class="logo" viewBox="0 0 24 24" fill="#fd7e14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10m0 5h-2a1 1 0 0 0 -1 1v8a1 1 0 0 0 1 1l.117 -.007a1 1 0 0 0 .883 -.993v-2.332l2.2 2.932a1 1 0 0 0 1.4 .2l.096 -.081a1 1 0 0 0 .104 -1.319l-1.903 -2.538l.115 -.037a3.001 3.001 0 0 0 -1.012 -5.825m0 2a1 1 0 0 1 0 2h-1v-2z"/></svg>
+  <h1>MCP Raptor Player</h1>
+  <div class="sub">Manual de usuario</div>
+  <div class="datos">Versión 1.0.0 · Noviembre de 2026<br>Windows 10/11 y Linux</div>
+</section>
+
+<h1>Un poco de historia</h1>
+<p><strong>MCP Raptor Player</strong> es una versión tributo por su aniversario, actualizada a este siglo por el autor. Retoma la idea original —manejar desde una sola pantalla la música, los comerciales y los efectos que salen al aire— con herramientas actuales: análisis automático de cada tema, mezcla inteligente, un motor de audio propio y control desde asistentes de inteligencia artificial mediante MCP.</p>
+<div class="aviso"><strong>¡Disfrútelo!</strong> Y no pida soporte: el Inyenieri hizo esto por nostalgia de radio y por hobby. Queda avisado: se usa a su propio riesgo. Gracias.</div>
+<p>Raptor nació a mediados de 1997 como una solución de automatización de radio (<em>radio automation</em>). Su autor, <strong>Aníbal H. Flores</strong>, desarrolló la primera versión, Raptor 1, con las tecnologías de la época: Windows 95, una de las primeras versiones de Delphi y sus componentes VCL de audio. Le siguió Raptor II, cuya última versión es de 2007.</p>
+<figure>
+  <img src="imagenes/raptor-ii.jpg" alt="Pantalla de Raptor II">
+  <figcaption>Raptor II en su última versión, de 2007.</figcaption>
+</figure>
+
+<h1>Contenido</h1>
+<div class="indice">
+<p><strong>Parte I · Características técnicas</strong></p>
+<ol>
+  <li>Qué es MCP Raptor Player</li>
+  <li>Requisitos y formatos</li>
+  <li>Arquitectura y motor de audio</li>
+  <li>Análisis automático de los temas</li>
+  <li>Mezcla entre temas y nivelación</li>
+  <li>Efectos, overlay y botonera</li>
+  <li>Tipos de elemento</li>
+  <li>Datos guardados</li>
+  <li>Control remoto por MCP</li>
+</ol>
+<p><strong>Parte II · Uso de la interfaz</strong></p>
+<ol start="10">
+  <li>Primeros pasos</li>
+  <li>La ventana principal</li>
+  <li>Armar y administrar la lista</li>
+  <li>Reproducir y mezclar</li>
+  <li>El panel de efectos</li>
+  <li>El editor de pistas</li>
+  <li>Clasificar el catálogo por tipo</li>
+  <li>Tandas programadas y registro de comerciales</li>
+  <li>Atajos de teclado</li>
+  <li>Mantenimiento del catálogo</li>
+  <li>Solución de problemas</li>
+  <li>Decisiones de diseño</li>
+</ol>
+<p><strong>Anexo</strong></p>
+<ol type="A">
+  <li>Complementos que mejoran el sonido</li>
+</ol>
+</div>
+
+<!-- =============================================================== -->
+<h1>Parte I · Características técnicas</h1>
+
+<h2>1. Qué es MCP Raptor Player</h2>
+<p>MCP Raptor Player es un reproductor de escritorio pensado para la emisión de radio. Reúne en una sola ventana:</p>
+<ul>
+  <li><strong>Una lista de reproducción en secuencia</strong> que pasa de un tema al siguiente con mezcla (crossfade), manual o calculada a partir del análisis de cada tema.</li>
+  <li><strong>Una botonera de efectos</strong> de 10 botones por hoja, con tantas hojas como haga falta, para disparar efectos, voces en off y cortinas por encima de la música (<em>overlay</em>, «pisar» el tema).</li>
+  <li><strong>Un editor de pistas</strong> con forma de onda para ajustar el inicio y el fin de cada tema, su intro, su outro, la ventana donde se puede pisar y sus datos (tipo, título, artista, género, ranking, BPM).</li>
+  <li><strong>Un servidor MCP</strong> (<em>Model Context Protocol</em>) embebido, que permite manejar el reproductor desde un asistente de IA como Claude: armar la lista, disparar efectos, mezclar o consultar qué está sonando.</li>
+</ul>
+
+<h2>2. Requisitos y formatos</h2>
+<table>
+  <tr><th style="width:32%">Sistema operativo</th><td>Windows 10 u 11. Linux con PulseAudio o PipeWire (también funciona en WSL2 con WSLg); si no hay servidor de sonido usa ALSA.</td></tr>
+  <tr><th>Pantalla</th><td>Mínimo Full HD (1920 × 1080), con la escala de Windows al 100 %, 125 % o 150 %. Al 150 % los botones de las barras quedan solo con el icono para que entre también la botonera de efectos (ver <span class="ui">Ocultar textos de los botones</span>, en el menú Ventana). En pantallas mayores (QHD, 4K) la interfaz aprovecha el espacio extra; los textos que no entran completos muestran un tooltip con el texto entero.</td></tr>
+  <tr><th>Formatos de audio</th><td>MP3, WAV, AIFF (<code>.aif</code>, <code>.aiff</code>), AAC (<code>.aac</code>, <code>.m4a</code>), FLAC y Ogg Vorbis (<code>.ogg</code>, <code>.oga</code>).</td></tr>
+  <tr><th>Listas</th><td>Formato propio (JSON) y M3U para cargar listas de otros programas.</td></tr>
+  <tr><th>Salida de audio</th><td>La salida predeterminada del sistema para la música. La preescucha del editor puede usar otra placa (por ejemplo, unos auriculares).</td></tr>
+</table>
+
+<h2>3. Arquitectura y motor de audio</h2>
+
+<h3>Diagrama de bloques</h3>
+<p>El diagrama muestra las partes del programa y cómo se relacionan: arriba, por dónde llegan las órdenes; en el medio, la lógica que decide qué suena y cuándo; abajo, el camino del audio hasta las placas de sonido.</p>
+<figure class="diagrama">
+<svg viewBox="0 0 760 600" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, DejaVu Sans, Arial, sans-serif" role="img" aria-label="Diagrama de bloques de MCP Raptor Player">
+  <defs>
+    <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#495057"/>
+    </marker>
+    <style>
+      .linea { stroke: #495057; stroke-width: 1.6; fill: none; }
+      .punteada { stroke-dasharray: 5 4; }
+      .titulo { font-size: 13px; font-weight: 700; fill: #1f2328; text-anchor: middle; }
+      .detalle { font-size: 10.5px; fill: #444c56; text-anchor: middle; }
+      .rotulo { font-size: 10px; fill: #57606a; font-style: italic; }
+      .capa { font-size: 10px; font-weight: 700; fill: #868e96; letter-spacing: 1px; }
+      .entrada { fill: #e7f1fb; stroke: #1971c2; }
+      .logica { fill: #fff4e6; stroke: #e8590c; }
+      .datos { fill: #f3f0ff; stroke: #7048e8; }
+      .audio { fill: #ebfbee; stroke: #2f9e44; }
+      .placa { fill: #f1f3f5; stroke: #495057; }
+      rect { stroke-width: 1.6; }
+    </style>
+  </defs>
+
+  <!-- Capas -->
+  <text class="capa" x="10" y="14">ÓRDENES</text>
+  <text class="capa" x="10" y="104">LÓGICA</text>
+  <text class="capa" x="10" y="294">AUDIO</text>
+  <text class="capa" x="10" y="534">SALIDA</text>
+
+  <!-- Ordenes -->
+  <rect class="entrada" x="20" y="22" width="210" height="52" rx="6"/>
+  <text class="titulo" x="125" y="44">Ventana principal</text>
+  <text class="detalle" x="125" y="61">lista, transporte, botonera</text>
+
+  <rect class="entrada" x="275" y="22" width="210" height="52" rx="6"/>
+  <text class="titulo" x="380" y="44">Editor de pistas</text>
+  <text class="detalle" x="380" y="61">marcas, datos, preescucha</text>
+
+  <rect class="entrada" x="530" y="22" width="210" height="52" rx="6"/>
+  <text class="titulo" x="635" y="44">Servidor MCP</text>
+  <text class="detalle" x="635" y="61">asistente de IA · 127.0.0.1:8765</text>
+
+  <!-- Logica -->
+  <rect class="datos" x="20" y="112" width="160" height="58" rx="6"/>
+  <text class="titulo" x="100" y="135">Datos guardados</text>
+  <text class="detalle" x="100" y="152">fichas, botonera, listas,</text>
+  <text class="detalle" x="100" y="165">preferencias, registro</text>
+
+  <rect class="logica" x="215" y="112" width="330" height="58" rx="6"/>
+  <text class="titulo" x="380" y="135">Controlador</text>
+  <text class="detalle" x="380" y="152">lista y selector, reglas de cada</text>
+  <text class="detalle" x="380" y="165">tipo, ciclo periódico</text>
+
+  <rect class="datos" x="580" y="112" width="160" height="58" rx="6"/>
+  <text class="titulo" x="660" y="135">Análisis</text>
+  <text class="detalle" x="660" y="152">en segundo plano: onda,</text>
+  <text class="detalle" x="660" y="165">puntos, BPM, LUFS, voz</text>
+
+  <rect class="logica" x="20" y="210" width="230" height="56" rx="6"/>
+  <text class="titulo" x="135" y="232">Gestor de reproducción</text>
+  <text class="detalle" x="135" y="250">secuencia, mezcla, nivelación</text>
+
+  <rect class="logica" x="265" y="210" width="230" height="56" rx="6"/>
+  <text class="titulo" x="380" y="232">Gestor de efectos</text>
+  <text class="detalle" x="380" y="250">modo libre / trabado, plan del efecto</text>
+
+  <rect class="logica" x="510" y="210" width="230" height="56" rx="6"/>
+  <text class="titulo" x="625" y="232">Salida de preescucha</text>
+  <text class="detalle" x="625" y="250">misma salida u otra placa</text>
+
+  <!-- Audio: motores -->
+  <rect class="audio" x="20" y="302" width="110" height="56" rx="6"/>
+  <text class="titulo" x="75" y="325">Motor A</text>
+  <text class="detalle" x="75" y="342">música</text>
+
+  <rect class="audio" x="140" y="302" width="110" height="56" rx="6"/>
+  <text class="titulo" x="195" y="325">Motor B</text>
+  <text class="detalle" x="195" y="342">música</text>
+
+  <rect class="audio" x="265" y="302" width="230" height="56" rx="6"/>
+  <text class="titulo" x="380" y="325">Motor de efectos</text>
+  <text class="detalle" x="380" y="342">efecto de la botonera o fijado</text>
+
+  <rect class="audio" x="510" y="302" width="230" height="56" rx="6"/>
+  <text class="titulo" x="625" y="325">Motor de preescucha</text>
+  <text class="detalle" x="625" y="342">tema del editor (+ efecto de prueba)</text>
+
+
+  <!-- Audio: mezcladores -->
+  <rect class="audio" x="20" y="412" width="475" height="70" rx="6"/>
+  <text class="titulo" x="257" y="436">Mezclador principal</text>
+  <text class="detalle" x="257" y="454">suma 4 voces · reloj de frames · atenuador común</text>
+  <text class="detalle" x="257" y="469">(baja la música durante los efectos) · recortador suave</text>
+
+  <rect class="audio" x="510" y="412" width="230" height="70" rx="6"/>
+  <text class="titulo" x="625" y="436">Mezclador aparte</text>
+  <text class="detalle" x="625" y="454">opcional: tema y efecto</text>
+  <text class="detalle" x="625" y="469">de prueba, con su atenuador</text>
+
+  <!-- Salida -->
+  <rect class="placa" x="120" y="542" width="275" height="46" rx="6"/>
+  <text class="titulo" x="257" y="562">Placa principal</text>
+  <text class="detalle" x="257" y="578">salida al aire (la predeterminada)</text>
+
+  <rect class="placa" x="510" y="542" width="230" height="46" rx="6"/>
+  <text class="titulo" x="625" y="562">Otra placa</text>
+  <text class="detalle" x="625" y="578">por ejemplo, auriculares</text>
+
+  <!-- Flechas: ordenes -> controlador -->
+  <path class="linea" d="M125 74 L125 92 L300 92 L300 112" marker-end="url(#flecha)"/>
+  <path class="linea" d="M380 74 L380 112" marker-end="url(#flecha)"/>
+  <path class="linea" d="M635 74 L635 92 L460 92 L460 112" marker-end="url(#flecha)"/>
+
+  <!-- Controlador <-> datos y analisis -->
+  <path class="linea" d="M182 141 L213 141" marker-start="url(#flecha)" marker-end="url(#flecha)"/>
+  <path class="linea" d="M547 141 L578 141" marker-start="url(#flecha)" marker-end="url(#flecha)"/>
+
+  <!-- Controlador -> gestores -->
+  <path class="linea" d="M300 170 L300 190 L135 190 L135 210" marker-end="url(#flecha)"/>
+  <path class="linea" d="M380 170 L380 210" marker-end="url(#flecha)"/>
+  <path class="linea" d="M460 170 L460 190 L625 190 L625 210" marker-end="url(#flecha)"/>
+
+  <!-- Gestores -> motores -->
+  <path class="linea" d="M100 266 L75 302" marker-end="url(#flecha)"/>
+  <path class="linea" d="M170 266 L195 302" marker-end="url(#flecha)"/>
+  <path class="linea" d="M380 266 L380 302" marker-end="url(#flecha)"/>
+  <path class="linea" d="M625 266 L625 302" marker-end="url(#flecha)"/>
+
+  <!-- Motores -> mezcladores -->
+  <path class="linea" d="M75 358 L75 412" marker-end="url(#flecha)"/>
+  <path class="linea" d="M195 358 L195 412" marker-end="url(#flecha)"/>
+  <path class="linea" d="M380 358 L380 412" marker-end="url(#flecha)"/>
+  <path class="linea" d="M625 358 L625 412" marker-end="url(#flecha)"/>
+  <path class="linea punteada" d="M560 358 L560 392 L470 392 L470 412" marker-end="url(#flecha)"/>
+  <text class="rotulo" x="476" y="404">misma salida</text>
+  <text class="rotulo" x="631" y="392">otra placa</text>
+
+  <!-- Mezcladores -> placas -->
+  <path class="linea" d="M257 482 L257 542" marker-end="url(#flecha)"/>
+  <path class="linea" d="M625 482 L625 542" marker-end="url(#flecha)"/>
+</svg>
+<figcaption>Partes del programa: órdenes (azul), lógica (naranja), datos (violeta), audio (verde) y placas de sonido (gris). La línea punteada es la preescucha cuando comparte la salida de la música. Cada motor decodifica su archivo en un hilo propio y lo deja en un búfer de 1 s.</figcaption>
+</figure>
+
+<h3>Qué hace cada parte</h3>
+<table>
+  <tr><th style="width:28%">Bloque</th><th>Función</th></tr>
+  <tr><td><strong>Ventana principal, editor y servidor MCP</strong></td><td>Reciben las órdenes: del usuario (clics, teclas) o de un asistente de IA conectado por MCP. Las tres entradas llegan al mismo controlador, así que valen las mismas reglas.</td></tr>
+  <tr><td><strong>Controlador</strong></td><td>El centro del programa. Mantiene la lista y el selector, aplica las reglas (por ejemplo, que un Efecto no entre en la lista), actualiza la pantalla y, en un ciclo periódico, avisa a los gestores para que avancen.</td></tr>
+  <tr><td><strong>Datos guardados</strong></td><td>Lee y escribe las fichas de cada archivo, la botonera, las listas, las preferencias y el registro de comerciales (ver la sección 8).</td></tr>
+  <tr><td><strong>Análisis</strong></td><td>Trabaja en segundo plano sin frenar la interfaz: lee etiquetas y calcula forma de onda, puntos de mezcla, tempo, sonoridad y la ventana de overlay sugerida. Sus resultados vuelven al controlador y se guardan en las fichas.</td></tr>
+  <tr><td><strong>Gestor de reproducción</strong></td><td>Decide la secuencia: qué tema sigue, cuándo empieza la mezcla, cuánto dura y con qué volumen (nivelación). Alterna los motores A y B: mientras uno termina, el otro entra.</td></tr>
+  <tr><td><strong>Gestor de efectos</strong></td><td>Decide cuándo suena un efecto (modo libre o trabado a la ventana de overlay), con qué volumen y cuánto baja la música. Programa la bajada y la vuelta de la música en el atenuador del mezclador.</td></tr>
+  <tr><td><strong>Salida de preescucha</strong></td><td>Elige por dónde suena la preescucha del editor: por la voz de preescucha del mezclador principal (con la música detenida) o por un mezclador aparte en otra placa.</td></tr>
+  <tr><td><strong>Motores</strong></td><td>Cada uno abre un archivo, lo decodifica y lo remuestrea a la frecuencia de la placa en su propio hilo, y deja el audio listo en un búfer. Saben en qué posición está su tema y pueden arrancar en un frame exacto.</td></tr>
+  <tr><td><strong>Mezclador principal</strong></td><td>Suma las cuatro voces (motores A y B, efectos y preescucha) con su volumen, aplica el atenuador común a la música y el recortador suave, y entrega el resultado a la placa. Lleva el reloj de frames con que se sincronizan mezclas y efectos.</td></tr>
+  <tr><td><strong>Mezclador aparte</strong></td><td>Solo existe si se eligió otra salida para la preescucha. Tiene su propio reloj y su propio atenuador, así que la prueba no toca lo que sale al aire.</td></tr>
+</table>
+
+<h3>Características del motor</h3>
+<ul>
+  <li><strong>Decodificación nativa</strong> de todos los formatos, sin depender de códecs del sistema, y remuestreo de alta calidad a la frecuencia de la placa.</li>
+  <li><strong>Mezclador propio con cuatro voces:</strong> dos se alternan para la música (mientras una termina, la otra entra), una emite los efectos de la botonera y la cuarta es la preescucha del editor.</li>
+  <li><strong>Sincronía al cuadro (frame) de audio:</strong> la pista que entra en una mezcla y los efectos se programan en el instante exacto de la salida, no «cuando la interfaz llega».</li>
+  <li><strong>Atenuador común:</strong> mientras suena un efecto, la música baja con rampas suaves programadas; una mezcla que empieza durante el efecto ya entra atenuada.</li>
+  <li><strong>Recortador suave</strong> en la suma final: por encima de cierto nivel la señal se comprime hacia el máximo sin el chasquido de un recorte brusco.</li>
+  <li><strong>Un segundo de búfer</strong> por voz, para que la máquina ocupada no produzca cortes.</li>
+  <li><strong>Preescucha por otra salida:</strong> si se elige otra placa, la preescucha abre allí un mezclador propio (tema y efecto de prueba), con lo que se puede preescuchar con la música al aire.</li>
+</ul>
+
+<h2>4. Análisis automático de los temas</h2>
+<p>Cada archivo que entra en la lista se analiza en segundo plano, sin frenar la interfaz. El resultado se guarda y no se vuelve a calcular.</p>
+<ul>
+  <li><strong>Etiquetas:</strong> título, artista, género, álbum, año y duración.</li>
+  <li><strong>Forma de onda</strong>, que se usa en el editor y para todo el análisis siguiente (se guarda en caché).</li>
+  <li><strong>Puntos automáticos:</strong> inicio y fin del tema sin los silencios, intro (hasta dónde llega el comienzo instrumental) y outro (desde dónde el tema empieza a apagarse).</li>
+  <li><strong>Tempo (BPM)</strong> y fase de los golpes, estimados en tres bandas (graves, medios y agudos), así que un tema sin bombo también marca el pulso.</li>
+  <li><strong>Sonoridad</strong> en LUFS y pico real, para nivelar el volumen entre temas.</li>
+  <li><strong>Ventana de overlay sugerida:</strong> busca un tramo instrumental de al menos 4 segundos (sin voz cantada) donde se puede pisar el tema. Acierta en la mayoría de los temas con voz; con voces muy procesadas, coros o rap puede fallar, y siempre se puede corregir a mano.</li>
+</ul>
+<div class="nota">Todo lo que el análisis propone se muestra como <strong>Automático</strong>. Si el usuario lo cambia, pasa a <strong>Manual</strong> y el análisis ya no lo toca. El botón <span class="ui">Volver al automatico</span> del editor deshace los cambios manuales.</div>
+
+<h2>5. Mezcla entre temas y nivelación</h2>
+<h3>Fader (mezcla manual)</h3>
+<p>El deslizante <span class="ui">Fader</span> fija los segundos de mezcla (0 a 15) al pasar de tema con <span class="ui">Siguiente</span> y los del fundido al <span class="ui">Detener</span>. Cuando un tema termina solo y pasa al siguiente, se superponen tantos segundos como el menor entre la outro del que sale y la intro del que entra (la columna <em>Mezcla</em> de la lista los muestra).</p>
+<h3>Cómo baja el tema que sale</h3>
+<ul>
+  <li><strong>Desde la outro:</strong> si la outro empieza antes que la mezcla, el tema que sale ya empieza a bajar desde el inicio de su outro, en forma pareja, hasta quedar 6 dB abajo cuando entra el siguiente. Así el final no queda a todo volumen esperando la mezcla.</li>
+  <li><strong>Durante la mezcla:</strong> baja con una pendiente que se acentúa hacia el final: a mitad de la mezcla está 12 dB abajo y a tres cuartos, más de 24 dB abajo, para no tapar al que entra. El que entra sube rápido al principio (curva de seno con el crossfade inteligente, línea recta sin él).</li>
+  <li>Si el tema que sale tiene un <strong>fundido natural</strong> (baja solo en su grabación), no se lo atenúa antes de la mezcla: durante la mezcla solo se lo acompaña en línea recta hasta el silencio.</li>
+</ul>
+<h3>Crossfade inteligente</h3>
+<p>Con la opción <span class="ui">Crossfade inteligente</span>, la mezcla se decide con el análisis de los dos temas:</p>
+<ul>
+  <li><strong>Sin silencios muertos:</strong> el tema que sale termina en su marca de fin y el que entra arranca en su marca de inicio.</li>
+  <li><strong>Duración adaptada:</strong> la mezcla dura lo mismo que la más larga entre la outro del tema que sale y la intro del que entra, con un mínimo de 2 y un máximo de 12 segundos.</li>
+  <li><strong>Volumen parejo:</strong> el que entra sube con curva de potencia y el que sale baja como se explica arriba. Si el que entra ya tiene un fundido natural en ese tramo, no se lo vuelve a atenuar, para evitar un «bache» de volumen.</li>
+  <li><strong>Alineación de golpes:</strong> si el final del tema que sale y el comienzo del que entra tienen el mismo tempo (o uno es el doble del otro), el tema que entra se adelanta o se atrasa menos de medio golpe para que los golpes de los dos coincidan.</li>
+</ul>
+<h3>Nivelar volumen</h3>
+<p>La opción <span class="ui">Nivelar volumen</span> lleva cada tema a una misma sonoridad, elegida en el combo de al lado: <strong>−14 LUFS</strong> (más rango dinámico), <strong>−11 LUFS</strong> (el predeterminado) o <strong>−8 LUFS</strong> (más fuerte). Cada objetivo tiene límites de subida y de bajada y un techo de pico real.</p>
+
+<h2>6. Efectos, overlay y botonera</h2>
+<ul>
+  <li><strong>Botonera:</strong> 10 botones (0 a 9) por hoja y tantas hojas como se necesiten. Cada botón tiene un archivo de audio; se disparan con un clic o con las teclas <kbd>0</kbd>–<kbd>9</kbd>. Al pasar el puntero por un botón se ve su archivo y, si tiene, su <strong>nota</strong> (por ejemplo, «Aplauso corto: usar al cierre del programa»); los botones con nota llevan un pequeño ícono abajo a la izquierda. La nota se escribe con <span class="ui">Editar...</span> del botón, en la solapa <span class="ui">Datos</span>.</li>
+  <li><strong>Ventana de overlay:</strong> tramo de cada tema donde se lo puede pisar (normalmente instrumental). Se sugiere sola y se puede ajustar en el editor.</li>
+  <li><strong>Modo libre</strong>: el efecto suena apenas se pulsa. <strong>Modo trabado</strong> (sin <span class="ui">Modo libre</span>): el efecto tiene que sonar entero dentro de la ventana de overlay del tema en curso. Antes de la ventana, espera a que se abra. Dentro, suena si todavía cabe completo. Si ya no cabe, espera la ventana del tema siguiente. Un tema sin ventana deja sonar el efecto enseguida.</li>
+  <li><strong>Atenuación de la música:</strong> la música baja un instante antes del efecto y vuelve con una rampa cuando termina. Con <span class="ui">Ajuste inteligente</span>, el volumen del efecto se iguala con la música y la música baja según lo fuerte que suene ese tramo.</li>
+  <li><strong>Efecto fijado:</strong> a un tema se le puede fijar un efecto que suena solo, cada vez que sale el tema, dentro de su ventana.</li>
+  <li><strong>Tramo del efecto:</strong> si en el editor se fijan a mano el inicio y el fin del archivo de un efecto, suena solo ese tramo.</li>
+</ul>
+
+<h2>7. Tipos de elemento</h2>
+<p>Cada elemento del catálogo tiene un <strong>tipo</strong> que decide cómo se trata: <strong>Tema</strong>, <strong>Tema editado</strong>, <strong>Comercial</strong>, <strong>Anuncio</strong>, <strong>Publicidad</strong>, <strong>Podcast</strong>, <strong>Efecto</strong> o <strong>Seco</strong>. El <strong>género</strong> queda libre para el estilo musical (Rock, Pop, Institucional...) y no cambia nada de cómo suena: un tema de género «Publicidad» sigue siendo un Tema. Un elemento <em>sin clasificar</em> suena como un Tema, pero no puede ir en tandas ni órdenes.</p>
+<table>
+  <tr><th style="width:19%">Tipo</th><th style="width:7%">Franja</th><th>Qué es</th><th style="width:27%">En la lista</th></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-tema.svg" alt=""><strong>Tema</strong></td><td></td><td><strong>Música</strong>: se mezcla con el anterior y el siguiente.</td><td>Sí. La validación marca los repetidos.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-tema-editado.svg" alt=""><strong>Tema editado</strong></td><td></td><td>Un tema con una <strong>locución o edición especial para la radio</strong> (radio edit, intro locutada, versión acortada). Se trata igual que un Tema; el tipo sirve para reconocerlo y buscarlo (<code>tipo:"tema editado"</code>). Su ícono es dorado.</td><td>Sí, como un Tema: se mezcla y la validación marca los repetidos.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-comercial.svg" alt=""><strong>Comercial</strong></td><td><span class="franja" style="background:#12b886"></span></td><td>Propaganda <strong>facturable y calendarizada</strong>: avisos pautados con horario de emisión.</td><td>Sí. Forma tanda; se anota en el registro de comerciales.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-anuncio.svg" alt=""><strong>Anuncio</strong></td><td><span class="franja" style="background:#845ef7"></span></td><td><strong>Mensaje propio de la emisora</strong> (promociones de la programación, avisos institucionales).</td><td>Sí. Forma tanda; no se anota en el registro (no se factura).</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-publicidad.svg" alt=""><strong>Publicidad</strong></td><td><span class="franja" style="background:#e64980"></span></td><td>Propaganda <strong>facturable pero no calendarizada</strong> (se emite cuando hay lugar).</td><td>Sí. Forma tanda; se anota en el registro de comerciales.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/efectos.svg" alt=""><strong>Efecto</strong></td><td><span class="franja" style="background:#fa5252"></span></td><td><strong>Cortos de audio para overlay</strong>: se usan para pisar los temas.</td><td><strong>No.</strong> Solo pueden estar en la botonera.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-seco.svg" alt=""><strong>Seco</strong></td><td><span class="franja" style="background:#94d82d"></span></td><td><strong>Voces en off.</strong> También se usan para pisar, pero además pueden insertarse en la lista como separadores.</td><td>Sí, como separador; no se anota en el registro.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-podcast.svg" alt=""><strong>Podcast</strong></td><td><span class="franja" style="background:#be4bdb"></span></td><td><strong>Programa completo pregrabado.</strong> Es <strong>calendarizable</strong>: se pauta en la pauta de tandas para que salga a cierta hora (sección 17).</td><td>Sí, sin mezcla. Puede ir en una tanda; no se anota en el registro (no se factura).</td></tr>
+</table>
+<p>Cada tipo tiene su <strong>ícono</strong>, que se ve junto al tipo en la lista, el catálogo, los avisos, las tandas, las órdenes y el editor; el de los tipos sin mezcla lleva el color de su franja. Un elemento sin tipo se marca con <img class="icono" src="imagenes/iconos/sin-tipo.svg" alt="">en los selectores de avisos, y el anuncio HTH <img class="icono" src="imagenes/iconos/hth.svg" alt="">y los bloques fijos <img class="icono" src="imagenes/iconos/bloque-fijo.svg" alt="">tienen el suyo.</p>
+<p>Un <strong>Tema</strong> o un <strong>Tema editado</strong> se mezcla con el anterior y el siguiente. Los otros seis tipos comparten estas reglas:</p>
+<ul>
+  <li>Suenan <strong>sin mezcla</strong>: no se mezclan con el tema anterior ni con el siguiente; el siguiente arranca cuando termina el anterior.</li>
+  <li>Pueden <strong>repetirse en la lista</strong> (por ejemplo, un comercial en varias tandas); la validación no los marca como duplicados.</li>
+  <li><strong>No tienen ventana de overlay ni efecto fijado.</strong> En modo trabado no aceptan efectos (el efecto espera al tema siguiente); en modo libre, sí.</li>
+  <li>Al mezclar la lista al azar, se mezclan como cualquier tema. Para que una <strong>tanda</strong> quede entera, en su lugar y en su orden, enciérrela en un bloque fijo (sección 12).</li>
+</ul>
+<p>Los combos de efectos del editor (efecto fijado y efecto de prueba) solo ofrecen los archivos de la botonera de tipo <strong>Efecto</strong> o <strong>Seco</strong>.</p>
+<p><strong>Catálogos de versiones anteriores.</strong> Antes, el género hacía de tipo. La primera vez que se abre esta versión, cada ficha recibe su tipo a partir de su género, sin distinguir mayúsculas ni acentos y en plural o compuestos («Anuncios», «Publicidad radial», «Efectos de sonido», «Tema seco»); cualquier otro género («Rock») pasa a Tema, y las fichas sin género quedan sin clasificar. El género no se toca, y antes de reescribir el catálogo se deja una copia, <code>mezcla.json.antes-del-tipo</code>. Lo mismo vale para un archivo nuevo: si sus etiquetas dicen «Comercial», entra como Comercial.</p>
+
+<h2>8. Datos guardados</h2>
+<p>El reproductor guarda todo en la carpeta <code>.mcp-raptor-player</code> dentro de la carpeta del usuario (en Windows, <code>C:\Users\&lt;usuario&gt;\.mcp-raptor-player</code>; en Linux, <code>~/.mcp-raptor-player</code>):</p>
+<table>
+  <tr><th style="width:30%">Archivo o carpeta</th><th>Contenido</th></tr>
+  <tr><td><code>mezcla.json</code></td><td>La ficha de cada archivo de audio: puntos de mezcla, ventana de overlay, tipo, título, artista, género, álbum, año, nota, ranking, BPM, efecto fijado y última reproducción. Si el archivo vuelve a la lista, recupera todo.</td></tr>
+  <tr><td><code>botonera.json</code></td><td>Las hojas de efectos, el archivo de cada botón y los ajustes del panel de efectos.</td></tr>
+  <tr><td><code>preferencias.json</code></td><td>Fader, opciones de mezcla, última lista y último tema, posición del editor, salida y volumen de la preescucha, carpeta de las locuciones del anuncio HTH, localidad del clima, si los textos de los botones están ocultos y si los ajustes de los efectos están desplegados.</td></tr>
+  <tr><td><code>listas\lista.json</code></td><td>La lista en curso, que se recupera al abrir el programa.</td></tr>
+  <tr><td><code>tandas.json</code></td><td>Las tandas programadas: avisos, horarios, tolerancia, duración máxima y la última salida atendida (para no repetirla si el programa se reinicia).</td></tr>
+  <tr><td><code>anunciantes.json</code></td><td>Las fichas de los anunciantes: nombre comercial, razón social, CUIT, rubro, contacto, teléfono, correo, dirección, agencia, notas y si está activo.</td></tr>
+  <tr><td><code>ordenes.json</code></td><td>Las órdenes de publicidad: anunciante, rubro, vigencia, días, franja, frecuencia, avisos en rotación y tandas permitidas.</td></tr>
+  <tr><td><code>pauta\AAAA-MM-DD.json</code></td><td>La pauta de cada día (dónde fue cada aviso de las órdenes y lo que no entró) y las reposiciones pendientes. Se conservan tres meses, como el registro.</td></tr>
+  <tr><td><code>certificados\</code></td><td>Los certificados de emisión por anunciante, en CSV.</td></tr>
+  <tr><td><code>comerciales\AAAA-MM.csv</code></td><td>El registro de salidas al aire de la propaganda facturable (Comercial y Publicidad), un archivo por mes. Se conservan el mes actual y los dos anteriores.</td></tr>
+  <tr><td><code>reubicaciones.json</code></td><td>Los archivos reubicados en el mantenimiento del catálogo (ruta anterior y ruta nueva), para que las listas guardadas con la ruta anterior se abran con la nueva.</td></tr>
+  <tr><td><code>servicios\</code></td><td>El último anuncio de hora, temperatura y humedad armado y la última voz dicha sobre una base (se vuelven a armar cada vez que salen al aire).</td></tr>
+  <tr><td><code>ondas\</code></td><td>Caché de las formas de onda (se puede borrar; se vuelve a calcular). El mantenimiento del catálogo borra las que ya no se usan.</td></tr>
+  <tr><td><code>logs\</code></td><td>Bitácora del programa, útil para diagnosticar problemas.</td></tr>
+</table>
+<p>La variable de entorno <code>RAPTOR_CARPETA_DE_DATOS</code> permite usar otra carpeta (por ejemplo, una por estudio).</p>
+
+<h2>9. Control remoto por MCP</h2>
+<p>El reproductor incluye un servidor MCP que escucha <strong>solo en el propio equipo</strong>, en <code>http://127.0.0.1:8765/mcp</code>, y rechaza pedidos de páginas web. La variable <code>RAPTOR_MCP_PUERTO</code> cambia el puerto; con <code>0</code> el servidor queda desactivado.</p>
+<p>Para conectarlo con Claude Code:</p>
+<p><code>claude mcp add --transport http raptor http://127.0.0.1:8765/mcp</code></p>
+<p>Las herramientas disponibles son:</p>
+<table>
+  <tr><th style="width:30%">Herramienta</th><th>Qué hace</th></tr>
+  <tr><td><code>listar_pistas</code></td><td>Lista las pistas con sus datos, puntos de mezcla y cuál suena.</td></tr>
+  <tr><td><code>agregar_pistas</code>, <code>quitar_pistas</code></td><td>Agrega archivos o carpetas, con o sin sus subcarpetas (en una posición), o quita pistas por posición o ruta.</td></tr>
+  <tr><td><code>mover_pista</code>, <code>ordenar_lista</code></td><td>Cambia una pista de lugar u ordena la lista.</td></tr>
+  <tr><td><code>definir_mezcla</code>, <code>sugerir_puntos</code></td><td>Fija inicio, fin, intro, outro y ventana de overlay, o consulta lo que propone el análisis.</td></tr>
+  <tr><td><code>definir_datos</code></td><td>Fija el tipo (Tema, Comercial, Anuncio, Publicidad, Efecto o Seco; vacío lo deja sin clasificar) y corrige título, artista, género, álbum, año, nota, ranking, BPM o efecto fijado. Por ruta sirve también para un efecto de la botonera o un tema que no está en la lista. Si la pista está sin clasificar y se indica un género que nombra un tipo («Comercial»), toma ese tipo.</td></tr>
+  <tr><td><code>estado_del_reproductor</code></td><td>Qué suena, posición, próxima pista, controles y botonera.</td></tr>
+  <tr><td><code>controlar_reproduccion</code>, <code>seleccionar_pista</code></td><td>Reproducir, pausar, detener, siguiente, anterior; marcar la próxima pista.</td></tr>
+  <tr><td><code>ajustar_controles</code></td><td>Volumen, fader, repetir, crossfade, nivelación y opciones de efectos.</td></tr>
+  <tr><td><code>asignar_efecto</code>, <code>quitar_efecto</code>, <code>disparar_efecto</code>, <code>detener_efecto</code>, <code>hojas_de_efectos</code></td><td>Maneja la botonera y sus hojas.</td></tr>
+  <tr><td><code>abrir_editor</code></td><td>Abre el editor con una pista de la lista.</td></tr>
+  <tr><td><code>programar_tanda</code></td><td>Programa una tanda (o reemplaza la del mismo nombre): avisos, primer horario, intervalo, horario límite, días, tolerancia antes y después, modo (<code>tolerancia</code> o <code>exacta</code>) prioridad y duración máxima (<code>duracion_maxima_segundos</code>).</td></tr>
+  <tr><td><code>encolar_tanda</code></td><td>Encola ya una tanda programada en el próximo corte, fuera de su horario.</td></tr>
+  <tr><td><code>listar_tandas</code></td><td>Las tandas programadas con su regla, sus avisos, la próxima salida y la última atendida.</td></tr>
+  <tr><td><code>quitar_tanda</code></td><td>Quita una tanda de la programación (lo ya encolado queda en la lista).</td></tr>
+  <tr><td><code>registro_de_comerciales</code></td><td>Salidas al aire entre dos fechas, con su tanda y su orden; se puede filtrar por anunciante, título o tanda.</td></tr>
+  <tr><td><code>programar_orden</code></td><td>Carga una orden de publicidad (o reemplaza la del mismo nombre): anunciante, rubro, vigencia, días, franja, una frecuencia (<code>cada_minutos</code>, <code>veces_por_dia</code> u <code>horarios</code>), avisos, tandas permitidas y prioridad.</td></tr>
+  <tr><td><code>listar_ordenes</code></td><td>Las órdenes con cuántas salidas se ubicaron hoy de las que piden.</td></tr>
+  <tr><td><code>quitar_orden</code></td><td>Quita una orden: sus avisos dejan de repartirse.</td></tr>
+  <tr><td><code>pauta_del_dia</code></td><td>Dónde va cada aviso de las órdenes en las tandas de un día y lo que no se pudo ubicar, con su motivo.</td></tr>
+  <tr><td><code>certificado_de_emision</code></td><td>Certificado de un anunciante entre dos fechas: contratadas, emitidas completas, cortadas y cumplimiento por orden; también queda en un CSV.</td></tr>
+  <tr><td><code>registrar_anunciante</code></td><td>Carga o actualiza la ficha de un anunciante; los datos que se omiten conservan su valor. Valida el CUIT y el correo. Con <code>nombre_anterior</code> lo renombra y sus órdenes pasan al nombre nuevo.</td></tr>
+  <tr><td><code>listar_anunciantes</code></td><td>Los anunciantes con su ficha, sus órdenes y lo que falta para facturarles, y los nombrados en órdenes que no tienen ficha.</td></tr>
+  <tr><td><code>quitar_anunciante</code></td><td>Quita la ficha de un anunciante sin órdenes (si tiene, hay que quitarlas o desactivarlo).</td></tr>
+  <tr><td><code>encolar_pista</code></td><td>Encola una pista como la siguiente: va justo después de la que suena y se mezcla con su final. Si eso la saca de un bloque fijo, lo informa y pide confirmarlo con <code>sacar_del_bloque</code>.</td></tr>
+  <tr><td><code>buscar_en_catalogo</code></td><td>Busca temas del catálogo por título, artista, tipo, género, álbum o archivo, o con los prefijos de la búsqueda (<code>ranking:&gt;=4 -sonado:&lt;30d</code>, sección 12), y devuelve sus rutas, para insertarlos con <code>agregar_pistas</code>.</td></tr>
+  <tr><td><code>bloque_fijo</code></td><td>Encierra un tramo de la lista en un bloque fijo, que Mezclar y BPM no cambian.</td></tr>
+  <tr><td><code>base_hth</code></td><td>Cambia la base musical de un anuncio HTH de la lista o se la quita.</td></tr>
+  <tr><td><code>insertar_hth</code></td><td>Inserta el anuncio de hora, temperatura y humedad (con una base musical, si hay) en una posición o después de la seleccionada.</td></tr>
+</table>
+<div class="nota">Un asistente conectado puede, por ejemplo: «después del tema que suena, agregá una hora de temas que no se pasan hace mucho y con un BPM no mayor a 70» o «pisá el tema con el efecto 4 de hoja 1». Las mismas reglas de la interfaz valen por MCP: un archivo de tipo Efecto no entra en la lista y un tema de la lista no puede pasar a tipo Efecto.</div>
+
+<!-- =============================================================== -->
+<h1>Parte II · Uso de la interfaz</h1>
+
+<h2>10. Primeros pasos</h2>
+<h3>Windows</h3>
+<p>Ejecute <code>mcp-raptor-player.exe</code>. Para tener el icono en la barra de tareas, ábralo y elija <em>Anclar a la barra de tareas</em>. Este manual se abre desde <span class="ui">Ayuda › Manual</span> si el archivo <code>Raptor_Manual_es.pdf</code> está junto al ejecutable.</p>
+<h3>Linux</h3>
+<p>El script <code>recursos/linux/instalar.sh</code> copia el programa a <code>~/.local/bin</code> e instala el lanzador y el icono, para que aparezca en el menú de aplicaciones.</p>
+<h3>Al abrir</h3>
+<p>La ventana se maximiza y recupera la última lista, con el último tema marcado. Si el servidor MCP no puede usar su puerto, el reproductor funciona igual, sin control remoto.</p>
+<h3>Idioma</h3>
+<p>La interfaz está en <strong>español</strong> y en <strong>inglés</strong>. La primera vez se abre en inglés si la cuenta del sistema está en inglés, y en español en cualquier otro caso. Para cambiarlo, use <span class="ui">Ventana › Idioma / Language</span> (el menú se llama igual en los dos idiomas, para encontrarlo aunque no se entienda el actual). El cambio es inmediato, sin reiniciar, y se recuerda para la próxima vez.</p>
+<ul>
+  <li>Se traducen los menús, botones, columnas, ayudas, avisos y mensajes, los nombres de los tipos y el certificado de emisión.</li>
+  <li>No cambian los datos guardados (el catálogo, las listas, las tandas, las órdenes y el registro de comerciales siguen igual en cualquier idioma) ni las descripciones de las herramientas MCP, que están en español.</li>
+  <li>Las fechas se muestran como día/mes/año en los dos idiomas.</li>
+  <li>Este manual está en español.</li>
+</ul>
+
+<h2>11. La ventana principal</h2>
+<figure>
+  <img src="imagenes/ventana-principal.png" alt="Ventana principal">
+  <figcaption>Ventana principal con una lista de ejemplo.</figcaption>
+</figure>
+<p>De arriba hacia abajo:</p>
+<ol>
+  <li><strong>Menú</strong> <span class="ui">Archivo</span> (cargar y guardar listas, mantenimiento del catálogo), <span class="ui">Ventana</span> (ubicación del editor) y <span class="ui">Ayuda</span> (este manual y <em>Acerca de</em>).</li>
+  <li><strong>Detalles</strong> del tema marcado (o del que suena): la carpeta y el nombre del archivo, tipo y género, álbum, ranking, año, última reproducción y efecto fijado (el título y el artista están en la lista y, del que suena, debajo, en grande). A la derecha, el <strong>reloj</strong> con la fecha. Con el botón de la esquina (<img class="icono" src="imagenes/iconos/barras-de-nivel.svg" alt="">) el panel muestra en cambio la <strong>forma de onda</strong> del tema (ver más abajo). A la derecha, el <strong>reloj</strong>: la hora, la fecha, el <strong>clima</strong> de la localidad elegida (temperatura, humedad y localidad; un clic permite cambiarla y al pasar el puntero se ve cuánto hace de la última lectura) y, si hay, la próxima tanda.</li>
+  <li><strong>Lo que suena</strong> y, en la misma línea, las opciones <span class="ui">Desplazar</span>, <span class="ui">Repetir lista</span>, <span class="ui">Crossfade inteligente</span>, <span class="ui">Nivelar volumen</span> y el objetivo LUFS.</li>
+  <li><strong>Barra de progreso</strong>: un clic o un arrastre salta a esa posición. Muestra la ventana de overlay (naranja si es sugerida, rosa si la fijó usted), la outro (celeste sugerida, verde fijada; desde ahí el tema empieza a bajar) y en violeta donde se solapan. Un <strong>recuadro rojo</strong> marca la <strong>mezcla efectiva</strong> con el tema siguiente: el tramo en que los dos suenan juntos, que con el crossfade inteligente dura de 2 a 12 s y puede ser más corto o más largo que la outro. A la derecha, el <strong>tiempo</strong>: un clic alterna entre transcurrido, restante y segundos restantes o transcurridos sobre el total; se pone naranja mientras mezcla con el tema siguiente.</li>
+  <li><strong>Transporte</strong> (<span class="ui">Anterior</span>, <span class="ui">Reproducir</span>/<span class="ui">Pausa</span>, <span class="ui">Detener</span>, <span class="ui">Siguiente</span>), el <strong>engranaje</strong> (<img class="icono" src="imagenes/iconos/ajustes.svg" alt="">) y los deslizantes de <strong>volumen</strong> (<img class="icono" src="imagenes/iconos/volumen.svg" alt="">, doble clic: 80 %) y <strong>fader</strong> (<img class="icono" src="imagenes/iconos/fader.svg" alt="">, segundos de mezcla y de fundido; doble clic: 5 s). El engranaje muestra u oculta el volumen, el fader y las opciones de reproducción: ocultos, queda más lugar para el nombre del tema y la ventana se ve más despejada. La elección se recuerda.</li>
+  <li><strong>Barra de la lista</strong>: <span class="ui">Agregar</span>, <span class="ui">Quitar</span>, <span class="ui">Limpiar</span>, <span class="ui">Editar</span>, <span class="ui">Subir</span>, <span class="ui">Bajar</span>, <span class="ui">Mezclar</span>, <span class="ui">BPM</span>, <span class="ui">Validar</span>, el buscador y el botón <span class="ui">Efectos</span>, que muestra u oculta la botonera.</li>
+  <li><strong>La lista</strong>: posición, título, artista, duración, tipo (con su ícono), ranking, género, año, BPM, ventana de overlay y segundos de mezcla con el siguiente; cada encabezado lleva el ícono de su dato. La pista que suena (o está en pausa) tiene <strong>fondo ámbar</strong>, el número en negrita y un ícono de reproducir junto al número.</li>
+  <li><strong>Barra de estado</strong>: ayuda, avisos y, a la derecha, el total de la lista y lo que falta sonar (descontando las mezclas).</li>
+</ol>
+<h3>Forma de onda en el panel de detalles</h3>
+<p>El botón de la esquina del panel de detalles alterna entre los <strong>datos</strong> del tema y su <strong>forma de onda</strong>: barras de nivel con la mitad superior de la onda (el pico más tenue y, encima, el nivel promedio), escaladas al punto más fuerte del tema. Sirve para ver de un vistazo dónde arranca, dónde crece y dónde termina. La elección se recuerda.</p>
+<figure>
+  <img src="imagenes/panel-onda.png" alt="Panel de detalles con la forma de onda del tema que suena">
+  <figcaption>Forma de onda del tema que suena, con sus datos técnicos arriba: lo reproducido va en el color de la barra de progreso, la ventana de overlay en naranja y la mezcla con el tema siguiente en el recuadro rojo.</figcaption>
+</figure>
+<ul>
+  <li>Muestra el mismo tema que los datos: el marcado con el selector o, si no hay, el que suena.</li>
+  <li>Arriba van los <strong>datos técnicos</strong> del archivo: formato, frecuencia de muestreo, bits por muestra (en los formatos sin pérdida), canales y tasa media en kbps (por ejemplo, <em>MP3 · 44,1 kHz · estéreo · 320 kbps</em>) y, al final, el título y el artista; estos se omiten cuando es el tema que suena, porque ya se ven abajo, en grande.</li>
+  <li>La barra de progreso tiene el mismo ancho que el panel, y el medidor de tiempo el mismo que el reloj: las marcas de la onda y las de la barra quedan una encima de la otra.</li>
+  <li>Usa los <strong>mismos colores que la barra de progreso</strong>: la ventana de overlay en naranja (rosa si la fijó usted), la outro en celeste (verde si la fijó usted), violeta donde se solapan y el <strong>recuadro rojo</strong> de la mezcla efectiva con el tema siguiente.</li>
+  <li>Si es el tema que suena, la parte ya reproducida va en el color de la barra de progreso, con una línea en la posición, y <strong>un clic salta a ese punto</strong>.</li>
+  <li>Se arma con la forma de onda que ya guarda el análisis de la lista, en otro hilo y con 200 barras: no vuelve a leer el audio ni afecta la reproducción. Si el tema todavía se está analizando, aparece al terminar.</li>
+</ul>
+<h3>Íconos de los datos</h3>
+<p>Cada dato tiene un ícono, el mismo en todas las ventanas: en los encabezados de las columnas (lista, catálogo, avisos, tandas, órdenes, anunciantes y mantenimiento) y en los rótulos de la solapa <span class="ui">Datos</span> del editor. Al pasar el puntero por un encabezado se ve qué muestra la columna. Si una columna queda muy angosta (ventana chica o letra grande), el encabezado muestra solo el ícono y el título completo aparece en el tooltip.</p>
+<table>
+  <tr><th style="width:8%">Ícono</th><th style="width:22%">Dato</th><th style="width:8%">Ícono</th><th>Dato</th></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-titulo.svg" alt=""></td><td>Título, nombre de una tanda</td><td><img class="icono" src="imagenes/iconos/dato-artista.svg" alt=""></td><td>Artista</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-duracion.svg" alt=""></td><td>Duración</td><td><img class="icono" src="imagenes/iconos/dato-tipo.svg" alt=""></td><td>Tipo (en cada fila, el ícono del tipo: ver sección 7)</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-ranking.svg" alt=""></td><td>Ranking</td><td><img class="icono" src="imagenes/iconos/dato-genero.svg" alt=""></td><td>Género</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-bpm.svg" alt=""></td><td>BPM (tempo)</td><td><img class="icono" src="imagenes/iconos/overlay.svg" alt=""></td><td>Ventana de overlay</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/puntos-de-mezcla.svg" alt=""></td><td>Segundos de mezcla</td><td><img class="icono" src="imagenes/iconos/dato-album.svg" alt=""></td><td>Álbum</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-anio.svg" alt=""></td><td>Año</td><td><img class="icono" src="imagenes/iconos/nota.svg" alt=""></td><td>Nota</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-sonado.svg" alt=""></td><td>Última reproducción (Sonó)</td><td><img class="icono" src="imagenes/iconos/dato-en-lista.svg" alt=""></td><td>Ya está en la lista</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-anunciante.svg" alt=""></td><td>Anunciante</td><td><img class="icono" src="imagenes/iconos/dato-razon-social.svg" alt=""></td><td>Razón social</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-cuit.svg" alt=""></td><td>CUIT</td><td><img class="icono" src="imagenes/iconos/dato-rubro.svg" alt=""></td><td>Rubro</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-contacto.svg" alt=""></td><td>Contacto</td><td><img class="icono" src="imagenes/iconos/dato-orden.svg" alt=""></td><td>Orden de publicidad</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-activa.svg" alt=""></td><td>Activa</td><td><img class="icono" src="imagenes/iconos/dato-estado.svg" alt=""></td><td>Estado</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/pauta.svg" alt=""></td><td>Horarios de una tanda</td><td><img class="icono" src="imagenes/iconos/dato-entrada.svg" alt=""></td><td>Entrada (tolerancia o a hora exacta)</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-avisos.svg" alt=""></td><td>Avisos de una tanda</td><td><img class="icono" src="imagenes/iconos/dato-proxima.svg" alt=""></td><td>Próxima salida</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-salidas.svg" alt=""></td><td>Salidas de una orden</td><td><img class="icono" src="imagenes/iconos/dato-vigencia.svg" alt=""></td><td>Vigencia</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-hoy.svg" alt=""></td><td>Salidas ubicadas hoy</td><td><img class="icono" src="imagenes/iconos/dato-ubicacion-anterior.svg" alt=""><img class="icono" src="imagenes/iconos/dato-ubicacion-nueva.svg" alt=""></td><td>Ubicación anterior y nueva de un archivo (mantenimiento)</td></tr>
+</table>
+<h3>Franjas de color de la lista</h3>
+<p>A la izquierda de cada fila puede haber una o dos franjas:</p>
+<table>
+  <tr><th style="width:8%">Color</th><th>Significado</th></tr>
+  <tr><td><span class="franja" style="background:#12b886"></span></td><td>Comercial (además, la fila tiene fondo verde azulado, igual que Anuncio y Publicidad)</td></tr>
+  <tr><td><span class="franja" style="background:#845ef7"></span></td><td>Anuncio</td></tr>
+  <tr><td><span class="franja" style="background:#e64980"></span></td><td>Publicidad</td></tr>
+  <tr><td><span class="franja" style="background:#94d82d"></span></td><td>Seco</td></tr>
+  <tr><td><span class="franja" style="background:#be4bdb"></span></td><td>Podcast</td></tr>
+  <tr><td><span class="franja" style="background:#fa5252"></span></td><td>Efecto (solo se ve si un archivo cambia de tipo mientras suena; no puede quedar en la lista)</td></tr>
+  <tr><td><span class="franja" style="background:#22b8cf"></span></td><td>Anuncio de hora, temperatura y humedad (HTH)</td></tr>
+  <tr><td><span class="franja" style="background:#ced4da"></span></td><td>Marcador de inicio o de fin de bloque fijo (toda la fila en gris, con su ícono). Las pistas dentro del bloque llevan esta línea a la derecha.</td></tr>
+  <tr><td><span class="franja" style="background:#339af0"></span></td><td>El tema tiene un efecto fijado</td></tr>
+  <tr><td><span class="franja" style="background:#f0ad4e"></span></td><td>Coincide con la búsqueda</td></tr>
+</table>
+
+<h2>12. Armar y administrar la lista</h2>
+<ul>
+  <li><span class="ui">Agregar</span> abre un menú con estas opciones:
+    <ul>
+      <li><span class="ui">Archivos...</span>: el selector de archivos (se pueden elegir varios).</li>
+      <li><span class="ui">Carpeta con subcarpetas...</span>: se elige una carpeta y se recorre con todas sus subcarpetas. Antes de agregar, un aviso informa cuántos archivos de audio encontró y en cuántas subcarpetas, y pide confirmación. Entran carpeta por carpeta: primero los archivos de cada carpeta por nombre y después los de sus subcarpetas.</li>
+      <li><span class="ui">Desde el catálogo...</span> (<kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>F</kbd>): abre el buscador del catálogo (ver más abajo).</li>
+      <li><span class="ui">Fijar la selección como bloque</span>, <span class="ui">Inicio de bloque fijo</span> y <span class="ui">Fin de bloque fijo</span>: marcadores de bloque fijo (ver más abajo).</li>
+    </ul>
+    Las pistas nuevas entran <strong>después de la seleccionada</strong>, o al final si no hay selección. Al terminar, la barra de estado resume cuántas se agregaron y por qué no entraron las demás: las que ya estaban en la lista se omiten y las de tipo Efecto quedan afuera.</li>
+  <li><span class="ui">Quitar</span> saca las pistas seleccionadas; <span class="ui">Limpiar</span>, toda la lista. Ninguno borra archivos del disco. La pista que suena (o está en pausa) <strong>no se quita</strong>: si está en la selección, se quitan las demás y ella queda. Si la selección tiene marcadores de bloque fijo y temas, el primer <span class="ui">Quitar</span> saca solo los marcadores y deja los temas seleccionados; un segundo <span class="ui">Quitar</span> los saca a ellos.</li>
+  <li><span class="ui">Subir</span> y <span class="ui">Bajar</span> mueven la selección.</li>
+  <li><span class="ui">Mezclar</span> desordena al azar toda la lista o, si hay varias pistas seleccionadas, solo esas. El tema que suena queda primero. Lo que está en un <strong>bloque fijo</strong> no se toca: para que una tanda de comerciales no se desarme, enciérrela en un bloque fijo.</li>
+  <li><span class="ui">BPM</span> ordena por tempo, de menor a mayor (a igual tempo, primero el de mayor ranking). Tampoco toca los bloques fijos.</li>
+  <li><span class="ui">Validar</span> revisa que existan los archivos (ofrece quitar los que faltan) y busca temas repetidos: mismo título y artista en otro archivo. Pregunta uno por uno si quitarlos.</li>
+  <li><strong>Buscar</strong> (<kbd>Ctrl</kbd>+<kbd>F</kbd>): busca por título, artista, tipo, género, álbum o archivo. <code>#508</code> salta a la pista 508, y con prefijos se busca por un dato en particular: ranking, año, BPM, duración o fecha de la última reproducción (ver <em>Búsqueda con prefijos</em>, más abajo). <kbd>↑</kbd> <kbd>↓</kbd> o <kbd>Enter</kbd> saltan entre los resultados; <kbd>Esc</kbd> limpia.</li>
+  <li><strong>Columnas:</strong> número, <em>Título</em>, <em>Artista</em>, <em>Duración</em>, <em>Tipo</em>, <em>Ranking</em> (de 0 a 5 estrellas, se fija en el editor), <em>Género</em>, <em>BPM</em>, <em>Overlay</em> y <em>Mezcla</em>. Un tema con <strong>nota</strong> muestra un pequeño ícono a la derecha del título; al pasar el puntero por el título se ven la nota y la ruta del archivo. <em>Overlay</em> muestra solo los segundos que dura la ventana de overlay (en cursiva si es la sugerida por el análisis); su inicio y su fin se ven al pasar el puntero, en el panel de detalle y en el editor.</li>
+  <li><strong>Selección:</strong> clic para una pista, <kbd>Ctrl</kbd>+clic para sumar y <kbd>Mayús</kbd>+clic para un rango.</li>
+  <li><strong>Doble clic</strong> en el número, el título o el artista: reproduce ese tema. En las demás columnas: abre el editor. En un marcador de bloque fijo: selecciona el bloque completo.</li>
+  <li><strong>Clic derecho</strong> en una fila: <span class="ui">Reproducir</span>, <span class="ui">Encolar como siguiente</span> (lleva el tema justo después del que suena, para que el final del actual se mezcle con él sin seguir el orden de la lista; lo demás queda en su orden; si el tema está dentro de un bloque fijo y lo saca de él, pide confirmación), <span class="ui">Editar pista...</span>, <span class="ui">Quitar de la lista</span> y <span class="ui">Descatalogar...</span> (quita el tema y borra todos sus datos guardados; el archivo de audio no se borra). En un anuncio HTH aparece además <span class="ui">Base del anuncio HTH</span> (ver la sección 14).</li>
+  <li><strong>Listas con nombre:</strong> <span class="ui">Archivo › Cargar lista...</span> (<kbd>Ctrl</kbd>+<kbd>O</kbd>, también M3U), <span class="ui">Guardar lista</span> (<kbd>Ctrl</kbd>+<kbd>S</kbd>) y <span class="ui">Guardar lista como...</span> (<kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>S</kbd>). El título de la ventana muestra la lista abierta y un asterisco si tiene cambios sin guardar.</li>
+</ul>
+
+<h3>Bloques fijos</h3>
+<p>Un <strong>bloque fijo</strong> es un tramo de la lista que <span class="ui">Mezclar</span> y <span class="ui">BPM</span> no cambian: por ejemplo, una tanda con su orden, un programa armado a mano o lo que tiene que salir a una hora. Se marca con dos filas especiales, un <strong>inicio</strong> y un <strong>fin</strong>, que se ven en gris con su propio ícono; las pistas que quedan entre los dos llevan una línea gris a la derecha.</p>
+<ul>
+  <li><span class="ui">Agregar › Fijar la seleccion como bloque</span> pone un inicio antes de la primera pista seleccionada y un fin después de la última. <span class="ui">Inicio de bloque fijo</span> y <span class="ui">Fin de bloque fijo</span> insertan uno solo, después de la seleccionada.</li>
+  <li>Al mezclar u ordenar, lo de adentro queda en su lugar y en su orden, y solo se reordena lo que está afuera. La barra de estado dice cuántos temas quedaron sin cambios.</li>
+  <li>Los marcadores <strong>no suenan</strong>: la reproducción y las mezclas pasan de largo, sin aviso, y la mezcla se hace entre el tema anterior y el siguiente. No suman duración y se guardan con la lista.</li>
+  <li>Un inicio sin fin fija hasta el final de la lista; un fin sin inicio fija desde el fin anterior (o desde el principio).</li>
+  <li><strong>Doble clic</strong> en el inicio o en el fin selecciona el bloque completo, con sus dos marcadores.</li>
+  <li>Con el bloque seleccionado, <span class="ui">Quitar</span> lo <strong>deshace</strong>: saca los marcadores y los temas quedan en su lugar, seleccionados. Si se pulsa <span class="ui">Quitar</span> otra vez, se quitan también los temas. Un marcador suelto se quita como cualquier fila, y se mueve con <span class="ui">Subir</span> y <span class="ui">Bajar</span>.</li>
+</ul>
+
+<h3>Buscar en el catálogo</h3>
+<p>El <strong>catálogo</strong> guarda los datos de cada tema que alguna vez entró a la lista. <span class="ui">Archivo › Buscar en el catalogo...</span>, <span class="ui">Agregar › Desde el catalogo...</span> o <kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>F</kbd> abren un buscador para volver a traerlos sin recorrer carpetas.</p>
+<figure>
+  <img src="imagenes/buscador.png" alt="Buscador del catálogo">
+  <figcaption>Temas de Alejandro Sanz que no suenan hace más de 30 días («artista:sanz sonado:>30d»); dos elegidos para insertar.</figcaption>
+</figure>
+<ul>
+  <li>Busca mientras se escribe, por título, artista, tipo, género, álbum o nombre de archivo. Tienen que aparecer todas las palabras, sin importar mayúsculas ni acentos. También entiende los prefijos de la <em>Búsqueda con prefijos</em> (por ejemplo <code>ranking:&gt;=4 sonado:&gt;30d</code>). Con el texto vacío muestra todo el catálogo, por artista y título (hasta 500 temas: si hay más, afine la búsqueda).</li>
+  <li>La columna <em>Sonó</em> muestra el día de la última reproducción (vacía si nunca salió al aire).</li>
+  <li>Se elige como en la lista: clic, <kbd>Ctrl</kbd>+clic y <kbd>Mayús</kbd>+clic.</li>
+  <li><span class="ui">Insertar despues de la seleccionada</span> (o <kbd>Enter</kbd>, o doble clic en un tema) los pone en la lista después de la pista seleccionada en la ventana principal; <span class="ui">Agregar al final</span>, al final. Los que ya están en la lista no se repiten.</li>
+  <li>La columna <em>En lista</em> marca los que ya están. Los que figuran <em>sin archivo</em> se movieron o se borraron: no se insertan (ver la sección 19). Los de tipo Efecto no aparecen, porque solo van en la botonera.</li>
+  <li><kbd>Esc</kbd> limpia la búsqueda y, con el texto vacío, cierra la ventana.</li>
+</ul>
+
+<h3>Búsqueda con prefijos</h3>
+<p>El buscador de la lista (<kbd>Ctrl</kbd>+<kbd>F</kbd>) y el del catálogo (<kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>F</kbd>) entienden, además de palabras sueltas, <strong>condiciones con prefijo</strong> para buscar por un dato en particular. Se pueden combinar varias separadas por espacios: el tema tiene que cumplirlas todas. El prefijo no distingue mayúsculas ni acentos (<code>Género:</code> es igual a <code>genero:</code>). Al pasar el puntero sobre el buscador se ve un resumen. Los prefijos también se pueden escribir <strong>en inglés</strong>, en cualquier idioma de la interfaz: <code>title:</code>, <code>artist:</code>, <code>genre:</code>, <code>type:</code>, <code>note:</code>, <code>file:</code>, <code>year:</code>, <code>rating:</code>, <code>duration:</code> y <code>played:</code>, con <code>today</code>, <code>yesterday</code>, <code>never</code> y las unidades <code>w</code> (semanas) e <code>y</code> (años).</p>
+<table>
+  <tr><th style="width:24%">Escriba</th><th>Encuentra</th></tr>
+  <tr><td><code>#508</code></td><td>La pista 508 de la lista: el selector salta a ella. <code>#10..20</code> (o <code>#10-20</code>) marca un tramo. Solo en la lista: el catálogo no tiene posiciones.</td></tr>
+  <tr><td><code>titulo:</code> <code>artista:</code> <code>genero:</code> <code>album:</code> <code>tipo:</code> <code>nota:</code></td><td>El texto solo en ese dato: <code>artista:sanz</code>, <code>tipo:comercial</code>, <code>nota:pedido</code>. Para una frase con espacios, entre comillas: <code>genero:"rock nacional"</code>. Abreviaturas: <code>t:</code>, <code>a:</code>, <code>g:</code>.</td></tr>
+  <tr><td><code>archivo:</code> o <code>ruta:</code></td><td>El texto en la ruta completa del archivo, con sus carpetas: <code>archivo:enganchados</code>. (Sin prefijo, el catálogo busca solo en el nombre del archivo.)</td></tr>
+  <tr><td><code>ranking:</code> (o <code>r:</code>)</td><td>Por estrellas: <code>ranking:5</code>, <code>ranking:&gt;=4</code>, <code>ranking:&lt;2</code>.</td></tr>
+  <tr><td><code>anio:</code> o <code>año:</code></td><td>Por año: <code>anio:1997</code>, <code>anio:1990..1999</code> (o <code>1990-1999</code>), <code>anio:&gt;=2000</code>.</td></tr>
+  <tr><td><code>bpm:</code></td><td>Por tempo, el fijado o el analizado: <code>bpm:120</code> (de 119,5 a 120,5), <code>bpm:118..126</code>, <code>bpm:&gt;128</code>.</td></tr>
+  <tr><td><code>duracion:</code> (o <code>dur:</code>)</td><td>Por duración, en minutos o en minutos y segundos: <code>duracion:4</code> (de 4:00 a 4:59), <code>duracion:&lt;3:30</code>, <code>duracion:3..5</code>.</td></tr>
+  <tr><td><code>sonado:</code></td><td>Por la <strong>última reproducción</strong>, en la hora local:
+    <ul>
+      <li><code>sonado:hoy</code>, <code>sonado:ayer</code>, <code>sonado:nunca</code> (nunca salió al aire).</li>
+      <li>Hace cuánto: <code>sonado:7d</code> o <code>sonado:&lt;7d</code> (en los últimos 7 días), <code>sonado:&gt;30d</code> (hace más de 30 días). Unidades: <code>h</code> horas, <code>d</code> días, <code>s</code> semanas, <code>m</code> meses, <code>a</code> años.</li>
+      <li>Una fecha: <code>sonado:2026-11-03</code>, <code>sonado:03/11/2026</code>, <code>sonado:3/11</code> (de este año) o un mes entero, <code>sonado:2026-11</code>.</li>
+      <li>Antes o después de una fecha, o entre dos: <code>sonado:&lt;01/10/2026</code>, <code>sonado:&gt;=2026-11-01</code>, <code>sonado:2026-10-01..2026-10-15</code>.</li>
+    </ul></td></tr>
+  <tr><td><code>-</code> adelante</td><td>Niega cualquier condición o palabra: <code>-genero:cumbia</code>, <code>-sanz</code>. <code>-sonado:&lt;30d</code> encuentra lo que no sonó en los últimos 30 días, <strong>incluidos los que nunca sonaron</strong> (en cambio <code>sonado:&gt;30d</code> deja afuera a los que nunca sonaron).</td></tr>
+</table>
+<p>Los datos con número se comparan con <code>=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code> y <code>&lt;=</code>, o con un tramo <code>desde..hasta</code> (se puede dejar abierto un lado: <code>anio:..1979</code>, <code>bpm:130..</code>). Un tema sin el dato (sin año, sin BPM, nunca reproducido) no cumple la condición. Si un prefijo tiene un valor que no se entiende, el buscador muestra <em>Búsqueda no válida</em> y la barra de estado explica qué escribir. Una palabra con dos puntos que no es un prefijo (<code>12:30</code>) se busca como texto.</p>
+<p>Ejemplos:</p>
+<ul>
+  <li><code>genero:"rock nacional" ranking:&gt;=4 -sonado:&lt;15d</code>: rock nacional de 4 o 5 estrellas que no salió en las últimas dos semanas.</li>
+  <li><code>a:soda anio:1980..1989</code>: Soda Stereo de los ochenta.</li>
+  <li><code>bpm:120..128 duracion:&lt;4</code>: temas para enganchar, de menos de 4 minutos.</li>
+  <li><code>tipo:comercial sonado:hoy</code>: los avisos que ya salieron hoy.</li>
+  <li><code>sonado:nunca</code>: lo que todavía no salió al aire.</li>
+</ul>
+
+<h2>13. Reproducir y mezclar</h2>
+<ul>
+  <li><span class="ui">Reproducir</span> empieza o reanuda; el mismo botón pausa.</li>
+  <li><span class="ui">Siguiente</span> pasa al tema marcado con el selector (o al que sigue) <strong>mezclando</strong> los segundos del fader. Para preparar el próximo tema, márquelo con un clic: queda como el siguiente.</li>
+  <li><span class="ui">Anterior</span> vuelve al tema anterior, sin mezcla.</li>
+  <li><span class="ui">Detener</span> detiene con un fundido de los segundos del fader; pulsado otra vez (o con fader en 0), detiene al instante.</li>
+  <li>Hacia o desde algo que no es un Tema (comercial, seco...), <span class="ui">Siguiente</span> hace un fundido de salida y lo siguiente arranca después, sin mezcla.</li>
+  <li><strong>Archivos que faltan:</strong> si el archivo de un tema de la lista se movió o se borró, la secuencia (y <span class="ui">Siguiente</span>) lo saltea y sigue con el próximo que exista, sin cortar la emisión. La barra de estado avisa qué tema se salteó; <span class="ui">Validar</span> ofrece quitarlo de la lista.</li>
+  <li><span class="ui">Desplazar</span> mantiene el tema que suena en el centro de la lista. <span class="ui">Repetir lista</span> vuelve al principio al terminar.</li>
+  <li>Mientras se analizan temas nuevos, la línea de estado indica «Analizando N tema(s)».</li>
+</ul>
+
+<h2>14. El panel de efectos</h2>
+<figure>
+  <img src="imagenes/ventana-con-efectos.png" alt="Ventana principal con el panel de efectos">
+  <figcaption>El panel de efectos se abre con el botón Efectos.</figcaption>
+</figure>
+<h3>Botones</h3>
+<ul>
+  <li>Un clic (o la tecla <kbd>0</kbd>–<kbd>9</kbd>) dispara el efecto del botón. Si el botón está en espera, el clic cancela la espera. Un botón vacío muestra un <strong>+</strong>: con un clic se le asigna un archivo.</li>
+  <li>Cada botón muestra su número, el <strong>título</strong> del catálogo (o, si no tiene, el nombre del archivo sin la extensión) en hasta dos renglones —un nombre más largo se corta con «…» y completo se ve en el tooltip, junto a la ruta— y la duración (la del tramo, si se recortó). En <strong>naranja</strong> con un reloj de arena: en espera de su ventana. En <strong>verde</strong> con un parlante: sonando.</li>
+  <li><strong>Clic derecho</strong>: <span class="ui">Asignar archivo...</span>, <span class="ui">Editar...</span> (abre el editor con ese archivo, para fijarle el tipo o el tramo que suena), <span class="ui">Vaciar</span> e <span class="ui">Insertar en la playlist</span> (deshabilitado para el tipo Efecto).</li>
+  <li>Las flechas cambian de hoja; <strong>+</strong> agrega una hoja y <strong>−</strong> quita la que se ve.</li>
+  <li><span class="ui">Detener efecto</span> corta el efecto que suena (o el que espera) y devuelve la música a su nivel.</li>
+</ul>
+<h3>Anuncio de hora, temperatura y humedad (HTH)</h3>
+<p>Al final del panel, debajo de los mensajes de la botonera, el botón <span class="ui">HTH</span> inserta en la lista, después de la pista seleccionada, el servicio de hora, temperatura y humedad. En la lista se ve como «Hora, temperatura y humedad», con tipo <em>HTH</em> y franja celeste verdosa.</p>
+<p>El <strong>clima</strong> que dirá el anuncio se ve en el reloj de la ventana principal: la temperatura, la humedad y la localidad; al pasar el puntero, cuánto hace de la última lectura (por ejemplo «Buenos Aires: 13,9 °C, humedad 84 % — Ultima lectura hace 4 min»). Se consulta a Open-Meteo cada 10 minutos desde que se abre el programa. Si no hay conexión el reloj lo muestra en rojo <strong>sin datos</strong>, con la antigüedad de la última lectura si la hubo; mientras el dato tenga menos de una hora se sigue usando, y pasada la hora el anuncio dice solo la hora.</p>
+<p><strong>Clic derecho en <span class="ui">HTH</span></strong> abre un menú con:</p>
+<ul>
+  <li><span class="ui">Insertar el anuncio HTH</span>: lo mismo que el clic.</li>
+  <li><span class="ui">Cambiar la localidad del clima...</span>: abre la ventana <em>Localidad del clima</em>. Escriba el nombre de la ciudad (por ejemplo «Rosario») y pulse Enter: la búsqueda se hace en el servicio gratuito de Open-Meteo, sin clave, y muestra hasta 20 localidades con su departamento o partido, provincia y país, para distinguir las que se llaman igual. Elija una y pulse <span class="ui">Usar esta localidad</span> (o haga doble clic). El clima de la localidad anterior se descarta y el de la nueva se consulta en el momento; la elección queda guardada. Un clic en el clima del reloj abre la misma ventana.</li>
+  <li><span class="ui">Actualizar el clima ahora</span>: consulta el clima sin esperar los 10 minutos (por ejemplo, al volver la conexión).</li>
+  <li><span class="ui">Carpeta de las locuciones...</span>: lo mismo que el botón de la carpeta.</li>
+</ul>
+<figure>
+  <img src="imagenes/localidad.png" alt="Ventana Localidad del clima">
+  <figcaption>La ventana Localidad del clima: cada resultado muestra su región para elegir la correcta.</figcaption>
+</figure>
+<ul>
+  <li><strong>Se arma al salir al aire</strong>, no al insertarlo: justo antes de sonar se une la hora del reloj con el último clima conocido, así dice la hora real aunque se haya insertado una hora antes. Por ejemplo: «Son las quince y treinta. Temperatura: diecisiete grados. Humedad: setenta y seis por ciento.»</li>
+  <li><strong>Sin internet:</strong> la voz sale de locuciones pregrabadas, que se unen recortando sus silencios y con una pausa breve entre frases. Cada locución puede tener dos tomas de la misma frase (por ejemplo <code>15.mp3</code> y <code>15'.mp3</code>, una con más énfasis y otra más plana): en cada anuncio se elige al azar una de las dos por pieza, para que no suene siempre igual.</li>
+  <li><strong>El clima</strong> (temperatura y humedad de la localidad elegida; de entrada, Buenos Aires) se consulta cada 10 minutos en el servicio gratuito Open-Meteo, desde que se abre el programa (lo muestra el reloj de la ventana principal). Sin conexión, o si el último dato tiene más de una hora, el anuncio dice solo la hora. La localidad se cambia con <strong>clic derecho en <span class="ui">HTH</span></strong> o con un clic en el texto del clima (ver más abajo).</li>
+  <li><strong>Con bases musicales:</strong> si la carpeta de locuciones tiene una subcarpeta <code>bases</code> con cortinas cortas, el botón inserta una base elegida al azar (sin repetir la anterior). En la lista se ve como «HTH · nombre de la base», con la misma franja.
+    <ul>
+      <li>La base es un tema común: se analiza, <strong>se mezcla</strong> con el tema anterior y con el siguiente, y se edita en el editor como cualquier otro (inicio, fin, intro, outro).</li>
+      <li>La <strong>ventana de overlay</strong> de la base marca dónde se dice el anuncio. Cuando la base empieza a sonar, la voz se arma con la hora en que se abre esa ventana y suena ahí, como un efecto fijado. Mientras habla, la base siempre baja (aunque <span class="ui">Bajar la música durante el efecto</span> esté desmarcado) y vuelve al terminar, con los ajustes del panel de efectos. Sin una ventana fijada se usa la sugerida por el análisis; sin ninguna, la voz arranca con la base.</li>
+      <li>La voz dura unos 9 segundos: si la ventana es más corta, la barra de estado lo avisa al guardar la base en el editor y al sonar.</li>
+      <li>La misma base puede estar varias veces en la lista: Validar no la cuenta como tema repetido.</li>
+      <li><strong>Cambiar o quitar la base:</strong> con clic derecho en la fila del anuncio, <span class="ui">Base del anuncio HTH</span> lista las bases para elegir otra, y <span class="ui">Sin base (la voz sola)</span> la deja sin música de fondo. También pone una base a un anuncio que no la tenía. El anuncio que está sonando no se cambia.</li>
+    </ul>
+  </li>
+  <li><strong>Sin bases</strong>, el anuncio es la voz sola y suena <strong>sin mezcla</strong>, como un comercial: el tema anterior termina y el anuncio arranca después. No se analiza, no se edita ni cuenta pases, y puede estar varias veces en la lista.</li>
+  <li>El botón de la <strong>carpeta</strong>, junto a <span class="ui">HTH</span>, elige la carpeta de las locuciones. La primera vez que se pulsa <span class="ui">HTH</span> sin carpeta elegida, también la pide. Debe tener las subcarpetas <code>hora</code> (<code>00</code> a <code>23</code>) y <code>minutos</code> (<code>00</code> a <code>59</code>, donde <code>00</code> es «en punto»); <code>temperatura</code> (<code>-10</code> a <code>50</code>), <code>humedad</code> (<code>000</code> a <code>100</code>) y <code>bases</code> son opcionales. También se busca sola una carpeta <code>locuciones</code> junto al programa.</li>
+  <li>Si no se puede armar (por ejemplo, se borró la carpeta de locuciones), el anuncio se saltea y sigue el próximo tema, para no decir una hora vieja.</li>
+</ul>
+<h3>Ajustes</h3>
+<p>Junto a <span class="ui">Modo libre</span> está el botón del <strong>engranaje</strong>, que muestra u oculta el resto de los ajustes (desde <span class="ui">Bajar la música durante el efecto</span> hasta <span class="ui">Vuelve en</span>). Plegados, los diez botones, <span class="ui">Detener efecto</span>, <span class="ui">HTH</span> y la carpeta de las locuciones quedan a la vista sin desplazar, aun en Full HD con la escala al 150 %. Los ajustes siguen activos aunque estén ocultos, y el programa recuerda si quedaron plegados o desplegados. Si falta alto, los botones de efecto se achican antes de que el panel necesite desplazarse.</p>
+<table>
+  <tr><th style="width:34%">Control</th><th>Qué hace</th></tr>
+  <tr><td><span class="ui">Modo libre</span></td><td>Marcado: el efecto suena al pulsarlo. Sin marcar (trabado): espera la ventana de overlay del tema.</td></tr>
+  <tr><td><span class="ui">Bajar la música durante el efecto</span></td><td>Activa la atenuación de la música.</td></tr>
+  <tr><td><span class="ui">Ajuste inteligente</span></td><td>Iguala el efecto con la música y decide cuánto bajarla según lo fuerte de ese tramo.</td></tr>
+  <tr><td><span class="ui">Efecto</span> (dB)</td><td>Volumen del efecto. Con ajuste inteligente, 0 dB es la sonoridad de la música. Doble clic: 0 dB.</td></tr>
+  <tr><td><span class="ui">Separación</span> (con ajuste inteligente)</td><td>Cuántos dB por debajo del efecto queda la música: con más separación, la música baja más. Según lo fuerte del tramo, baja hasta la separación más 6 dB. Va de 4 a 24 dB; doble clic: 12 dB. También vale para la <strong>voz del anuncio HTH sobre su base</strong>, que siempre baja la base con el ajuste inteligente, aunque el panel diga lo contrario: si la locución se pierde en la base, suba la separación.</td></tr>
+  <tr><td><span class="ui">Música al</span> (sin ajuste inteligente)</td><td>Nivel fijo de la música durante el efecto. Doble clic: 50 %. El mismo deslizante muestra la separación o este nivel, según esté o no el ajuste inteligente.</td></tr>
+  <tr><td><span class="ui">Atenua en</span></td><td>Lo que tarda en bajar la música; termina justo cuando arranca el efecto. Doble clic: 40 ms.</td></tr>
+  <tr><td><span class="ui">Vuelve en</span></td><td>Lo que tarda la música en volver después del efecto. Doble clic: 0,8 s.</td></tr>
+</table>
+
+<h2>15. El editor de pistas</h2>
+<p>Se abre con doble clic en las columnas de datos de una fila, con <span class="ui">Editar</span> de la barra, con el menú contextual de la fila o, para un efecto, con <span class="ui">Editar...</span> en el menú del botón. Recuerda su última posición y tamaño.</p>
+<div class="nota"><strong>Varios monitores.</strong> Si el editor quedó en un monitor que ya no está conectado, al abrirlo aparece centrado sobre la ventana principal. El menú <span class="ui">Ventana</span> ofrece además <span class="ui">Traer las ventanas a la ventana principal</span>, que centra en el momento el editor y las demás ventanas abiertas (buscador, mantenimiento, pauta, órdenes y Acerca de), y <span class="ui">Editor siempre centrado</span>, que alterna entre Sí y No: con Sí, el editor se abre siempre centrado sobre la ventana principal en lugar de donde quedó la última vez.<br>Las ventanas que se abren desde los menús (buscador del catálogo, mantenimiento, pauta de tandas, órdenes de publicidad, selector de avisos, anunciantes y Acerca de) aparecen siempre centradas sobre la ventana principal. Si una ya está abierta en otra pantalla, o en una que se desconectó, al pedirla otra vez vuelve sobre la principal; si está en la misma pantalla, solo pasa al frente.</div>
+<div class="nota"><strong>Ocultar textos de los botones.</strong> En el menú <span class="ui">Ventana</span>, <span class="ui">Ocultar textos de los botones</span> alterna entre Sí y No y se recuerda al volver a abrir el programa. Con Sí, los botones de la ventana principal (transporte, barra de la lista, <span class="ui">Efectos</span>, <span class="ui">Detener efecto</span> y <span class="ui">HTH</span>) muestran solo su icono, y el nombre aparece en el tooltip al pasar el puntero. Con No, los textos se ven salvo cuando la ventana es angosta: por debajo de unos 1400 px lógicos de ancho con la botonera abierta (1120 sin ella), por ejemplo en Full HD con la escala al 150 %, los botones del transporte y de la barra de la lista quedan solo con el icono para que entre todo, botonera incluida. La ventana principal se puede achicar hasta 1180 × 600 px lógicos.</div>
+<figure>
+  <img src="imagenes/editor-solapa0.png" alt="Editor: puntos de mezcla">
+  <figcaption>Editor de pistas, solapa Puntos de mezcla.</figcaption>
+</figure>
+<h3>Forma de onda</h3>
+<ul>
+  <li>Un clic mueve el <strong>cursor</strong>. Las marcas (Inicio, Intro, Overlay, Outro, Fin) se arrastran con el mouse; la zona naranja de la ventana de overlay se arrastra entera.</li>
+  <li><span class="ui">Acercar</span>, <span class="ui">Alejar</span> y <span class="ui">Ver todo</span> controlan el zoom (también <kbd>+</kbd> y <kbd>−</kbd>).</li>
+</ul>
+<h3>Solapa Puntos de mezcla</h3>
+<ul>
+  <li><strong>Inicio y Fin</strong> (primer renglón): dónde empieza y dónde termina de sonar el tema; lo que queda afuera se saltea.</li>
+  <li><strong>Intro y Outro</strong> (segundo renglón): duración del comienzo y del final que se usan para mezclar.</li>
+  <li>Cada valor se edita con un clic en su campo (<kbd>Enter</kbd> confirma) o con su botón <span class="ui">Cursor</span>, que lo lleva a la posición del cursor. El botón <strong>deshacer</strong> de al lado recupera el valor previo.</li>
+  <li>El rótulo <strong>Automático</strong> / <strong>Manual</strong> indica el origen; <span class="ui">Volver al automatico</span> vuelve a lo que propone el análisis.</li>
+</ul>
+<figure>
+  <img src="imagenes/editor-solapa1.png" alt="Editor: overlay">
+  <figcaption>Solapa Overlay: ventana, efecto fijado y atenuación.</figcaption>
+</figure>
+<h3>Solapa Overlay</h3>
+<ul>
+  <li><span class="ui">Usar la sugerida</span> toma la ventana que propone el análisis; <span class="ui">Quitar ventana</span> / <span class="ui">Crear ventana</span>.</li>
+  <li><strong>Desde</strong> y <strong>Hasta</strong>, con sus botones <span class="ui">Cursor (V)</span> y <span class="ui">Cursor (B)</span> y sus deshacer.</li>
+  <li><strong>Efecto fijado</strong>: el combo elige el efecto que suena solo con el tema. Si el combo muestra «(ninguno)», el botón <span class="ui">Efecto fijado</span> fija directamente el efecto elegido para probar (el combo junto a <span class="ui">Ventana con efecto</span>). El deshacer de al lado vuelve a la elección anterior. Solo se ofrecen efectos de la botonera de tipo Efecto o Seco.</li>
+  <li>Los ajustes de volumen y atenuación son los mismos del panel de efectos.</li>
+</ul>
+<figure>
+  <img src="imagenes/editor-solapa2.png" alt="Editor: datos">
+  <figcaption>Solapa Datos.</figcaption>
+</figure>
+<h3>Solapa Datos</h3>
+<p>Título, artista, <strong>tipo</strong> (el combo de la izquierda: Sin clasificar, Tema, Comercial, Anuncio, Publicidad, Efecto o Seco), género (texto libre; el botón de la derecha despliega todos los géneros que ya existen en el catálogo, en orden alfabético, así la lista crece con los que va usando; se desplaza con la rueda o la barra y se elige con un clic), ranking de 0 a 5, BPM (vacío: el del análisis; <span class="ui">Calcular</span>, <span class="ui">×2</span> y <span class="ui">÷2</span> lo corrigen), álbum, año y <strong>nota</strong>: una observación libre sobre el tema o elemento («versión editada para radio», «usar solo de noche»). La nota se ve al pasar el puntero por el título en la lista y por el botón de efecto; dejarla vacía la borra.</p>
+<h3>Preescucha</h3>
+<table>
+  <tr><th style="width:30%">Botón</th><th>Qué escucha</th></tr>
+  <tr><td><span class="ui">Preescucha</span></td><td>El tema entero, de la marca de inicio a la de fin.</td></tr>
+  <tr><td><span class="ui">Ventana con efecto</span> (ámbar)</td><td>Desde 3 s antes de la ventana hasta 2 s después, con el efecto fijado (o, si no hay, el elegido en el combo de prueba) sonando al abrirse la ventana, con la misma atenuación que al aire.</td></tr>
+  <tr><td><span class="ui">Desde el cursor</span> (<kbd>Espacio</kbd>)</td><td>Desde el cursor hasta el fin. <kbd>Espacio</kbd> otra vez detiene.</td></tr>
+  <tr><td><span class="ui">Intro</span> (verde)</td><td>Del inicio hasta 3 s después de la intro.</td></tr>
+  <tr><td><span class="ui">Outro</span> (celeste)</td><td>De 3 s antes de la outro hasta el fin.</td></tr>
+  <tr><td><span class="ui">Parar</span></td><td>Detiene la preescucha.</td></tr>
+</table>
+<p><strong>Salida y volumen.</strong> El combo <span class="ui">Salida</span> elige por dónde suena la preescucha:</p>
+<ul>
+  <li><em>Misma salida de la musica</em>: solo se puede preescuchar con la música detenida o en pausa.</li>
+  <li><strong>Otra salida</strong> (por ejemplo, unos auriculares): se puede preescuchar con la música al aire, y el efecto de prueba también sale por allí. No puede ser la misma salida de la música; si la placa se desconecta, la preescucha vuelve sola a la salida de la música y avisa.</li>
+</ul>
+<p>El botón de la lupa vuelve a buscar las salidas. <span class="ui">Volumen</span> es el volumen propio de la preescucha (tema y efecto de prueba). La salida y el volumen se recuerdan.</p>
+<h3>Guardar</h3>
+<p><span class="ui">Guardar</span> aplica los cambios y los recuerda para ese archivo; <span class="ui">Cancelar</span> los descarta.</p>
+
+<h2>16. Clasificar el catálogo por tipo</h2>
+<ul>
+  <li>Para clasificar un archivo, ábralo en el editor y elija el <span class="ui">Tipo</span> en la solapa <span class="ui">Datos</span>. Los avisos también se clasifican de a varios desde el selector de avisos (sección 17), y por MCP con <code>definir_datos</code>.</li>
+  <li>Si un tema que pasa a otro tipo tenía <strong>efecto fijado</strong> o <strong>ventana de overlay</strong>, el programa avisa que se van a quitar (junto con la intro y la outro) y pide confirmación. Con <span class="ui">Cancelar</span> se vuelve al tipo anterior.</li>
+  <li><strong>Efectos:</strong> asígnelos a la botonera y márquelos con tipo Efecto desde <span class="ui">Editar...</span> del botón. Ahí también puede recortar su tramo con Inicio y Fin. Un archivo Efecto no entra en la lista: <span class="ui">Agregar</span> lo deja afuera con un aviso, <span class="ui">Insertar en la playlist</span> queda deshabilitado y un tema que ya está en la lista no puede pasar a Efecto (primero hay que quitarlo).</li>
+  <li><strong>Secos:</strong> pueden ir en la botonera, para pisar como un efecto, y también en la lista como separadores (con <span class="ui">Insertar en la playlist</span> o <span class="ui">Agregar</span>).</li>
+  <li><strong>Podcast:</strong> un programa pregrabado. Para que salga a una hora fija, prográmelo como una tanda de un solo aviso (sección 17); también se puede insertar a mano en la lista.</li>
+  <li><strong>Comercial, Anuncio y Publicidad</strong> se insertan en la lista y forman tandas; desde la botonera, <span class="ui">Insertar en la playlist</span> los agrega aunque ya estén (pueden salir en varias tandas).</li>
+</ul>
+
+<h2>17. Tandas programadas y registro de comerciales</h2>
+<h3>Tandas programadas</h3>
+<p>Una <strong>tanda programada</strong> es un grupo de avisos que sale solo a horario, por ejemplo «a las 10:30 y cada 30 minutos hasta las 20:00, de lunes a viernes». Se programa en la ventana <span class="ui">Archivo › Pauta de tandas...</span> (<kbd>Ctrl</kbd>+<kbd>T</kbd>) o por MCP con <code>programar_tanda</code>. Una tanda puede llevar Comercial, Publicidad, Anuncio, Podcast o Seco: para que un <strong>podcast</strong> salga, por ejemplo, todos los sábados a las 21:00, arme una tanda con ese único aviso y elija <em>Bajar lo que suena a la hora exacta</em> si tiene que empezar en punto.</p>
+<figure>
+  <img src="imagenes/pauta.png" alt="Pauta de tandas">
+  <figcaption>La pauta: arriba las tandas con su próxima salida; abajo, el formulario de la elegida y sus avisos (en rojo, uno sin tipo válido).</figcaption>
+</figure>
+<ul>
+  <li><strong>La tabla</strong> muestra cada tanda con sus horarios, cómo entra, sus avisos (en rojo si alguno falta o no tiene un tipo válido) y la próxima salida con su cuenta regresiva. La casilla <span class="ui">Activa</span> la suspende o la reanuda sin borrarla; al reanudarla, lo que ya pasó no se cuenta como perdido.</li>
+  <li><strong>El formulario:</strong> nombre, primer horario, <span class="ui">Repetir cada</span> (0 = una vez por día), <span class="ui">Hasta</span> (último horario del día), días, tolerancia antes y después, qué hacer <span class="ui">Sin corte a tiempo</span>, <span class="ui">Duracion maxima</span> (lo que puede durar con los avisos de las órdenes; 0 = sin límite), prioridad y si está activa. <span class="ui">Programar tanda</span> o <span class="ui">Guardar cambios</span> lo aplica; <span class="ui">Descartar cambios</span> vuelve a lo guardado. Al renombrarla conserva su última salida.</li>
+  <li><strong>Los avisos</strong> salen en el orden de la lista: <span class="ui">Agregar del catalogo...</span> abre el selector de avisos (ver más abajo) y las flechas los ordenan. Si un aviso no tiene tipo, elíjalo y use <span class="ui">Asignar tipo</span> (Comercial, Publicidad o Anuncio; se guarda en el catálogo, no en el archivo).</li>
+  <li><span class="ui">Encolar ahora</span> pone la tanda en el próximo corte, fuera de su horario, sin cambiar su programación (por ejemplo, para reponer una salida perdida).</li>
+  <li><strong>Bajo el reloj</strong> de la ventana principal se ve la próxima tanda y cuánto falta («Proxima tanda: «Tanda A» 10:30 (en 4:12)»); un clic abre la pauta.</li>
+</ul>
+<ul>
+  <li><strong>Sin cortar temas:</strong> la tanda entra en el corte natural entre dos temas más cercano a su hora, dentro de la tolerancia (por defecto, hasta 3 minutos antes o 2 después). Si el tema termina temprano y el siguiente se pasaría mucho, entra antes; si el que suena termina después de la ventana, sale tarde, al final de ese tema.</li>
+  <li><strong>Como bloque fijo:</strong> unos minutos antes, sus avisos se encolan después del tema que suena, encerrados en un bloque fijo (Mezclar y BPM no los desarman). Si el tema que suena está dentro de otro bloque fijo, la tanda va después de ese bloque; si ya viene otra tanda, va detrás.</li>
+  <li><strong>Solo tipos de tanda:</strong> los avisos deben ser de tipo Comercial, Publicidad, Anuncio o Seco. Así no se mezclan con la música ni entre sí: el tema anterior suena hasta su final y cada aviso sale entero.</li>
+  <li><strong>Horarios fijos:</strong> cada horario sale de la regla, no de sumar el intervalo a la última salida, así una tanda atrasada no corre las siguientes. Las salidas atendidas se anotan, y no se repiten aunque el programa se reinicie.</li>
+  <li><strong>Hora exacta:</strong> si la tanda está marcada <span class="ui">Bajar lo que suena a la hora exacta</span> y no hay un corte natural dentro de su tolerancia, se encola poco antes y, a la hora pautada menos los segundos del fader, el tema que suena baja con un fundido para que el primer aviso salga en punto. No se corta un aviso ni un bloque fijo: en ese caso entra al final, como con tolerancia. Sirve para la hora en punto o un enlace con la red.</li>
+  <li><strong>Prioridad:</strong> de 1 a 9. Si dos tandas tienen la misma hora, sale primero la de mayor prioridad y la otra va pegada detrás.</li>
+  <li><strong>Salidas perdidas:</strong> si en la ventana de una tanda no suena nada (reproductor detenido o en pausa, o el programa cerrado), esa salida se da por perdida, se avisa en la barra de estado y queda en la bitácora.</li>
+</ul>
+<p>Por MCP, <code>listar_tandas</code> muestra cada tanda con su próxima salida, <code>encolar_tanda</code> la encola ya y <code>quitar_tanda</code> la saca de la programación.</p>
+<h3>Selector de avisos del catálogo</h3>
+<p>Los avisos de las tandas y de las órdenes se eligen del <strong>catálogo de la emisora</strong> (todo lo que alguna vez entró a la lista), no del explorador de archivos. <span class="ui">Agregar del catalogo...</span>, en la pauta o en las órdenes, abre el selector para la tanda u orden que se está editando.</p>
+<figure>
+  <img src="imagenes/avisos.png" alt="Selector de avisos del catálogo">
+  <figcaption>El selector con dos avisos elegidos; arriba, en naranja, la advertencia de los elementos del catálogo que no tienen tipo.</figcaption>
+</figure>
+<ul>
+  <li><strong>Búsqueda y filtro:</strong> se busca por título, anunciante (el artista de la ficha), tipo, género, álbum o archivo. El filtro muestra los <em>Avisos</em> (tipos de tanda: Comercial, Publicidad, Anuncio o Seco), los elementos <em>Sin tipo</em> o <em>Todo el catalogo</em> (menos los efectos, que solo van en la botonera).</li>
+  <li><strong>Validación:</strong> solo se agregan los que tienen archivo y un tipo de tanda. Los demás quedan en la columna <span class="ui">Estado</span> en rojo con su motivo («sin tipo: asignele uno», «Tema: no va en tandas», «sin archivo»), y si se eligen no se agregan: el aviso de abajo dice cuáles y por qué. Los que ya están en la tanda u orden se marcan «ya esta» y no se repiten.</li>
+  <li><strong>Advertencia de tipos faltantes:</strong> el resumen cuenta los avisos del catálogo y, en naranja, los elementos <strong>sin tipo</strong>. Con el filtro <em>Sin tipo</em> se revisan todos y, eligiendo varios, <span class="ui">Asignar tipo</span> les pone Comercial, Publicidad, Anuncio o Seco de una vez. El tipo queda en el catálogo y vale para la lista, las tandas y las órdenes; el género no cambia.</li>
+  <li><strong>Desde un archivo...</strong> es para un aviso nuevo que todavía no está en el catálogo. Entra aunque no tenga tipo, pero se advierte, y la tanda u orden no se guarda hasta asignárselo; al hacerlo, queda en el catálogo.</li>
+</ul>
+<h3>Órdenes de publicidad</h3>
+<p>Una <strong>orden de publicidad</strong> es lo que contrata un anunciante: por ejemplo, «el anunciante A, del 1 al 30 de noviembre, cada 2 horas de 08:00 a 20:00» o «el anunciante B, 3 veces por día». Se cargan en <span class="ui">Archivo › Ordenes de publicidad...</span> (<kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>T</kbd>) o por MCP con <code>programar_orden</code>. Sus avisos no se ponen a mano: se reparten solos en las tandas programadas.</p>
+<figure>
+  <img src="imagenes/ordenes.png" alt="Órdenes de publicidad">
+  <figcaption>Las órdenes con cuántas salidas se ubicaron hoy; abajo, la pauta de hoy con una salida sin ubicar por competencia.</figcaption>
+</figure>
+<ul>
+  <li><strong>Frecuencia:</strong> <em>cada tantos minutos</em> desde el inicio de la franja (cada 120 = cada 2 horas: 08:00, 10:00… 20:00); <em>veces por día</em>, una en cada parte igual de la franja (3 por día de 08 a 20: una a la mañana, una a la tarde y una a la noche, en la tanda menos cargada de cada parte); o <em>a horas fijas</em> (menciones), en la tanda más cercana hasta 15 minutos antes o después.</li>
+  <li><strong>Vigencia, días y franja:</strong> la orden solo pide salidas entre sus fechas, en sus días y dentro de su franja horaria. <span class="ui">Solo en tandas</span> la limita a ciertas tandas (vacío: cualquiera).</li>
+  <li><strong>Avisos en rotación:</strong> cada salida lleva el aviso que le toca, y la rotación sigue de un día al otro. Se agregan con <span class="ui">Agregar del catalogo...</span>, igual que en las tandas, y deben ser de tipo Comercial, Publicidad, Anuncio o Seco.</li>
+  <li><strong>El reparto (pauta del día)</strong> ubica primero las salidas más difíciles, las que tienen menos tandas posibles, y a igual dificultad las de mayor prioridad. Respeta la <strong>duración máxima</strong> de cada tanda, no pone dos avisos del mismo <strong>rubro</strong> en la misma tanda (separación de competencia) ni dos de la misma orden. Al encolarse la tanda, sus avisos fijos van primero y después los de las órdenes.</li>
+  <li><strong>Sin ubicar:</strong> lo que no entra queda en rojo en <span class="ui">Pauta de hoy</span> con su motivo («no hay tandas entre…», «las tandas posibles están llenas», «otro aviso de su rubro…»), para resolverlo <strong>antes</strong> de salir al aire: agregar una tanda, ampliar su duración o la franja de la orden. La columna <span class="ui">Hoy</span> muestra cuántas salidas se ubicaron de las que pide la orden.</li>
+  <li><strong>Reposición:</strong> si una tanda se pierde (nada sonaba en su horario) o un aviso de una orden sale cortado, ese aviso se repone solo en la próxima tanda posible del mismo día, dentro de la franja de la orden. Las reposiciones pendientes sobreviven a un reinicio.</li>
+  <li><strong>Certificado de emisión:</strong> <span class="ui">Certificado del mes</span> arma, para el anunciante de la orden elegida, un CSV en la carpeta <code>certificados</code> con las salidas contratadas, las emitidas completas, las cortadas y el cumplimiento de cada orden, más el detalle de cada salida (hora, aviso, orden y tanda), y lo abre. Por MCP, <code>certificado_de_emision</code> acepta cualquier rango de fechas dentro de los tres meses que se conservan.</li>
+</ul>
+<h3>Anunciantes</h3>
+<p>La ficha de cada anunciante guarda los datos para facturarle y ubicarlo: <strong>nombre comercial</strong> (el que usan sus órdenes), <strong>razón social</strong>, <strong>CUIT</strong>, rubro, persona de contacto, teléfono, correo, dirección, agencia que lo representa y notas. Se carga en <span class="ui">Archivo › Anunciantes...</span>, con <span class="ui">Ficha...</span> desde la orden o por MCP con <code>registrar_anunciante</code>.</p>
+<figure>
+  <img src="imagenes/anunciantes.png" alt="Anunciantes">
+  <figcaption>Los anunciantes con sus órdenes; abajo, la ficha del elegido. En rojo, uno nombrado en órdenes que todavía no tiene ficha.</figcaption>
+</figure>
+<ul>
+  <li><strong>Validación:</strong> el CUIT debe tener 11 dígitos y un dígito verificador correcto; se acepta con o sin guiones y se guarda como 30-71234567-1. El correo y el teléfono se revisan. El nombre comercial no distingue mayúsculas ni acentos: «Almacén Luna» y «almacen luna» son el mismo anunciante.</li>
+  <li><strong>Lo que falta:</strong> la columna <span class="ui">Estado</span> advierte en naranja si falta la razón social, el CUIT o un teléfono o correo. En rojo aparecen los anunciantes nombrados en órdenes <strong>sin ficha</strong>: al elegirlos, el formulario se completa con su nombre y el rubro de sus órdenes.</li>
+  <li><strong>Con las órdenes:</strong> debajo del anunciante de una orden se ve su razón social y su CUIT, o la advertencia de que no tiene ficha. Una orden de un anunciante con ficha toma su nombre tal como está escrito en la ficha y, si no indica rubro, el de la ficha. <span class="ui">Nueva orden para el anunciante</span> abre las órdenes con ese anunciante y su rubro.</li>
+  <li><strong>Renombrar, desactivar y quitar:</strong> al cambiarle el nombre, sus órdenes pasan al nombre nuevo. Un anunciante <em>inactivo</em> conserva su ficha y sus órdenes, pero no admite órdenes nuevas. Solo se puede quitar la ficha de un anunciante sin órdenes.</li>
+  <li><strong>Certificado:</strong> el certificado de emisión lleva en su encabezado la razón social, el CUIT y el contacto del anunciante.</li>
+</ul>
+<h3>Registro de comerciales</h3>
+<p>Cada salida al aire de la propaganda facturable, los elementos de tipo <strong>Comercial</strong> o <strong>Publicidad</strong>, se anota en la carpeta <code>comerciales</code> de los datos, en un archivo por mes (<code>2026-11.csv</code>), con separador punto y coma, para abrirlo en una planilla:</p>
+<table>
+  <tr><th>Inicio</th><th>Fin</th><th>Segundos emitidos</th><th>Duración</th><th>Completo</th><th>Título</th><th>Artista</th><th>Género</th><th>Archivo</th><th>Tanda</th><th>Orden</th><th>Tipo</th></tr>
+  <tr><td>2026-11-02 14:05:33</td><td>2026-11-02 14:06:03</td><td>30,0</td><td>30,2</td><td>Si</td><td>…</td><td>…</td><td>Pop</td><td>…</td><td>Tanda A 14:00</td><td>Sol - Noviembre</td><td>Comercial</td></tr>
+</table>
+<p><em>Completo</em> («Si» o «No») indica si salió entero o si se cortó (por Siguiente o Detener). Los segundos usan coma decimal. <em>Tanda</em> es la tanda programada que lo emitió y su hora pautada; queda vacía si el aviso se puso a mano. <em>Orden</em> es la orden de publicidad del aviso, si es de una. <em>Tipo</em> (Comercial o Publicidad) va al final para que las planillas de meses anteriores, que no la tienen, se sigan leyendo igual; <em>Género</em> es el estilo libre de la ficha. Los Anuncios (mensajes propios de la emisora), los Secos y los Efectos no se anotan.</p>
+<ul>
+  <li><strong>Rotación:</strong> se conservan el mes actual y los dos anteriores, así el mes pasado siempre está completo para facturarlo. Al empezar un mes nuevo se borra el archivo del mes que queda afuera; guarde una copia antes si necesita conservarlo más tiempo.</li>
+  <li><strong>Consulta:</strong> por MCP, <code>registro_de_comerciales</code> resume las salidas entre dos fechas (completas, cortadas y tiempo al aire) y las detalla con su tanda; se puede filtrar por anunciante, título o tanda.</li>
+  <li><strong>Versiones anteriores:</strong> el registro único <code>comerciales.csv</code> se reparte una vez en los archivos de cada mes (con las fechas pasadas a ISO 8601) y el original queda como <code>comerciales.csv.migrado</code>.</li>
+</ul>
+<h3>Formato de fecha y hora</h3>
+<p>Inicio y fin se anotan en la hora local del equipo con el formato estándar <strong>ISO 8601</strong>: <code>AAAA-MM-DD hh:mm:ss</code>, es decir año, mes y día, y la hora de 0 a 23. Por ejemplo, <code>2026-11-02 14:05:33</code> es el <strong>2 de noviembre de 2026</strong> a las 14:05:33.</p>
+<p>Con este orden la fecha no es ambigua: una fecha como 02/11/2026 puede leerse como 2 de noviembre o como 11 de febrero según el país. Además, las planillas la reconocen como fecha y ordenar por esa columna deja las salidas en orden cronológico.</p>
+
+<h2>18. Atajos de teclado</h2>
+<div class="dos">
+<div>
+<h4>Ventana principal</h4>
+<table>
+  <tr><td><kbd>0</kbd>–<kbd>9</kbd></td><td>Disparar el efecto del botón</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd></td><td>Buscar en la lista</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>F</kbd></td><td>Buscar en el catálogo</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>T</kbd></td><td>Pauta de tandas</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>T</kbd></td><td>Órdenes de publicidad</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Cargar lista</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Guardar lista</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>S</kbd></td><td>Guardar lista como</td></tr>
+  <tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd></td><td>Saltar entre resultados (en el buscador)</td></tr>
+  <tr><td><kbd>Esc</kbd></td><td>Limpiar la búsqueda</td></tr>
+</table>
+</div>
+<div>
+<h4>Editor de pistas</h4>
+<table>
+  <tr><td><kbd>Espacio</kbd></td><td>Preescuchar desde el cursor / detener</td></tr>
+  <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>Inicio / Fin al cursor</td></tr>
+  <tr><td><kbd>I</kbd> <kbd>O</kbd></td><td>Intro / Outro al cursor</td></tr>
+  <tr><td><kbd>V</kbd> <kbd>B</kbd></td><td>Desde / Hasta de la ventana al cursor</td></tr>
+  <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Mover el cursor 0,1 s (con <kbd>Mayús</kbd>, 1 s)</td></tr>
+  <tr><td><kbd>+</kbd> <kbd>−</kbd></td><td>Acercar / alejar</td></tr>
+</table>
+</div>
+</div>
+
+<h2>19. Mantenimiento del catálogo</h2>
+<p>El catálogo reconoce cada archivo por su ruta. Si se mueve una carpeta de música a otro disco o a otra carpeta, las fichas siguen apuntando a la ruta anterior y el programa ve esos archivos como nuevos, sin sus datos. <span class="ui">Archivo › Mantenimiento del catalogo...</span> resuelve esto sin perder nada.</p>
+<figure>
+  <img src="imagenes/mantenimiento.png" alt="Ventana de mantenimiento del catálogo">
+  <figcaption>Fichas cuyo archivo ya no existe, con la nueva ubicación encontrada.</figcaption>
+</figure>
+<ol>
+  <li>La ventana lista las fichas cuyo archivo ya no existe, con su tema y su ubicación anterior.</li>
+  <li><span class="ui">Buscar en carpeta...</span> pide la carpeta donde quedaron los archivos y la recorre con sus subcarpetas. Cada archivo se busca por su nombre, sin distinguir mayúsculas; si hay varios con el mismo nombre, se elige el que dura lo mismo que la ficha. La columna <em>Nueva ubicación</em> muestra lo encontrado en verde.</li>
+  <li><span class="ui">Reubicar encontradas</span> pasa cada ficha elegida a su nueva ruta <strong>sin perder sus datos</strong> (puntos de mezcla, overlay, tipo, género, ranking, BPM, última reproducción) y actualiza también la lista en curso, los botones de la botonera y los efectos fijados que apuntaban a esos archivos.</li>
+  <li>El programa recuerda cada reubicación: una lista guardada antes del cambio se abre con las rutas nuevas (queda marcada con <code>*</code> para guardarla al día).</li>
+</ol>
+<ul>
+  <li><span class="ui">Quitar elegidas del catalogo</span> borra las fichas de archivos que ya no se van a usar. Pide confirmación y no toca ningún archivo de audio.</li>
+  <li><span class="ui">Limpiar cache de ondas</span> borra las formas de onda guardadas de archivos que ya no existen, se movieron o cambiaron, y muestra el espacio liberado.</li>
+  <li>Las casillas de la izquierda eligen a qué fichas se aplican las acciones; la del encabezado marca o desmarca todas.</li>
+</ul>
+<div class="nota">La búsqueda reconoce archivos <strong>movidos</strong>, no <strong>renombrados</strong>: un archivo con otro nombre no se encuentra. Si dos o más archivos tienen el mismo nombre y la misma duración, no se reubica ninguno, para no asociar la ficha con el tema equivocado.</div>
+
+<h3>Actualizar los datos: etiquetas y MusicBrainz</h3>
+<p>El catálogo copia las etiquetas de cada archivo (título, artista, álbum, año y género) la primera vez que lo ve; después manda lo que guardó, corregido o no. Para mejorar esos datos hay dos fuentes, y en las dos se revisa lo que cambiaría antes de aplicarlo. Solo cambia el catálogo de la emisora: <strong>los archivos no se tocan</strong>.</p>
+<ul>
+  <li><strong>Releer las etiquetas</strong>: después de corregirlas con otro programa, como <em>MusicBrainz Picard</em> o <em>Mp3tag</em>.</li>
+  <li><strong>Completar desde MusicBrainz</strong> (musicbrainz.org, la base libre de datos musicales que usa Picard): busca cada tema por título y artista y propone el álbum donde salió, el año de la primera edición, el género más votado y el título y el artista como figuran ahí. Necesita conexión a internet, no necesita clave y consulta un tema por segundo (en un catálogo grande lleva su tiempo; se puede detener y aplicar lo encontrado hasta ese momento).</li>
+</ul>
+<p>Se usan desde tres lugares:</p>
+<ul>
+  <li>En la lista, clic derecho en una fila › <span class="ui">Actualizar datos</span>: se aplica a esa fila o, si está seleccionada junto con otras, a toda la selección.</li>
+  <li>En <span class="ui">Buscar en el catálogo</span>, con los botones <span class="ui">Releer etiquetas</span> y <span class="ui">MusicBrainz</span>: a los temas elegidos o, si no hay elegidos, a todos los resultados de la búsqueda. Una búsqueda previa, como <code>genero:pop</code> o <code>anio:1990..1999</code>, acota a qué temas se aplica.</li>
+  <li>En el editor, solapa <span class="ui">Datos</span>, botón <span class="ui">MusicBrainz</span>: para el tema que se está editando; lo que se aplica aparece en los campos del editor.</li>
+</ul>
+<figure>
+  <img src="imagenes/actualizacion-musicbrainz.png" alt="Ventana Actualizar datos del catálogo con resultados de MusicBrainz">
+  <figcaption>Datos propuestos por MusicBrainz: los que faltaban vienen marcados; el género que el usuario corrigió a mano, no.</figcaption>
+</figure>
+<p>La ventana <span class="ui">Actualizar datos del catálogo</span> muestra un renglón por cada dato distinto: el tema, el dato, lo que dice el catálogo <em>ahora</em> y lo <em>propuesto</em>. Solo se aplican los marcados (clic en el renglón o en su casilla; la del encabezado marca o desmarca todos). Nunca se propone borrar un dato. Vienen marcados:</p>
+<ul>
+  <li>siempre, los que completan un dato <strong>vacío</strong>;</li>
+  <li>de las etiquetas, también los que reemplazan un dato que usted <strong>no corrigió</strong>;</li>
+  <li>de MusicBrainz, ningún reemplazo: los datos que ya tienen valor se ofrecen desmarcados, para que decida.</li>
+</ul>
+<p>El catálogo recuerda qué datos <strong>corrigió usted a mano</strong> (en el editor o por MCP) o eligió de MusicBrainz: esos aparecen con la nota <em>corregido a mano</em> y no se marcan solos. Las fichas creadas antes de esta versión no lo registraban; sus datos llevan la nota <em>ficha anterior: no registra correcciones</em> y tampoco se marcan solos. Lo que se aplica desde las etiquetas deja de contar como corregido.</p>
+<figure>
+  <img src="imagenes/actualizacion-etiquetas.png" alt="Ventana Actualizar datos del catálogo con las etiquetas releídas">
+  <figcaption>Etiquetas releídas: el artista corregido a mano y los datos de una ficha anterior quedan desmarcados.</figcaption>
+</figure>
+<div class="nota"><strong>Si usa Picard:</strong> desactive <em>Renombrar archivos</em> y <em>Mover archivos</em> en sus opciones (o elija que no cambie el nombre ni la carpeta). El catálogo reconoce cada archivo por su ruta y el mantenimiento los busca por nombre: un archivo renombrado pierde su ficha, con sus puntos de mezcla, ranking y última reproducción. Las etiquetas de los archivos <strong>WAV</strong> no se pueden leer (la librería de audio las descarta); conviene etiquetar MP3, FLAC u otros formatos.</div>
+<p>MusicBrainz elige la grabación original: la del mismo título, de duración parecida al archivo (descarta versiones en vivo o extendidas) y con la primera edición más antigua; de sus ediciones toma el álbum de estudio, no un compilado. Si ninguna grabación coincide con seguridad, el tema se cuenta como <em>sin una coincidencia segura</em> y no se propone nada. Conviene revisar lo propuesto: en temas con muchas versiones puede elegir una grabación distinta de la que tiene el archivo.</p>
+
+<h2>20. Solución de problemas</h2>
+<table>
+  <tr><th style="width:36%">Problema</th><th>Qué hacer</th></tr>
+  <tr><td>«No hay una salida de audio disponible» al abrir</td><td>Conecte o active una placa de sonido y vuelva a abrir el programa. En Linux, verifique que PulseAudio o PipeWire estén corriendo.</td></tr>
+  <tr><td>La preescucha dice que la salida no está conectada</td><td>Conecte la placa y pulse la lupa junto al combo <span class="ui">Salida</span>. Mientras tanto, la preescucha usa la salida de la música.</td></tr>
+  <tr><td>Un efecto trabado no suena</td><td>Espera la ventana de overlay del tema (el botón queda naranja). Si lo que suena no es un Tema (un comercial, un seco), espera al siguiente. Use <span class="ui">Modo libre</span> para que suene ya.</td></tr>
+  <tr><td>Un efecto no aparece en los combos del editor</td><td>Solo se ofrecen los de la botonera de tipo Efecto o Seco: márquelo desde <span class="ui">Editar...</span> del botón.</td></tr>
+  <tr><td>La barra de estado dice «Se salteo … porque el archivo no existe»</td><td>El archivo se movió, se renombró o se borró. La reproducción siguió con el próximo tema. Si lo movió, use <span class="ui">Archivo › Mantenimiento del catalogo...</span> para reubicarlo sin perder sus datos; si lo borró, <span class="ui">Validar</span> ofrece quitarlo de la lista.</td></tr>
+  <tr><td>No se puede agregar un archivo a la lista</td><td>Probablemente es de tipo Efecto: solo puede estar en la botonera.</td></tr>
+  <tr><td>El control por MCP no responde</td><td>El reproductor debe estar abierto. Verifique el puerto 8765 (o el de <code>RAPTOR_MCP_PUERTO</code>) y que ningún otro programa lo use.</td></tr>
+  <tr><td>El icono anclado en la barra de tareas no se actualiza</td><td>Desancle el programa y vuelva a anclarlo: Windows guarda los iconos en caché.</td></tr>
+  <tr><td><span class="ui">Ayuda › Manual</span> no abre este manual</td><td>Copie <code>Raptor_Manual_es.pdf</code> junto al ejecutable.</td></tr>
+</table>
+<p>Ante cualquier error, la bitácora en la carpeta <code>logs</code> de los datos registra qué pasó.</p>
+
+<h2>21. Decisiones de diseño</h2>
+<h3>Sin base de datos: formato abierto</h3>
+<p>MCP Raptor Player no usa una base de datos. El catálogo, la botonera, las listas y las preferencias se guardan en archivos <strong>JSON</strong>, y el registro de comerciales en <strong>CSV</strong> (ver la sección 8). Son formatos abiertos que se leen con cualquier editor de texto o planilla, se copian o respaldan con solo copiar la carpeta de datos y no dependen del programa para consultarlos.</p>
+<p>El volumen lo permite: con una tanda cada media hora, el registro suma unas pocas decenas de miles de líneas por mes, que se leen en milisegundos. Para que no crezca sin límite se guarda un archivo por mes y se conservan tres meses. Las tandas y el registro se acceden a través de un contrato propio (<code>AlmacenDeTandas</code> y <code>AlmacenDeEmisiones</code>), así que si más adelante hace falta una base de datos (varias emisoras, reportes de años o consultas desde otra máquina) alcanza con otra implementación, sin tocar la programación ni la reproducción.</p>
+<h3>Sin huellas (hash) de los archivos</h3>
+<p>Al catalogar, el programa no calcula una huella (<em>hash</em>) del contenido de cada archivo para reconocerlo. Una huella sirve solo si el archivo no cambia nunca: editar el audio o tan solo corregir sus etiquetas cambia la huella, y la ficha quedaría desvinculada de su archivo igual que si se lo hubiera movido. Por eso cada archivo se reconoce por su ruta, y los movimientos se resuelven con el mantenimiento del catálogo (sección 19).</p>
+<h3>Traducciones en un catálogo gettext</h3>
+<p>Los textos se escriben en español y sus traducciones están en <code>lang/en/LC_MESSAGES/mcp-raptor-player.po</code>, un catálogo gettext estándar que se puede editar con cualquier herramienta de traducción. Lo usan las dos partes del programa: la interfaz Slint (textos marcados con <code>@tr</code>) y el código Rust (la macro <code>tr!</code>). Al compilar, el catálogo se convierte en código, así que una traducción con un marcador equivocado no compila. <code>herramientas/traducciones.py</code> junta los textos nuevos y avisa los que faltan traducir, y una prueba automática verifica que no falte ninguno. Para sumar otro idioma alcanza con agregar su catálogo en <code>lang/</code> y ofrecerlo en el menú.</p>
+<h3>Los contenidos son inmutables</h3>
+<p>MCP Raptor Player parte de una premisa: <strong>los archivos de audio y su almacenamiento no se modifican</strong>. No es un editor de audio ni un editor de etiquetas (<em>tagger</em>):</p>
+<ul>
+  <li>Nunca escribe en los archivos de audio. El tipo, el título, el artista, el género, el ranking, los puntos de mezcla y todo lo que se corrige en el editor se guarda en su propio catálogo (<code>mezcla.json</code>), no en el archivo.</li>
+  <li>Las etiquetas del archivo se leen cuando entra a la lista y solo completan lo que su ficha todavía no tiene: lo que el usuario corrigió no se pisa.</li>
+</ul>
+<div class="nota">La filosofía que se le pide al usuario es la misma: mantener ordenado su almacenamiento y no modificar los archivos de audio. Si hace falta mover carpetas, el mantenimiento del catálogo las vuelve a vincular sin perder datos.</div>
+
+<!-- =============================================================== -->
+<h1>Anexo</h1>
+
+<h2>A. Complementos que mejoran el sonido</h2>
+<p>Un <strong>mejorador de sonido del sistema</strong> procesa todo el audio que sale por la placa: ecualizador, compresor, realce de graves, ampliación estéreo y limitador. MCP Raptor Player no lo necesita para funcionar, pero puede servir para darle carácter a la salida o compensar los parlantes del estudio.</p>
+<table>
+  <tr><th style="width:20%">Sistema</th><th>Complemento</th></tr>
+  <tr><td><strong>Windows</strong></td><td><strong>FxSound</strong> (gratuito y de código abierto). Se instala como un dispositivo de salida propio, por ejemplo <em>Altavoces (FxSound Audio Enhancer)</em>, que procesa el sonido y lo reenvía a la placa real. Si FxSound es la salida predeterminada de Windows, la música de Raptor sale procesada.</td></tr>
+  <tr><td><strong>Linux</strong></td><td><strong>EasyEffects</strong> (gratuito y de código abierto), para sistemas con PipeWire. Se instala desde la tienda de software de la distribución o con Flatpak. Raptor sale por PulseAudio, que en las distribuciones actuales lo atiende PipeWire, así que EasyEffects procesa su salida en la sección <em>Salida</em>.</td></tr>
+</table>
+<h3>Recomendaciones</h3>
+<ul>
+  <li><strong>Nivelación:</strong> <span class="ui">Nivelar volumen</span> iguala los temas entre sí antes de la salida; el mejorador actúa después, sobre todo lo que sale. Para que la nivelación se siga notando, use en el mejorador una compresión suave.</li>
+  <li><strong>Saturación:</strong> el realce de graves y el ecualizador suben el nivel. Active el limitador del mejorador o baje su ganancia de salida para que no recorte.</li>
+  <li><strong>Preescucha:</strong> si en el editor elige como salida de preescucha la placa real (por ejemplo, los auriculares) y no la del mejorador, escucha los temas tal como son, sin procesar.</li>
+  <li><strong>Efectos y anuncio HTH:</strong> pasan por el mismo camino que la música, así que el mejorador los procesa igual. No hace falta ajustar nada en Raptor.</li>
+  <li><strong>Procesador de aire:</strong> si la emisora ya usa un procesador de audio externo o en el transmisor, el mejorador del sistema suele sobrar: dos cadenas de compresión seguidas aplastan el sonido.</li>
+</ul>
+
+</body>
+</html>

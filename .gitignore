@@ -22,3 +22,21 @@ rustc-ice-*.txt
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# --- Raptor 3 ---
+# Grafo de conocimiento de graphify (se regenera con `graphify update .`).
+graphify-out/
+# Locuciones y bases del anuncio HTH: no se publican (se generan con
+# herramientas/generar_locuciones.py y una clave propia de ElevenLabs).
+herramientas/locuciones/
+*.wav
+# Claves y configuracion local: nunca al repositorio.
+.env
+.env.*
+*.key
+# Editores y sistema.
+.vscode/
+.idea/
+.claude/settings.local.json
+Thumbs.db
+.DS_Store

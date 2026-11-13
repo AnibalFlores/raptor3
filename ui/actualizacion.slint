@@ -1,0 +1,205 @@
+import { Button, CheckBox, ListView, Palette } from "std-widgets.slint";
+import { CeldaConIcono, EncabezadoConIcono } from "iconografia.slint";
+
+// Un dato que cambiaria en un tema del catalogo.
+export struct CambioPropuesto {
+    elegido: bool,
+    // Titulo y artista actuales (o el nombre del archivo).
+    tema: string,
+    // Ruta del archivo, para el tooltip.
+    ruta: string,
+    // Clave del dato: titulo, artista, album, anio o genero.
+    campo: string,
+    // Valor actual (vacio: no tiene) y el que propone la fuente.
+    actual: string,
+    nuevo: string,
+    // "corregido a mano", "ficha anterior: no registra correcciones" o vacio.
+    nota: string,
+}
+
+// Revision de los datos que propone una fuente externa (las etiquetas de
+// los archivos o MusicBrainz): se eligen los cambios y se aplican al
+// catalogo, sin tocar los archivos.
+export component ActualizacionDeDatos inherits Window {
+    title: @tr("Actualizar datos del catálogo - MCP Raptor Player");
+    icon: @image-url("iconos/ventana-raptor.svg");
+    preferred-width: 1120px;
+    preferred-height: 640px;
+    min-width: 860px;
+    min-height: 420px;
+    background: Palette.background;
+
+    // Que se esta haciendo y de donde vienen los datos.
+    in property <string> origen;
+    in property <string> resumen;
+    in property <bool> trabajando;
+    // Avance de 0 a 1 mientras se lee o se consulta.
+    in property <float> progreso;
+    in property <[CambioPropuesto]> cambios;
+    in property <int> elegidos;
+    in property <string> aviso;
+
+    // Marca o desmarca un cambio (indice) o todos (-1).
+    callback elegir(indice: int, elegido: bool);
+    callback aplicar();
+    callback detener();
+    callback cerrar();
+
+    property <length> ancho-del-dato: 120px;
+    property <length> ancho-de-la-nota: 220px;
+
+    pure function icono-de(campo: string) -> image {
+        if (campo == "titulo") { return @image-url("iconos/dato-titulo.svg"); }
+        if (campo == "artista") { return @image-url("iconos/dato-artista.svg"); }
+        if (campo == "album") { return @image-url("iconos/dato-album.svg"); }
+        if (campo == "anio") { return @image-url("iconos/dato-anio.svg"); }
+        return @image-url("iconos/dato-genero.svg");
+    }
+
+    pure function nombre-de(campo: string) -> string {
+        if (campo == "titulo") { return @tr("Título"); }
+        if (campo == "artista") { return @tr("Artista"); }
+        if (campo == "album") { return @tr("Álbum"); }
+        if (campo == "anio") { return @tr("Año"); }
+        return @tr("Género");
+    }
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 8px;
+
+        Text {
+            text: root.origen;
+            wrap: word-wrap;
+            font-size: 12px;
+            color: Palette.foreground.transparentize(25%);
+        }
+        HorizontalLayout {
+            spacing: 10px;
+            Text {
+                text: root.resumen;
+                font-weight: 700;
+                vertical-alignment: center;
+                wrap: word-wrap;
+                horizontal-stretch: 1;
+            }
+            // Barra de avance mientras se lee o se consulta.
+            if root.trabajando: Rectangle {
+                width: 220px;
+                height: 8px;
+                y: (parent.height - self.height) / 2;
+                border-radius: 4px;
+                background: Palette.alternate-background;
+                Rectangle {
+                    x: 0;
+                    width: parent.width * max(0, min(1, root.progreso));
+                    border-radius: 4px;
+                    background: Palette.accent-background;
+                }
+            }
+        }
+
+        // Encabezado de la tabla.
+        HorizontalLayout {
+            height: 26px;
+            spacing: 4px;
+            padding-left: 8px;
+            padding-right: 8px;
+            CheckBox {
+                checked: root.cambios.length > 0 && root.elegidos == root.cambios.length;
+                enabled: root.cambios.length > 0;
+                toggled => { root.elegir(-1, self.checked); }
+            }
+            EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Tema"); icono: @image-url("iconos/tipo-tema.svg"); }
+            EncabezadoConIcono { width: root.ancho-del-dato; texto: @tr("Dato"); icono: @image-url("iconos/datos.svg"); }
+            EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Ahora"); icono: @image-url("iconos/deshacer.svg"); ayuda: @tr("Lo que dice el catálogo ahora"); }
+            EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Propuesto"); icono: @image-url("iconos/validar.svg"); ayuda: @tr("Lo que trae la fuente; se aplica si está marcado"); }
+            EncabezadoConIcono { width: root.ancho-de-la-nota; texto: @tr("Nota"); icono: @image-url("iconos/nota.svg"); ayuda: @tr("Los datos que usted corrigió a mano no se marcan solos: revíselos antes de aplicar"); }
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+            border-width: 1px;
+            border-color: Palette.border;
+            border-radius: 4px;
+            ListView {
+                for cambio[indice] in root.cambios: fila := Rectangle {
+                    height: 30px;
+                    background: Math.mod(indice, 2) == 1 ? Palette.alternate-background : transparent;
+                    property <color> tono: cambio.elegido ? Palette.foreground : Palette.foreground.transparentize(35%);
+                    TouchArea {
+                        clicked => { root.elegir(indice, !cambio.elegido); }
+                        Tooltip { text: @markdown("\{cambio.ruta}"); }
+                    }
+                    HorizontalLayout {
+                        spacing: 4px;
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        CheckBox {
+                            checked: cambio.elegido;
+                            toggled => { root.elegir(indice, self.checked); }
+                        }
+                        CeldaConIcono { horizontal-stretch: 1; texto: cambio.tema; tono: fila.tono; }
+                        CeldaConIcono {
+                            width: root.ancho-del-dato;
+                            texto: root.nombre-de(cambio.campo);
+                            icono: root.icono-de(cambio.campo);
+                            tono: fila.tono;
+                        }
+                        CeldaConIcono {
+                            horizontal-stretch: 1;
+                            texto: cambio.actual == "" ? @tr("(vacío)") : cambio.actual;
+                            tono: Palette.foreground.transparentize(cambio.actual == "" ? 55% : 30%);
+                        }
+                        CeldaConIcono {
+                            horizontal-stretch: 1;
+                            texto: cambio.nuevo;
+                            tono: cambio.elegido ? #69db7c : Palette.foreground.transparentize(35%);
+                            peso: 600;
+                        }
+                        CeldaConIcono { width: root.ancho-de-la-nota; texto: cambio.nota; tono: #ffc078; }
+                    }
+                }
+            }
+            if root.cambios.length == 0: Text {
+                text: root.trabajando ? @tr("Buscando datos...") : @tr("No hay datos distintos para proponer.");
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                color: Palette.foreground.transparentize(35%);
+            }
+        }
+
+        Text {
+            text: root.aviso != "" ? root.aviso : @tr("Clic en una fila para marcarla o desmarcarla. Solo se cambia el catálogo de la emisora: los archivos no se tocan.");
+            wrap: word-wrap;
+            font-size: 12px;
+            color: Palette.foreground.transparentize(20%);
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+            Button {
+                icon: @image-url("iconos/validar.svg");
+                colorize-icon: true;
+                text: @tr("Aplicar los marcados ({})", root.elegidos);
+                primary: true;
+                enabled: root.elegidos > 0;
+                clicked => { root.aplicar(); }
+            }
+            Button {
+                icon: @image-url("iconos/detener.svg");
+                colorize-icon: true;
+                text: @tr("Detener");
+                enabled: root.trabajando;
+                clicked => { root.detener(); }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            Button {
+                icon: @image-url("iconos/cancelar.svg");
+                colorize-icon: true;
+                text: @tr("Cerrar");
+                clicked => { root.cerrar(); }
+            }
+        }
+    }
+}

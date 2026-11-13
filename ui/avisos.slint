@@ -1,0 +1,244 @@
+import { Button, ComboBox, LineEdit, ListView, Palette } from "std-widgets.slint";
+import { CeldaDelCatalogo } from "buscador.slint";
+import { EncabezadoConIcono, Iconografia } from "iconografia.slint";
+
+// Tema del catalogo que se ofrece como aviso de una tanda o de una orden.
+export struct AvisoDelCatalogo {
+    titulo: string,
+    // El anunciante (el artista de la ficha).
+    artista: string,
+    // Comercial, Publicidad... o "sin tipo".
+    tipo: string,
+    genero: string,
+    duracion: string,
+    // Ruta del archivo, para el tooltip.
+    ruta: string,
+    // "ya esta", "sin tipo", "sin archivo", "Tema: no va en tandas"...
+    estado: string,
+    // No se puede agregar asi: falta el archivo o el tipo no sirve.
+    con-problema: bool,
+    // Ya esta en la tanda o en la orden que se edita.
+    ya-agregado: bool,
+    seleccionado: bool,
+}
+
+// Selector de avisos: busca en el catalogo de la emisora los avisos
+// (Comercial, Publicidad, Anuncio, Podcast o Seco) para agregarlos a la tanda o a la
+// orden que se edita, y deja asignar el tipo a los que no lo tienen.
+export component SelectorDeAvisos inherits Window {
+    title: @tr("Avisos del catalogo - MCP Raptor Player");
+    icon: @image-url("iconos/ventana-raptor.svg");
+    preferred-width: 980px;
+    preferred-height: 620px;
+    min-width: 780px;
+    min-height: 420px;
+    background: Palette.background;
+
+    // "la tanda «Tanda A»", "la orden «Sol - Noviembre»".
+    in property <string> destino;
+    in property <[AvisoDelCatalogo]> avisos;
+    in property <string> resumen;
+    // Hay elementos del catalogo sin tipo: el resumen se muestra como advertencia.
+    in property <bool> faltan-tipos;
+    in property <string> aviso;
+    in property <bool> aviso-es-error;
+    in property <int> seleccionados;
+    in-out property <string> texto;
+    // 0: avisos (tipos de tanda), 1: sin tipo, 2: todo el catalogo.
+    in-out property <int> filtro;
+    in-out property <int> tipo-a-asignar;
+
+    callback buscar(texto: string);
+    callback cambiar-filtro(filtro: int);
+    callback clic(indice: int, control: bool, mayusculas: bool);
+    // Agrega ese aviso (doble clic) o, con -1, los seleccionados.
+    callback agregar(indice: int);
+    callback asignar-tipo();
+    callback desde-archivo();
+    callback cerrar();
+
+    // Entra "Publicidad" con su icono.
+    property <length> ancho-del-tipo: 112px;
+    property <length> ancho-del-genero: 120px;
+    property <length> ancho-de-la-duracion: 90px;
+    property <length> ancho-del-estado: 210px;
+
+    pure function tono-de(aviso: AvisoDelCatalogo) -> color {
+        if aviso.seleccionado {
+            return Palette.selection-foreground;
+        }
+        return aviso.ya-agregado ? Palette.foreground.transparentize(45%) : Palette.foreground;
+    }
+
+    public function enfocar() {
+        campo.focus();
+        campo.select-all();
+    }
+
+    forward-focus: campo;
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 8px;
+
+        Text {
+            text: @tr("Agregar avisos a {}", root.destino);
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+            campo := LineEdit {
+                horizontal-stretch: 1;
+                placeholder-text: @tr("Titulo, anunciante, tipo, genero, album o archivo");
+                text <=> root.texto;
+                edited(texto) => { root.buscar(texto); }
+                accepted => { root.agregar(-1); }
+                key-pressed(evento) => {
+                    if evento.text == Key.Escape {
+                        if self.text != "" {
+                            self.text = "";
+                            root.buscar("");
+                        } else {
+                            root.cerrar();
+                        }
+                        return accept;
+                    }
+                    return reject;
+                }
+            }
+            ComboBox {
+                width: 230px;
+                model: [@tr("Avisos (tipos de tanda)"), @tr("Sin tipo"), @tr("Todo el catalogo")];
+                current-index <=> root.filtro;
+                selected => { root.cambiar-filtro(self.current-index); }
+            }
+        }
+        Text {
+            text: root.resumen;
+            wrap: word-wrap;
+            font-size: 12px;
+            color: root.faltan-tipos ? #ffc078 : Palette.foreground.transparentize(25%);
+        }
+
+        // Encabezado de la tabla.
+        HorizontalLayout {
+            height: 24px;
+            padding-left: 1px;
+            padding-right: 1px;
+            EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Título"); icono: @image-url("iconos/dato-titulo.svg"); }
+            EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Anunciante (artista)"); icono: @image-url("iconos/dato-anunciante.svg"); }
+            EncabezadoConIcono { width: root.ancho-del-tipo; texto: @tr("Tipo"); icono: @image-url("iconos/dato-tipo.svg"); }
+            EncabezadoConIcono { width: root.ancho-del-genero; texto: @tr("Género"); icono: @image-url("iconos/dato-genero.svg"); }
+            EncabezadoConIcono { width: root.ancho-de-la-duracion; texto: @tr("Duración"); icono: @image-url("iconos/dato-duracion.svg"); alineacion: right; }
+            EncabezadoConIcono { width: root.ancho-del-estado; texto: @tr("Estado"); icono: @image-url("iconos/dato-estado.svg"); }
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+            border-width: 1px;
+            border-color: Palette.border;
+            border-radius: 4px;
+            ListView {
+                for aviso[indice] in root.avisos: Rectangle {
+                    height: 28px;
+                    background: aviso.seleccionado ? Palette.selection-background
+                        : Math.mod(indice, 2) == 1 ? Palette.alternate-background : transparent;
+                    TouchArea {
+                        pointer-event(evento) => {
+                            if evento.kind == PointerEventKind.down && evento.button == PointerEventButton.left {
+                                root.clic(indice, evento.modifiers.control, evento.modifiers.shift);
+                            }
+                        }
+                        double-clicked => { root.agregar(indice); }
+                        HorizontalLayout {
+                            CeldaDelCatalogo { horizontal-stretch: 1; texto: aviso.titulo; tono: root.tono-de(aviso); }
+                            CeldaDelCatalogo { horizontal-stretch: 1; texto: aviso.artista; tono: root.tono-de(aviso); }
+                            CeldaDelCatalogo {
+                                width: root.ancho-del-tipo;
+                                texto: Iconografia.nombre-de-tipo(aviso.tipo);
+                                tono: root.tono-de(aviso);
+                                icono: Iconografia.icono-de-tipo(aviso.tipo);
+                                tono-del-icono: Iconografia.color-de-tipo(aviso.tipo, root.tono-de(aviso));
+                            }
+                            CeldaDelCatalogo { width: root.ancho-del-genero; texto: aviso.genero; tono: root.tono-de(aviso); }
+                            CeldaDelCatalogo { width: root.ancho-de-la-duracion; texto: aviso.duracion; tono: root.tono-de(aviso); alineacion: right; }
+                            CeldaDelCatalogo {
+                                width: root.ancho-del-estado;
+                                texto: aviso.estado;
+                                tono: aviso.seleccionado ? Palette.selection-foreground
+                                    : aviso.con-problema ? #ff8787 : #69db7c;
+                            }
+                        }
+                        Tooltip { text: @markdown("\{aviso.ruta}"); }
+                    }
+                }
+            }
+            if root.avisos.length == 0: Text {
+                text: root.filtro == 1 ? @tr("Todo el catalogo tiene tipo.")
+                    : root.texto == "" ? @tr("No hay avisos en el catalogo: agregue uno desde un archivo o asigne el tipo a los que ya estan (filtro Sin tipo o Todo el catalogo).")
+                    : @tr("Sin resultados.");
+                wrap: word-wrap;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                color: Palette.foreground.transparentize(35%);
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 6px;
+            Text {
+                text: @tr("Tipo de los elegidos");
+                vertical-alignment: center;
+            }
+            ComboBox {
+                width: 130px;
+                model: [@tr("Comercial"), @tr("Publicidad"), @tr("Anuncio"), @tr("Podcast"), @tr("Seco")];
+                current-index <=> root.tipo-a-asignar;
+                enabled: root.seleccionados > 0;
+            }
+            Button {
+                text: @tr("Asignar tipo ({})", root.seleccionados);
+                enabled: root.seleccionados > 0;
+                clicked => { root.asignar-tipo(); }
+                Tooltip { text: @markdown("\{@tr("Se guarda en el catalogo de la emisora (no en el archivo) y vale para la lista, las tandas y las ordenes")}"); }
+            }
+            Rectangle { horizontal-stretch: 1; }
+        }
+
+        Text {
+            text: root.aviso != "" ? root.aviso
+                : @tr("Clic, Ctrl+clic o Mayus+clic para elegir; doble clic o Enter agrega. Solo se agregan los que tienen archivo y tipo Comercial, Publicidad, Anuncio, Podcast o Seco.");
+            wrap: word-wrap;
+            font-size: 12px;
+            color: root.aviso-es-error ? #ff8787 : Palette.foreground.transparentize(20%);
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+            Button {
+                icon: @image-url("iconos/agregar.svg");
+                colorize-icon: true;
+                text: @tr("Agregar los elegidos ({})", root.seleccionados);
+                primary: true;
+                enabled: root.seleccionados > 0;
+                clicked => { root.agregar(-1); }
+            }
+            Button {
+                icon: @image-url("iconos/carpeta.svg");
+                colorize-icon: true;
+                text: @tr("Desde un archivo...");
+                clicked => { root.desde-archivo(); }
+                Tooltip { text: @markdown("\{@tr("Para un aviso nuevo que todavia no esta en el catalogo; al asignarle el tipo queda en el catalogo")}"); }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            Button {
+                icon: @image-url("iconos/cancelar.svg");
+                colorize-icon: true;
+                text: @tr("Cerrar");
+                clicked => { root.cerrar(); }
+            }
+        }
+    }
+}

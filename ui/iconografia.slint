@@ -1,0 +1,192 @@
+import { Palette } from "std-widgets.slint";
+
+// Iconos y colores comunes a todas las ventanas: uno por tipo de elemento y
+// uno por dato, para que cada cosa se reconozca igual en la lista, el
+// catalogo, los avisos, las tandas, las ordenes y el editor.
+export global Iconografia {
+    // Color de cada tipo sin mezcla (el mismo de la franja de la lista):
+    // comercial verde azulado, anuncio violeta, publicidad fucsia, efecto
+    // rojo, seco verde lima, HTH celeste verdoso, podcast uva y bloque fijo
+    // gris. El Tema editado no lleva franja (es un tema) pero su icono es dorado.
+    out property <color> color-comercial: #12b886;
+    out property <color> color-de-bloque-fijo: #ced4da;
+
+    // Marcas del tema, iguales en la barra de progreso y en la onda del
+    // panel de detalles: overlay (naranja sugerido, rosa fijado), outro
+    // (celeste sugerida, verde fijada), violeta donde se solapan y rojo la
+    // mezcla efectiva con la siguiente.
+    out property <color> color-overlay-sugerido: #f0ad4e;
+    out property <color> color-overlay-manual: #e64980;
+    out property <color> color-outro-sugerida: #4aa3df;
+    out property <color> color-outro-manual: #2f9e44;
+    out property <color> color-solapamiento: #7950f2;
+    out property <color> color-mezcla: #ff6b6b;
+
+    // Color segun el numero de tipo de la lista: 1 comercial, 2 anuncio,
+    // 3 publicidad, 4 efecto, 5 seco, 6 anuncio HTH y 7 podcast.
+    public pure function color-de-reservado(reservado: int) -> color {
+        if (reservado == 2) { return #845ef7; }
+        if (reservado == 3) { return #e64980; }
+        if (reservado == 4) { return #fa5252; }
+        if (reservado == 5) { return #94d82d; }
+        if (reservado == 6) { return #22b8cf; }
+        if (reservado == 7) { return #be4bdb; }
+        return self.color-comercial;
+    }
+
+    // Color del icono de un tipo por su nombre; el Tema y lo que no tiene
+    // tipo llevan el color del texto (`tono`).
+    public pure function color-de-tipo(tipo: string, tono: color) -> color {
+        if (tipo == "Comercial") { return self.color-de-reservado(1); }
+        if (tipo == "Anuncio") { return self.color-de-reservado(2); }
+        if (tipo == "Publicidad") { return self.color-de-reservado(3); }
+        if (tipo == "Efecto") { return self.color-de-reservado(4); }
+        if (tipo == "Seco") { return self.color-de-reservado(5); }
+        if (tipo == "HTH") { return self.color-de-reservado(6); }
+        if (tipo == "Podcast") { return self.color-de-reservado(7); }
+        if (tipo == "Tema editado") { return #e0a458; }
+        if (tipo == "Bloque fijo") { return self.color-de-bloque-fijo; }
+        if (tipo == "sin tipo") { return #ffc078; }
+        return tono;
+    }
+
+    // Nombre de un tipo en el idioma de la interfaz. Rust pasa la clave fija
+    // (la que se guarda en el catalogo) y aqui se traduce.
+    public pure function nombre-de-tipo(tipo: string) -> string {
+        if (tipo == "Tema") { return @tr("Tema"); }
+        if (tipo == "Tema editado") { return @tr("Tema editado"); }
+        if (tipo == "Comercial") { return @tr("Comercial"); }
+        if (tipo == "Anuncio") { return @tr("Anuncio"); }
+        if (tipo == "Publicidad") { return @tr("Publicidad"); }
+        if (tipo == "Podcast") { return @tr("Podcast"); }
+        if (tipo == "Efecto") { return @tr("Efecto"); }
+        if (tipo == "Seco") { return @tr("Seco"); }
+        if (tipo == "HTH") { return @tr("HTH"); }
+        if (tipo == "Bloque fijo") { return @tr("Bloque fijo"); }
+        if (tipo == "sin tipo") { return @tr("sin tipo"); }
+        return tipo;
+    }
+
+    // Icono de un tipo por su nombre (Tema, Comercial... HTH, Bloque fijo o
+    // "sin tipo"); vacio si no tiene tipo en la lista o el catalogo.
+    public pure function icono-de-tipo(tipo: string) -> image {
+        if (tipo == "Tema") { return @image-url("iconos/tipo-tema.svg"); }
+        if (tipo == "Tema editado") { return @image-url("iconos/tipo-tema-editado.svg"); }
+        if (tipo == "Podcast") { return @image-url("iconos/tipo-podcast.svg"); }
+        if (tipo == "Comercial") { return @image-url("iconos/tipo-comercial.svg"); }
+        if (tipo == "Anuncio") { return @image-url("iconos/tipo-anuncio.svg"); }
+        if (tipo == "Publicidad") { return @image-url("iconos/tipo-publicidad.svg"); }
+        if (tipo == "Efecto") { return @image-url("iconos/efectos.svg"); }
+        if (tipo == "Seco") { return @image-url("iconos/tipo-seco.svg"); }
+        if (tipo == "HTH") { return @image-url("iconos/hth.svg"); }
+        if (tipo == "Bloque fijo") { return @image-url("iconos/bloque-fijo.svg"); }
+        if (tipo == "sin tipo") { return @image-url("iconos/sin-tipo.svg"); }
+        return @image-url("");
+    }
+}
+
+// Celda de una tabla: icono opcional y texto que se recorta con "...".
+// No muestra tooltip (lo pone la fila o el encabezado) para no quitarle los
+// clics a la fila.
+export component CeldaConIcono inherits Rectangle {
+    in property <image> icono;
+    // Color del icono; por defecto, el del texto.
+    in property <color> tono-del-icono: root.tono;
+    in property <string> texto;
+    in property <color> tono: Palette.foreground;
+    in property <TextHorizontalAlignment> alineacion: left;
+    in property <int> peso: 400;
+    in property <length> margen: 6px;
+    in property <length> tamano-del-icono: 14px;
+    // Si el texto no entra entero junto al icono, queda solo el icono (en
+    // los encabezados de columnas angostas).
+    in property <bool> solo-icono-si-no-entra;
+    // El texto no entra en la celda (o no se ve).
+    out property <bool> recortado: root.sin-lugar || rotulo.preferred-width > rotulo.width;
+
+    property <bool> con-icono: root.icono.width > 0;
+    property <length> ancho-util: max(0px, root.width - 2 * root.margen);
+    property <bool> sin-lugar: root.solo-icono-si-no-entra && root.con-icono
+        && rotulo.preferred-width > root.ancho-util - root.tamano-del-icono - 5px;
+    property <length> ancho-del-icono: !root.con-icono ? 0px : root.sin-lugar ? root.tamano-del-icono : root.tamano-del-icono + 5px;
+    property <length> ancho-del-texto: root.sin-lugar ? 0px : min(rotulo.preferred-width, max(0px, root.ancho-util - root.ancho-del-icono));
+    property <length> sobrante: root.ancho-util - root.ancho-del-icono - root.ancho-del-texto;
+    // Icono y texto van juntos, alineados como pide la columna.
+    property <length> inicio: root.margen + (root.alineacion == TextHorizontalAlignment.right ? root.sobrante
+        : root.alineacion == TextHorizontalAlignment.center ? root.sobrante / 2 : 0px);
+
+    if root.con-icono: Image {
+        x: root.inicio;
+        y: (root.height - self.height) / 2;
+        width: root.tamano-del-icono;
+        height: root.tamano-del-icono;
+        source: root.icono;
+        colorize: root.tono-del-icono;
+        accessible-role: none;
+    }
+    rotulo := Text {
+        visible: !root.sin-lugar;
+        x: root.inicio + root.ancho-del-icono;
+        width: root.ancho-del-texto;
+        text: root.texto;
+        color: root.tono;
+        font-weight: root.peso;
+        overflow: elide;
+        vertical-alignment: center;
+    }
+}
+
+// Encabezado de columna con su icono. Al pasar el puntero muestra la ayuda
+// y, si el titulo no entra, el titulo completo.
+export component EncabezadoConIcono inherits Rectangle {
+    in property <image> icono;
+    in property <string> texto;
+    in property <string> ayuda;
+    in property <TextHorizontalAlignment> alineacion: left;
+    in property <int> peso: 700;
+    in property <length> margen: 6px;
+    accessible-role: text;
+    accessible-label: root.texto;
+    accessible-description: root.ayuda;
+
+    celda := CeldaConIcono {
+        width: 100%;
+        height: 100%;
+        icono: root.icono;
+        tono-del-icono: Palette.foreground.transparentize(20%);
+        texto: root.texto;
+        alineacion: root.alineacion;
+        peso: root.peso;
+        margen: root.margen;
+        solo-icono-si-no-entra: true;
+    }
+    property <string> globo: celda.recortado ? (root.ayuda != "" ? root.texto + "\n\n" + root.ayuda : root.texto) : root.ayuda;
+    if root.globo != "": TouchArea {
+        Tooltip { text: @markdown("\{root.globo}"); }
+    }
+}
+
+// Rotulo de un dato en un formulario (icono y texto), para usar dentro de un
+// layout: su ancho preferido es el del contenido.
+export component RotuloConIcono inherits HorizontalLayout {
+    in property <image> icono;
+    in property <string> texto;
+    in property <color> tono-del-icono: Palette.foreground.transparentize(20%);
+    spacing: 5px;
+    VerticalLayout {
+        alignment: center;
+        Image {
+            width: 14px;
+            height: 14px;
+            source: root.icono;
+            colorize: root.tono-del-icono;
+            accessible-role: none;
+        }
+    }
+    Text {
+        text: root.texto;
+        vertical-alignment: center;
+        // El rotulo no se achica: si falta lugar, ceden los campos.
+        min-width: self.preferred-width;
+    }
+}

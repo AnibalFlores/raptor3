@@ -1,0 +1,12 @@
+# Fines de linea normalizados en el repositorio.
+* text=auto
+# Los scripts de shell siempre con LF (con CRLF fallan en Linux y WSL).
+*.sh text eol=lf
+*.desktop text eol=lf
+# Binarios.
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary
+*.mp3 binary
+*.wav binary

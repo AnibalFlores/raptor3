@@ -1,0 +1,291 @@
+import { Button, CheckBox, LineEdit, ListView, Palette } from "std-widgets.slint";
+import { CeldaConIcono as Celda, EncabezadoConIcono } from "iconografia.slint";
+import { LineaDePauta } from "ordenes.slint";
+
+// Un anunciante en la tabla: con ficha o solo nombrado en una orden.
+export struct FilaDeAnunciante {
+    nombre: string,
+    razon-social: string,
+    cuit: string,
+    rubro: string,
+    contacto: string,
+    // "2 activas de 3".
+    ordenes: string,
+    // "falta CUIT", "sin ficha: creela"; vacio si esta completa.
+    estado: string,
+    // Nombrado en ordenes pero sin ficha.
+    sin-ficha: bool,
+    activo: bool,
+    seleccionada: bool,
+}
+
+
+component Etiqueta inherits Text {
+    vertical-alignment: center;
+    horizontal-alignment: right;
+}
+
+// Anunciantes: la ficha de quien contrata la publicidad (datos fiscales y de
+// contacto) y sus ordenes.
+export component AnunciantesDeLaEmisora inherits Window {
+    title: @tr("Anunciantes - MCP Raptor Player");
+    icon: @image-url("iconos/ventana-raptor.svg");
+    preferred-width: 1180px;
+    preferred-height: 780px;
+    min-width: 980px;
+    min-height: 640px;
+    background: Palette.background;
+
+    in property <[FilaDeAnunciante]> anunciantes;
+    in property <[LineaDePauta]> ordenes-del-anunciante;
+    in property <string> resumen;
+    in property <bool> editando;
+    in property <bool> es-nuevo;
+    in property <string> aviso;
+    in property <bool> aviso-es-error;
+
+    in-out property <string> filtro;
+    in-out property <string> nombre;
+    in-out property <string> razon-social;
+    in-out property <string> cuit;
+    in-out property <string> rubro;
+    in-out property <string> contacto;
+    in-out property <string> telefono;
+    in-out property <string> correo;
+    in-out property <string> direccion;
+    in-out property <string> agencia;
+    in-out property <string> notas;
+    in-out property <bool> activo;
+
+    callback filtrar(texto: string);
+    callback elegir(indice: int);
+    callback nuevo();
+    callback quitar();
+    callback nueva-orden();
+    callback guardar();
+    callback descartar();
+    callback cerrar();
+
+    pure function tono-de(fila: FilaDeAnunciante) -> color {
+        if fila.seleccionada {
+            return Palette.selection-foreground;
+        }
+        return fila.activo ? Palette.foreground : Palette.foreground.transparentize(50%);
+    }
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 8px;
+
+        HorizontalLayout {
+            spacing: 8px;
+            LineEdit {
+                horizontal-stretch: 1;
+                placeholder-text: @tr("Buscar por nombre, razon social, CUIT, rubro, contacto o agencia");
+                text <=> root.filtro;
+                edited(texto) => { root.filtrar(texto); }
+            }
+        }
+        Text {
+            text: root.resumen;
+            wrap: word-wrap;
+            font-size: 12px;
+            color: Palette.foreground.transparentize(25%);
+        }
+
+        HorizontalLayout {
+            height: 24px;
+            EncabezadoConIcono { width: 170px; texto: @tr("Anunciante"); icono: @image-url("iconos/dato-anunciante.svg"); }
+            EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Razón social"); icono: @image-url("iconos/dato-razon-social.svg"); }
+            EncabezadoConIcono { width: 115px; texto: @tr("CUIT"); icono: @image-url("iconos/dato-cuit.svg"); }
+            EncabezadoConIcono { width: 115px; texto: @tr("Rubro"); icono: @image-url("iconos/dato-rubro.svg"); }
+            EncabezadoConIcono { width: 120px; texto: @tr("Contacto"); icono: @image-url("iconos/dato-contacto.svg"); }
+            EncabezadoConIcono { width: 110px; texto: @tr("Órdenes"); icono: @image-url("iconos/dato-orden.svg"); }
+            EncabezadoConIcono { width: 180px; texto: @tr("Estado"); icono: @image-url("iconos/dato-estado.svg"); }
+        }
+        Rectangle {
+            vertical-stretch: 1;
+            min-height: 120px;
+            border-width: 1px;
+            border-color: Palette.border;
+            border-radius: 4px;
+            ListView {
+                for fila[indice] in root.anunciantes: Rectangle {
+                    height: 30px;
+                    background: fila.seleccionada ? Palette.selection-background
+                        : Math.mod(indice, 2) == 1 ? Palette.alternate-background : transparent;
+                    TouchArea {
+                        clicked => { root.elegir(indice); }
+                        HorizontalLayout {
+                            Celda { width: 170px; texto: fila.nombre; tono: root.tono-de(fila); peso: 600; }
+                            Celda { horizontal-stretch: 1; texto: fila.razon-social; tono: root.tono-de(fila); }
+                            Celda { width: 115px; texto: fila.cuit; tono: root.tono-de(fila); }
+                            Celda { width: 115px; texto: fila.rubro; tono: root.tono-de(fila); }
+                            Celda { width: 120px; texto: fila.contacto; tono: root.tono-de(fila); }
+                            Celda { width: 110px; texto: fila.ordenes; tono: root.tono-de(fila); }
+                            Celda {
+                                width: 180px;
+                                texto: fila.estado;
+                                tono: fila.seleccionada ? Palette.selection-foreground : fila.sin-ficha ? #ff8787 : #ffc078;
+                            }
+                        }
+                    }
+                }
+            }
+            if root.anunciantes.length == 0: Text {
+                text: root.filtro == "" ? @tr("No hay anunciantes: use Nuevo anunciante.") : @tr("Ningun anunciante coincide.");
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                color: Palette.foreground.transparentize(35%);
+            }
+        }
+        HorizontalLayout {
+            spacing: 8px;
+            Button {
+                icon: @image-url("iconos/agregar.svg");
+                colorize-icon: true;
+                text: @tr("Nuevo anunciante");
+                clicked => { root.nuevo(); }
+            }
+            Button {
+                icon: @image-url("iconos/quitar.svg");
+                colorize-icon: true;
+                text: @tr("Quitar anunciante");
+                enabled: root.editando && !root.es-nuevo;
+                clicked => { root.quitar(); }
+                Tooltip { text: @markdown("\{@tr("Solo si no tiene ordenes; si tiene, desactivelo")}"); }
+            }
+            Button {
+                icon: @image-url("iconos/pauta.svg");
+                colorize-icon: true;
+                text: @tr("Nueva orden para el anunciante");
+                enabled: root.editando && !root.es-nuevo;
+                clicked => { root.nueva-orden(); }
+                Tooltip { text: @markdown("\{@tr("Abre las ordenes de publicidad con una orden nueva de este anunciante y su rubro")}"); }
+            }
+            Rectangle { horizontal-stretch: 1; }
+        }
+
+        Rectangle {
+            border-width: 1px;
+            border-color: Palette.border;
+            border-radius: 4px;
+            background: Palette.alternate-background;
+            HorizontalLayout {
+                padding: 10px;
+                spacing: 16px;
+
+                GridLayout {
+                    width: 620px;
+                    spacing: 6px;
+                    Row {
+                        Etiqueta { text: @tr("Anunciante"); }
+                        LineEdit { text <=> root.nombre; placeholder-text: @tr("Nombre comercial: Supermercado Sol"); enabled: root.editando; }
+                        Etiqueta { text: @tr("Rubro"); }
+                        LineEdit { text <=> root.rubro; placeholder-text: @tr("Supermercados"); enabled: root.editando; }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Razón social"); }
+                        LineEdit { text <=> root.razon-social; placeholder-text: @tr("Sol S.A."); enabled: root.editando; }
+                        Etiqueta { text: @tr("CUIT"); }
+                        LineEdit { text <=> root.cuit; placeholder-text: "30-71234567-1"; enabled: root.editando; }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Contacto"); }
+                        LineEdit { text <=> root.contacto; placeholder-text: @tr("Persona de contacto"); enabled: root.editando; }
+                        Etiqueta { text: @tr("Teléfono"); }
+                        LineEdit { text <=> root.telefono; placeholder-text: "011 4555-1234"; enabled: root.editando; }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Correo"); }
+                        LineEdit { text <=> root.correo; placeholder-text: @tr("ventas@empresa.com"); enabled: root.editando; }
+                        Etiqueta { text: @tr("Agencia"); }
+                        LineEdit { text <=> root.agencia; placeholder-text: @tr("Agencia que lo representa"); enabled: root.editando; }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Dirección"); }
+                        LineEdit { colspan: 3; text <=> root.direccion; placeholder-text: @tr("Calle, número, localidad"); enabled: root.editando; }
+                    }
+                    Row {
+                        Etiqueta { text: @tr("Notas"); }
+                        LineEdit { colspan: 3; text <=> root.notas; placeholder-text: @tr("Condiciones de pago, observaciones..."); enabled: root.editando; }
+                    }
+                    Row {
+                        Etiqueta { text: ""; }
+                        CheckBox {
+                            colspan: 3;
+                            text: @tr("Activo (inactivo: se conserva la ficha pero no admite ordenes nuevas)");
+                            checked <=> root.activo;
+                            enabled: root.editando;
+                        }
+                    }
+                }
+
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    spacing: 6px;
+                    Text { text: @tr("Ordenes del anunciante"); font-weight: 700; }
+                    Rectangle {
+                        vertical-stretch: 1;
+                        min-height: 120px;
+                        border-width: 1px;
+                        border-color: Palette.border;
+                        border-radius: 4px;
+                        background: Palette.background;
+                        ListView {
+                            for linea in root.ordenes-del-anunciante: Rectangle {
+                                height: 24px;
+                                Text {
+                                    x: 6px;
+                                    width: parent.width - 12px;
+                                    text: linea.texto;
+                                    overflow: elide;
+                                    vertical-alignment: center;
+                                    color: linea.problema ? #ff8787 : Palette.foreground;
+                                }
+                            }
+                        }
+                        if root.ordenes-del-anunciante.length == 0: Text {
+                            text: @tr("Sin ordenes.");
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: Palette.foreground.transparentize(35%);
+                        }
+                    }
+                }
+            }
+        }
+
+        Text {
+            text: root.aviso;
+            wrap: word-wrap;
+            font-size: 12px;
+            color: root.aviso-es-error ? #ff8787 : Palette.foreground.transparentize(20%);
+        }
+        HorizontalLayout {
+            spacing: 8px;
+            Button {
+                icon: @image-url("iconos/guardar.svg");
+                colorize-icon: true;
+                text: root.es-nuevo ? @tr("Cargar anunciante") : @tr("Guardar cambios");
+                primary: true;
+                enabled: root.editando;
+                clicked => { root.guardar(); }
+            }
+            Button {
+                icon: @image-url("iconos/deshacer.svg");
+                colorize-icon: true;
+                text: @tr("Descartar cambios");
+                enabled: root.editando;
+                clicked => { root.descartar(); }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            Button {
+                icon: @image-url("iconos/cancelar.svg");
+                colorize-icon: true;
+                text: @tr("Cerrar");
+                clicked => { root.cerrar(); }
+            }
+        }
+    }
+}

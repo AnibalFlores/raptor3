@@ -1,0 +1,2300 @@
+import { Button, CheckBox, ComboBox, LineEdit, ListView, ScrollView, Palette } from "std-widgets.slint";
+import { IdiomaDeLaInterfaz } from "idioma.slint";
+// Rust lo fija en cada ventana al cambiar el idioma.
+export { IdiomaDeLaInterfaz }
+export { EditorDePista, MarcaDeEdicion } from "editor.slint";
+export { AcercaDe } from "acerca.slint";
+export { MantenimientoDelCatalogo, FichaSinArchivo } from "mantenimiento.slint";
+export { BuscadorDelCatalogo, FichaDelCatalogo } from "buscador.slint";
+export { PautaDeTandas, FilaDeTanda, AvisoDeTanda } from "pauta.slint";
+export { OrdenesDePublicidad, FilaDeOrden, LineaDePauta } from "ordenes.slint";
+export { SelectorDeAvisos, AvisoDelCatalogo } from "avisos.slint";
+export { AnunciantesDeLaEmisora, FilaDeAnunciante } from "anunciantes.slint";
+export { SelectorDeLocalidad, LocalidadEncontrada } from "localidad.slint";
+export { ActualizacionDeDatos, CambioPropuesto } from "actualizacion.slint";
+import { Iconografia, EncabezadoConIcono } from "iconografia.slint";
+
+// Una barra de la vista de onda: pico y nivel RMS de su tramo, de 0 a 1.
+export struct BarraDeNivel {
+    pico: float,
+    rms: float,
+}
+
+export struct FilaDePista {
+    posicion: string,
+    titulo: string,
+    artista: string,
+    // Ruta completa del archivo; se ve al pasar el puntero por el titulo.
+    ruta: string,
+    // Duracion de la ventana de overlay en segundos ("27.5").
+    overlay: string,
+    // La ventana completa ("1:05.3 - 1:32.8"), para el tooltip.
+    ventana-de-overlay: string,
+    mezcla: string,
+    duracion: string,
+    // Tema, Comercial... (vacio: sin clasificar); "HTH" o "Bloque fijo" en
+    // el anuncio de hora y los marcadores.
+    tipo: string,
+    // Estrellas del ranking ("★★★★☆"); vacio en marcadores y anuncios HTH.
+    ranking: string,
+    // Nota u observacion del usuario; se ve en el tooltip del titulo.
+    nota: string,
+    genero: string,
+    // Año de edición ("1997"); vacio si no se sabe.
+    anio: string,
+    // Tempo del tema ("124"), "…" mientras se analiza o "—" si no tiene un ritmo claro.
+    bpm: string,
+    seleccionada: bool,
+    // La ventana de overlay la fijo el usuario; si no, sale del analisis y
+    // se muestra en cursiva.
+    overlay-manual: bool,
+    // Tiene un efecto fijado que suena solo con el tema.
+    fijado: bool,
+    // Tipo: 0 tema, tema editado o sin clasificar, 1 comercial, 2 anuncio,
+    // 3 publicidad, 4 efecto, 5 seco, 7 podcast; 6 es el anuncio de hora,
+    // temperatura y humedad.
+    // Suena sin mezcla, puede repetirse y se pinta aparte.
+    reservado: int,
+    // Coincide con la busqueda en curso.
+    coincide: bool,
+    // Es la pista que suena (o esta pausada): se resalta en ambar.
+    sonando: bool,
+    // Anuncio de hora, temperatura y humedad: 0 no es, 1 voz sola, 2 sobre
+    // una base musical.
+    hth: int,
+    // Marcador de bloque fijo: 0 no es, 1 inicio, 2 fin.
+    marcador: int,
+    // Esta entre un inicio y un fin de bloque fijo: Mezclar y BPM no la mueven.
+    en-bloque-fijo: bool,
+}
+
+// estado: 0 normal, 1 en espera, 2 sonando.
+export struct BotonDeEfecto {
+    texto: string,
+    ayuda: string,
+    estado: int,
+    duracion: string,
+    vacio: bool,
+    // Se puede insertar en la lista (no es de tipo Efecto).
+    insertable: bool,
+    // Tiene una nota (se ve en el tooltip); el boton muestra un icono.
+    con-nota: bool,
+}
+
+// Encabezado de una columna de la lista: icono del dato y titulo (solo el
+// icono si la columna es angosta; el titulo se ve en el tooltip).
+component Encabezado inherits EncabezadoConIcono {
+    peso: 600;
+}
+
+// Celda de la lista: muestra un valor y avisa el clic (seleccionar), el doble
+// clic (reproducir o editar, segun la columna) y el clic derecho (el menu de
+// la fila; el TouchArea recibe todos los botones, asi que se abre a mano).
+// Con `ayuda`, al pasar el puntero se ve un tooltip.
+component Celda inherits Rectangle {
+    in property <string> valor;
+    in property <brush> tono;
+    in property <bool> automatico;
+    in property <TextHorizontalAlignment> alineacion: right;
+    in property <int> font-weight: 400;
+    in property <string> ayuda;
+    // Muestra el icono de nota a la derecha (la nota va en `ayuda`).
+    in property <bool> con-nota;
+    // Icono a la izquierda del valor (el del tipo, en la columna Tipo).
+    in property <image> icono;
+    in property <color> tono-del-icono;
+    property <length> ancho-del-icono: root.icono.width > 0 ? 19px : 0px;
+    // El valor no entra en la columna: se ve completo en el tooltip.
+    property <bool> recortado: etiqueta.preferred-width > etiqueta.width;
+    property <string> globo: root.recortado ? (root.ayuda != "" ? root.valor + "\n\n" + root.ayuda : root.valor) : root.ayuda;
+    callback clic(control: bool, mayusculas: bool);
+    callback doble-clic();
+    callback menu(x: length, y: length);
+
+    TouchArea {
+        pointer-event(evento) => {
+            if evento.kind == PointerEventKind.down && evento.button == PointerEventButton.left {
+                root.clic(evento.modifiers.control, evento.modifiers.shift);
+            }
+            if evento.kind == PointerEventKind.down && evento.button == PointerEventButton.right {
+                root.menu(self.mouse-x, self.mouse-y);
+            }
+        }
+        double-clicked => { root.doble-clic(); }
+        if root.icono.width > 0: Image {
+            x: 6px;
+            y: (parent.height - self.height) / 2;
+            width: 14px;
+            height: 14px;
+            source: root.icono;
+            colorize: root.tono-del-icono;
+            accessible-role: none;
+        }
+        etiqueta := Text {
+            x: 6px + root.ancho-del-icono;
+            width: parent.width - 12px - root.ancho-del-icono - (root.con-nota ? 18px : 0px);
+            text: root.valor;
+            color: root.automatico ? root.tono.transparentize(30%) : root.tono;
+            font-italic: root.automatico;
+            horizontal-alignment: root.alineacion;
+            vertical-alignment: center;
+            overflow: elide;
+            font-weight: root.font-weight;
+        }
+        if root.con-nota: Image {
+            x: parent.width - 6px - self.width;
+            y: (parent.height - self.height) / 2;
+            width: 14px;
+            height: 14px;
+            source: @image-url("iconos/nota.svg");
+            colorize: root.tono.transparentize(25%);
+            accessible-role: none;
+        }
+        if root.globo != "": Tooltip { text: @markdown("\{root.globo}"); }
+    }
+}
+
+// Opcion de un menu desplegable propio, con icono.
+component OpcionDeMenu inherits Rectangle {
+    in property <image> icono;
+    in property <string> texto;
+    callback elegida();
+    height: 30px;
+    border-radius: 3px;
+    background: area.has-hover ? Palette.selection-background : transparent;
+    accessible-role: button;
+    accessible-label: root.texto;
+    accessible-action-default => { root.elegida(); }
+    HorizontalLayout {
+        padding-left: 8px;
+        spacing: 8px;
+        Image {
+            y: (parent.height - self.height) / 2;
+            width: 16px;
+            height: 16px;
+            source: root.icono;
+            colorize: area.has-hover ? Palette.selection-foreground : Palette.foreground;
+            accessible-role: none;
+        }
+        Text {
+            text: root.texto;
+            vertical-alignment: center;
+            color: area.has-hover ? Palette.selection-foreground : Palette.foreground;
+        }
+    }
+    area := TouchArea {
+        clicked => { root.elegida(); }
+    }
+}
+
+component BotonDeLaBotonera inherits Rectangle {
+    in property <BotonDeEfecto> boton;
+    callback pulsado();
+    callback asignar();
+    callback quitar();
+    callback insertar();
+    callback editar();
+
+    in property <int> numero;
+
+    // Alto ideal 74 px; con poco alto (Full HD al 150 %) se achica hasta 52.
+    min-height: 52px;
+    preferred-height: 74px;
+    max-height: 74px;
+    accessible-role: button;
+    accessible-label: @tr("Efecto {}: {}", root.numero, root.boton.texto);
+    accessible-description: root.boton.ayuda;
+    accessible-action-default => { root.pulsado(); }
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: Palette.border;
+    background: root.boton.estado == 1 ? #f0ad4e : root.boton.estado == 2 ? #5cb85c
+        : area.pressed ? Palette.control-background.darker(10%)
+        : area.has-hover ? Palette.control-background.brighter(5%) : Palette.control-background;
+
+    // El TouchArea recibe tambien el clic derecho, asi que el menu se abre a mano.
+    menu := ContextMenuArea {
+        Menu {
+            MenuItem {
+                title: @tr("Asignar archivo...");
+                activated => { root.asignar(); }
+            }
+            MenuItem {
+                title: @tr("Vaciar");
+                enabled: !root.boton.vacio;
+                activated => { root.quitar(); }
+            }
+            MenuItem {
+                title: @tr("Editar...");
+                enabled: !root.boton.vacio;
+                activated => { root.editar(); }
+            }
+            MenuItem {
+                title: @tr("Insertar en la playlist");
+                enabled: !root.boton.vacio && root.boton.insertable;
+                activated => { root.insertar(); }
+            }
+        }
+        area := TouchArea {
+            clicked => { root.pulsado(); }
+            pointer-event(evento) => {
+                if evento.kind == PointerEventKind.down && evento.button == PointerEventButton.right {
+                    menu.show({ x: self.mouse-x, y: self.mouse-y });
+                }
+            }
+            Tooltip { text: @markdown("\{root.boton.ayuda}"); }
+        }
+    }
+    property <color> color-tenue: root.boton.estado == 0 ? Palette.control-foreground.transparentize(35%) : #1a1a1a;
+    // Numero del boton (0 a 9), el mismo que usan las herramientas MCP.
+    numero-del-boton := Text {
+        x: 6px;
+        y: 3px;
+        text: root.numero;
+        font-size: 11px;
+        font-weight: 700;
+        color: root.boton.estado == 0 ? Palette.control-foreground.transparentize(35%) : #1a1a1a;
+    }
+    // En espera (reloj de arena) o sonando (parlante), junto al numero.
+    if root.boton.estado != 0: Image {
+        x: numero-del-boton.x + numero-del-boton.width + 4px;
+        y: 3px;
+        width: 13px;
+        height: 13px;
+        source: root.boton.estado == 1 ? @image-url("iconos/en-espera.svg") : @image-url("iconos/sonando.svg");
+        colorize: #1a1a1a;
+        accessible-role: none;
+    }
+    // Tiene nota: un icono abajo a la izquierda (la nota esta en el tooltip).
+    if root.boton.con-nota: Image {
+        x: 6px;
+        y: parent.height - self.height - 4px;
+        width: 13px;
+        height: 13px;
+        source: @image-url("iconos/nota.svg");
+        colorize: root.color-tenue;
+        accessible-role: none;
+    }
+    // Duracion del efecto.
+    Text {
+        x: parent.width - self.width - 6px;
+        y: 3px;
+        text: root.boton.duracion;
+        font-size: 11px;
+        color: root.boton.estado == 0 ? Palette.control-foreground.transparentize(35%) : #1a1a1a;
+    }
+    VerticalLayout {
+        x: 6px;
+        y: 17px;
+        width: parent.width - 12px;
+        height: parent.height - 19px;
+        alignment: center;
+        spacing: 2px;
+        // Vacio: un + tenue invita a asignarle un archivo.
+        if root.boton.vacio: HorizontalLayout {
+            alignment: center;
+            Image {
+                width: 18px;
+                height: 18px;
+                source: @image-url("iconos/agregar.svg");
+                colorize: root.color-tenue;
+                accessible-role: none;
+            }
+        }
+        Text {
+            font-size: 12px;
+            text: root.boton.texto;
+            color: root.boton.vacio ? root.color-tenue : root.boton.estado == 0 ? Palette.control-foreground : #1a1a1a;
+            horizontal-alignment: center;
+            // Arriba dentro de su caja (la caja ya va centrada en el boton):
+            // asi, si sobra texto, se ven los primeros renglones.
+            vertical-alignment: top;
+            wrap: word-wrap;
+            overflow: elide;
+            // Como mucho dos renglones: un texto mas largo se corta con "..."
+            // en vez de salirse del boton cuando este se achica (Full HD).
+            min-height: 0px;
+            max-height: 2 * self.font-size * 1.3;
+        }
+    }
+}
+
+// Boton que se alterna (como uno checkable) y puede resaltarse en naranja
+// para avisar algo aunque este apagado.
+component BotonAlternable inherits Rectangle {
+    in property <string> texto;
+    in property <image> icono;
+    in-out property <bool> activo;
+    in property <bool> aviso;
+    // Solo el icono: el texto pasa al globo de ayuda.
+    in property <bool> solo-icono;
+    callback alternado();
+
+    height: 32px;
+    min-width: contenido.preferred-width + 24px;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: Palette.border;
+    background: root.aviso ? #f0ad4e
+        : root.activo ? (area.has-hover ? Palette.accent-background.brighter(10%) : Palette.accent-background)
+        : area.has-hover ? Palette.control-background.brighter(5%) : Palette.control-background;
+    accessible-role: button;
+    accessible-label: root.texto;
+    accessible-checkable: true;
+    accessible-checked: root.activo;
+    accessible-action-default => {
+        root.activo = !root.activo;
+        root.alternado();
+    }
+
+    property <color> color-del-texto: root.aviso ? #1a1a1a : root.activo ? Palette.accent-foreground : Palette.control-foreground;
+    contenido := HorizontalLayout {
+        spacing: 4px;
+        alignment: center;
+        if root.icono.width > 0: Image {
+            y: (parent.height - self.height) / 2;
+            source: root.icono;
+            width: 20px;
+            height: 20px;
+            colorize: root.color-del-texto;
+            accessible-role: none;
+        }
+        if !root.solo-icono: Text {
+            text: root.texto;
+            vertical-alignment: center;
+            color: root.color-del-texto;
+        }
+    }
+    area := TouchArea {
+        clicked => {
+            root.activo = !root.activo;
+            root.alternado();
+        }
+        if root.solo-icono: Tooltip { text: @markdown("\{root.texto}"); }
+    }
+}
+
+// Deslizante horizontal que ademas avisa el doble clic (los de std-widgets no
+// lo hacen). Con paso > 0 el valor se redondea a ese paso.
+component Deslizante inherits Rectangle {
+    in property <float> minimum: 0;
+    in property <float> maximum: 1;
+    in property <float> step: 0;
+    in property <bool> enabled: true;
+    in-out property <float> value;
+    callback changed(value: float);
+    callback doble-clic();
+
+    // Radio del boton (tambien el margen a cada lado) y grosor de la pista.
+    in property <length> radio: 8px;
+    in property <length> grosor: 4px;
+    opacity: root.enabled ? 1 : 0.4;
+    property <float> proporcion: (root.value - root.minimum) / (root.maximum - root.minimum);
+
+    min-width: 60px;
+    min-height: 20px;
+    accessible-role: slider;
+    accessible-value: root.value;
+    accessible-value-minimum: root.minimum;
+    accessible-value-maximum: root.maximum;
+    accessible-value-step: root.step > 0 ? root.step : (root.maximum - root.minimum) / 100;
+    accessible-action-set-value(texto) => {
+        if texto.is-float() {
+            root.fijar(texto.to-float());
+        }
+    }
+    accessible-action-increment => { root.fijar(root.value + (root.step > 0 ? root.step : (root.maximum - root.minimum) / 20)); }
+    accessible-action-decrement => { root.fijar(root.value - (root.step > 0 ? root.step : (root.maximum - root.minimum) / 20)); }
+
+    function fijar(pedido: float) {
+        root.value = root.step > 0
+            ? root.minimum + round((max(root.minimum, min(root.maximum, pedido)) - root.minimum) / root.step) * root.step
+            : max(root.minimum, min(root.maximum, pedido));
+        root.changed(root.value);
+    }
+
+    function desde-x(x: length) {
+        root.fijar(root.minimum + (x - root.radio) / (root.width - 2 * root.radio) * (root.maximum - root.minimum));
+    }
+
+    Rectangle {
+        x: root.radio;
+        width: root.width - 2 * root.radio;
+        height: root.grosor;
+        border-radius: root.grosor / 2;
+        background: Palette.border;
+    }
+    Rectangle {
+        x: root.radio;
+        width: (root.width - 2 * root.radio) * root.proporcion;
+        height: root.grosor;
+        border-radius: root.grosor / 2;
+        background: Palette.accent-background;
+    }
+    Rectangle {
+        x: root.radio + (root.width - 2 * root.radio) * root.proporcion - root.radio;
+        width: 2 * root.radio;
+        height: 2 * root.radio;
+        border-radius: root.radio;
+        background: Palette.accent-background;
+        border-width: 2px;
+        border-color: Palette.background;
+    }
+    TouchArea {
+        pointer-event(evento) => {
+            if evento.kind == PointerEventKind.down && evento.button == PointerEventButton.left {
+                root.desde-x(self.mouse-x);
+            }
+        }
+        moved => {
+            if self.pressed {
+                root.desde-x(self.mouse-x);
+            }
+        }
+        double-clicked => { root.doble-clic(); }
+        enabled: root.enabled;
+    }
+}
+
+// Deslizante de la reproduccion con las marcas de la pista que suena, para
+// adelantar facil hasta la ventana de overlay o la outro y probarlas. Los
+// tiempos van en segundos desde el comienzo del archivo; un inicio negativo
+// indica que no hay esa marca. Cada marca tiene un color si es sugerida por
+// el analisis y otro si la fijo el usuario; donde se solapan, un tercero.
+component DeslizanteDeProgreso inherits Rectangle {
+    in property <float> maximum: 1;
+    in property <bool> enabled: true;
+    in-out property <float> value;
+    in property <float> overlay-inicio: -1;
+    in property <float> overlay-fin: -1;
+    in property <float> outro-inicio: -1;
+    in property <float> outro-fin: -1;
+    in property <bool> overlay-manual;
+    in property <bool> outro-manual;
+    // Tramo en que la pista se mezclara con la siguiente (la superposicion
+    // real, que decide la regla de mezcla o el crossfade inteligente).
+    in property <float> mezcla-inicio: -1;
+    in property <float> mezcla-fin: -1;
+    callback changed(value: float);
+
+    // Margen interno del recuadro y radio del boton: las marcas empiezan
+    // donde empieza la pista del deslizante.
+    property <length> margen: 6px;
+    property <length> radio-del-boton: 10px;
+    property <length> radio: root.margen + root.radio-del-boton;
+    property <length> largo: root.width - 2 * root.radio;
+    // Banda de las marcas y grosor de la pista, centradas en el recuadro.
+    property <length> alto-de-marca: 22px;
+    property <length> grosor: 10px;
+    property <color> color-overlay: root.overlay-manual ? Iconografia.color-overlay-manual : Iconografia.color-overlay-sugerido;
+    property <color> color-outro: root.outro-manual ? Iconografia.color-outro-manual : Iconografia.color-outro-sugerida;
+    property <color> color-solapamiento: Iconografia.color-solapamiento;
+    property <color> color-mezcla: Iconografia.color-mezcla;
+    property <bool> hay-overlay: root.overlay-inicio >= 0 && root.overlay-fin > root.overlay-inicio;
+    property <bool> hay-outro: root.outro-inicio >= 0 && root.outro-fin > root.outro-inicio;
+    property <float> solapamiento-inicio: max(root.overlay-inicio, root.outro-inicio);
+    property <float> solapamiento-fin: min(root.overlay-fin, root.outro-fin);
+    // Mismo alto, borde y fondo que el medidor de tiempo que tiene al lado.
+    height: 40px;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: Palette.border;
+    background: Palette.alternate-background;
+
+    function x-de(segundos: float) -> length {
+        root.radio + root.largo * max(0, min(1, segundos / max(root.maximum, 0.001)))
+    }
+
+    if root.enabled && root.hay-outro: Rectangle {
+        x: root.x-de(root.outro-inicio);
+        width: max(2px, root.x-de(root.outro-fin) - self.x);
+        height: root.alto-de-marca;
+        border-radius: 2px;
+        background: root.color-outro.with-alpha(0.55);
+    }
+    if root.enabled && root.hay-overlay: Rectangle {
+        x: root.x-de(root.overlay-inicio);
+        width: max(2px, root.x-de(root.overlay-fin) - self.x);
+        height: root.alto-de-marca;
+        border-radius: 2px;
+        background: root.color-overlay.with-alpha(0.6);
+    }
+    if root.enabled && root.hay-overlay && root.hay-outro && root.solapamiento-fin > root.solapamiento-inicio: Rectangle {
+        x: root.x-de(root.solapamiento-inicio);
+        width: max(2px, root.x-de(root.solapamiento-fin) - self.x);
+        height: root.alto-de-marca;
+        border-radius: 2px;
+        background: root.color-solapamiento.with-alpha(0.85);
+    }
+    // La mezcla efectiva: recuadro rojo, por encima de las demas marcas.
+    if root.enabled && root.mezcla-inicio >= 0 && root.mezcla-fin > root.mezcla-inicio: Rectangle {
+        x: root.x-de(root.mezcla-inicio);
+        width: max(3px, root.x-de(root.mezcla-fin) - self.x);
+        height: root.alto-de-marca + 10px;
+        border-radius: 3px;
+        border-width: 2px;
+        border-color: root.color-mezcla;
+        background: root.color-mezcla.with-alpha(0.2);
+    }
+    Deslizante {
+        x: root.margen;
+        width: parent.width - 2 * root.margen;
+        height: 100%;
+        radio: root.radio-del-boton;
+        grosor: root.grosor;
+        minimum: 0;
+        maximum: root.maximum;
+        enabled: root.enabled;
+        value <=> root.value;
+        changed(valor) => { root.changed(valor); }
+    }
+}
+
+export component VentanaPrincipal inherits Window {
+    // Nombre de la lista abierta, con * si tiene cambios sin guardar.
+    in property <string> nombre-de-lista: @tr("Lista sin nombre");
+    title: "MCP Raptor Player - " + root.nombre-de-lista;
+    // Icono de la ventana y de la barra de tareas: la R de Raptor.
+    icon: @image-url("iconos/ventana-raptor.svg");
+    preferred-width: 1600px;
+    preferred-height: 900px;
+    // Lo minimo en que entran todos los controles con la botonera abierta.
+    // Con los botones solo con icono entra en Full HD al 150 % (1280 x 640
+    // logicos, descontando la barra de tareas).
+    min-width: 1180px;
+    min-height: 600px;
+    // En pantallas anchas la botonera gana espacio para los nombres de los
+    // efectos. Se calcula al cambiar el ancho (y no con un enlace) para no
+    // formar un ciclo con el layout.
+    property <bool> botonera-ancha;
+    changed width => { root.medir-ancho(); }
+    changed botonera-visible => { root.medir-ancho(); }
+    // Ocultar los textos de los botones (menu Ventana): quedan los iconos y
+    // el nombre pasa al globo de ayuda.
+    in property <bool> ocultar-textos;
+    callback alternar-ocultar-textos();
+    // Idioma de la interfaz (menu Ventana): 0 español, 1 inglés.
+    in property <int> idioma;
+    callback elegir-idioma(idioma: int);
+    // Con la ventana angosta (Full HD al 150 %) los botones de las barras
+    // quedan solo con el icono aunque la preferencia este apagada: con los
+    // textos no entran y se recortaria la botonera.
+    property <bool> ventana-angosta;
+    property <bool> botones-compactos: root.ocultar-textos || root.ventana-angosta;
+    function medir-ancho() {
+        root.botonera-ancha = root.width >= 2400px;
+        root.ventana-angosta = root.width < (root.botonera-visible ? 1400px : 1120px);
+    }
+    // Nombres de los botones de transporte, que cambian con el estado.
+    property <string> texto-detener: root.deteniendo ? @tr("Deteniendo...") : @tr("Detener");
+    property <string> texto-siguiente: root.mezclando ? @tr("Mezclando...") : @tr("Siguiente");
+    background: Palette.background;
+
+    in property <[FilaDePista]> filas;
+    in property <string> pista-actual: @tr("Sin pista cargada");
+    in-out property <float> progreso;
+    in property <float> progreso-maximo: 1;
+    in property <bool> progreso-habilitado;
+    // Marcas de la pista que suena en el deslizante de progreso, en segundos
+    // desde el comienzo; -1 si no hay.
+    in property <float> progreso-overlay-inicio: -1;
+    in property <float> progreso-overlay-fin: -1;
+    in property <float> progreso-outro-inicio: -1;
+    in property <float> progreso-outro-fin: -1;
+    // Si el overlay y la outro los fijo el usuario (si no, salen del analisis).
+    in property <bool> progreso-overlay-manual;
+    in property <bool> progreso-outro-manual;
+    // Tramo de la mezcla efectiva con la siguiente; -1 si no se mezcla.
+    in property <float> progreso-mezcla-inicio: -1;
+    in property <float> progreso-mezcla-fin: -1;
+    in property <string> tiempo: "00:00 / 00:00";
+    in property <string> texto-reproducir: @tr("Reproducir");
+    in property <bool> anterior-habilitado;
+    in property <bool> siguiente-habilitado;
+    in-out property <bool> repetir;
+    in-out property <bool> crossfade-inteligente;
+    in-out property <bool> nivelar-volumen;
+    // Posicion del objetivo de nivelacion: 0 = -14, 1 = -11, 2 = -8 LUFS.
+    in-out property <int> objetivo-lufs: 1;
+    // Mantener la pista que suena en el centro de la lista.
+    in-out property <bool> desplazar;
+    // Aviso mientras se analizan temas para la mezcla ("Analizando 3 tema(s)...").
+    in property <string> analisis-de-mezcla;
+    in-out property <float> volumen: 0.8;
+    // Segundos (0 a 15, FADER_MAXIMO) de mezcla al usar Siguiente o de fundido al Detener.
+    in-out property <float> fader: 5;
+    // Fundido del fader en curso, para resaltar el boton que lo inicio.
+    in property <bool> deteniendo;
+    in property <bool> mezclando;
+    // Hay una mezcla en curso (automatica o con Siguiente): el tiempo se pinta naranja.
+    in property <bool> en-mezcla;
+    // Duracion total de la lista y tiempo que falta para terminarla.
+    in property <string> total-de-lista;
+    // Datos de la pista marcada con el selector (o de la que suena).
+    // Ruta completa del archivo de esa pista.
+    // Carpeta del archivo (ruta sin el nombre) y nombre del archivo.
+    in property <string> detalle-carpeta;
+    in property <string> detalle-archivo;
+    // El panel de detalles muestra la forma de onda (barras de nivel) en
+    // lugar de los datos; se alterna con el boton de su esquina.
+    in-out property <bool> ver-onda;
+    callback alternar-vista-del-detalle();
+    // Barras de la mitad superior de la onda del tema del panel.
+    in property <[BarraDeNivel]> barras;
+    // Lo que se ve mientras no hay barras ("Analizando el tema...").
+    in property <string> estado-de-la-onda;
+    // Las barras son del tema que suena: se pinta el avance y un clic salta.
+    in property <bool> onda-de-la-que-suena;
+    // Formato, muestreo, canales y tasa del archivo de la onda.
+    in property <string> datos-tecnicos;
+    // "Titulo - Artista" del tema de la onda; se agrega a los datos
+    // tecnicos salvo que sea el que suena (ese ya se ve abajo, en grande).
+    in property <string> titulo-de-la-onda;
+    // Duracion de la onda y sus marcas, en segundos (inicio -1: no hay).
+    in property <float> duracion-de-la-onda;
+    in property <float> onda-overlay-inicio: -1;
+    in property <float> onda-overlay-fin: -1;
+    in property <float> onda-outro-inicio: -1;
+    in property <float> onda-outro-fin: -1;
+    in property <bool> onda-overlay-manual;
+    in property <bool> onda-outro-manual;
+    in property <float> onda-mezcla-inicio: -1;
+    in property <float> onda-mezcla-fin: -1;
+    // Fecha y hora actual: "Lunes 02/11/2026" y "14:05:33".
+    in property <string> fecha-actual;
+    in property <string> hora-actual;
+    // Fuente de ancho fijo de los relojes (la hora y el tiempo del tema), para
+    // que los digitos no bailen al cambiar. Slint no acepta familias
+    // genericas: el nombre lo pone la aplicacion segun el sistema.
+    in property <string> fuente-monoespaciada: "Consolas";
+    in property <string> detalle-genero;
+    in property <string> detalle-tipo;
+    in property <string> detalle-album;
+    in property <string> detalle-anio;
+    // Nombre del efecto fijado al tema, o "—".
+    in property <string> detalle-efecto;
+    in property <string> detalle-ranking;
+    in property <string> detalle-ultima;
+    // Tiempo desde la ultima reproduccion, para el tooltip: "Hace 3 horas 20 minutos y 15 segundos".
+    in property <string> detalle-hace;
+    in property <bool> hay-seleccion;
+    // Hay un efecto esperando su ventana de overlay.
+    in property <bool> efecto-en-espera;
+    // Hojas de efectos: "Hoja 2 de 3" y que se puede hacer.
+    in property <string> hoja-de-efectos;
+    in property <bool> hay-hoja-anterior;
+    in property <bool> hay-hoja-siguiente;
+    in property <bool> puede-quitar-hoja;
+    in property <string> estado: @tr("Agregue archivos de audio para comenzar");
+
+    in-out property <bool> botonera-visible;
+    in property <[BotonDeEfecto]> botones;
+    in-out property <bool> modo-libre: true;
+    in-out property <bool> atenuar;
+    in-out property <float> nivel-de-musica: 0.3;
+    // Volumen de los efectos (dB), ajuste inteligente de la atenuacion y
+    // segundos que tarda la musica en volver.
+    in-out property <bool> efecto-inteligente: true;
+    in-out property <float> volumen-de-efecto: 0;
+    in-out property <float> anticipacion: 0.04;
+    in-out property <float> recuperacion: 0.8;
+    // Con el ajuste inteligente: dB que la musica queda debajo del efecto.
+    in-out property <float> separacion: 12;
+    in property <string> estado-de-botonera;
+    // Hay texto en el buscador y cuantas pistas coinciden ("3 de 12").
+    in property <bool> buscando;
+    in property <string> resultado-de-busqueda;
+    // Efecto en espera o sonando (o un aviso), junto al boton Efectos; vacio
+    // si no pasa nada.
+    in property <string> actividad-de-efectos;
+
+    callback agregar-archivos();
+    callback quitar-seleccionadas();
+    callback limpiar-lista();
+    // -1: la pista marcada con el selector (o la actual).
+    callback editar-pista(indice: int);
+    callback quitar-fila(indice: int);
+    // Busqueda en la lista: el texto cambio, o saltar a la coincidencia
+    // siguiente (true) o anterior (false).
+    callback buscar(texto: string);
+    callback ir-a-coincidencia(avanzar: bool);
+    // Quita la pista de la lista y borra sus datos guardados.
+    callback descatalogar-fila(indice: int);
+    // Actualizar los datos de la fila (o de la seleccion, si la incluye):
+    // 0 releer las etiquetas, 1 completar desde MusicBrainz.
+    callback actualizar-datos-de-fila(indice: int, origen: int);
+    // Bases musicales del anuncio HTH, para cambiar la de una fila (base -1:
+    // sin base, la voz sola).
+    in property <[string]> bases-hth;
+    callback cambiar-base-hth(indice: int, base: int);
+    // Marcadores de bloque fijo: insertar uno (1 inicio, 2 fin) o encerrar
+    // la seleccion entre los dos.
+    callback insertar-marcador(tipo: int);
+    callback fijar-seleccion-como-bloque();
+    callback subir-seleccionada();
+    callback mezclar-lista();
+    callback ordenar-por-bpm();
+    // Revisa archivos inexistentes y temas repetidos.
+    callback validar-lista();
+    callback cargar-lista();
+    callback guardar-lista();
+    callback guardar-lista-como();
+    callback bajar-seleccionada();
+    callback acerca-de();
+    callback abrir-manual();
+    callback mantenimiento-del-catalogo();
+    // Abre el buscador del catalogo, que inserta temas en la lista.
+    callback buscar-en-el-catalogo();
+    // Tandas programadas: abre la pauta; la proxima, bajo el reloj.
+    callback abrir-pauta();
+    callback abrir-ordenes();
+    callback abrir-anunciantes();
+    in property <string> proxima-tanda;
+    // Lleva esa fila justo despues de la que suena: se mezcla con su final.
+    callback encolar-como-siguiente(indice: int);
+    callback agregar-carpeta();
+    callback traer-editor();
+    callback alternar-editor-centrado();
+    // El editor se abre siempre centrado sobre la ventana principal.
+    in property <bool> editor-centrado;
+    callback insertar-efecto(indice: int);
+    // Anuncio de hora, temperatura y humedad: insertarlo en la lista y elegir
+    // la carpeta de sus locuciones.
+    callback insertar-hth();
+    callback elegir-locuciones();
+    // Menu contextual del boton HTH: localidad del clima y consulta inmediata.
+    callback cambiar-localidad-del-clima();
+    callback actualizar-clima();
+    // Clima para el anuncio: localidad, temperatura, humedad y antiguedad de
+    // la ultima lectura (o "sin datos").
+    in property <string> clima-hth;
+    in property <bool> clima-hth-sin-datos;
+    // El clima en una linea, para el reloj: "17,4 °C · humedad 76 % · Rosario".
+    in property <string> clima-del-reloj;
+    callback hoja-anterior();
+    callback hoja-siguiente();
+    callback agregar-hoja();
+    callback quitar-hoja();
+    callback nivel-de-musica-por-defecto();
+    callback ir-a-pista-actual();
+
+    // Desplaza la lista lo justo para que se vea la fila indicada.
+    public function mostrar-fila(indice: int) {
+        if indice * root.alto-de-fila < -lista-de-pistas.content-y {
+            lista-de-pistas.content-y = -indice * root.alto-de-fila;
+        } else if (indice + 1) * root.alto-de-fila > -lista-de-pistas.content-y + lista-de-pistas.visible-height {
+            lista-de-pistas.content-y = -((indice + 1) * root.alto-de-fila - lista-de-pistas.visible-height);
+        }
+    }
+    // Desplaza la lista para que la fila indicada quede en el centro, sin
+    // pasarse del principio ni del final.
+    public function centrar-fila(indice: int) {
+        lista-de-pistas.content-y = -max(0px, min(
+            (indice + 0.5) * root.alto-de-fila - lista-de-pistas.visible-height / 2,
+            root.filas.length * root.alto-de-fila - lista-de-pistas.visible-height));
+    }
+    callback clic-en-fila(indice: int, control: bool, mayusculas: bool);
+    callback doble-clic-en-fila(indice: int);
+    callback alternar-reproduccion();
+    callback detener();
+    callback anterior();
+    callback siguiente();
+    callback repetir-cambiado(repetir: bool);
+    callback crossfade-inteligente-cambiado(activo: bool);
+    callback nivelar-volumen-cambiado(activo: bool);
+    callback objetivo-lufs-cambiado(indice: int);
+    callback desplazar-cambiado(activo: bool);
+    callback volumen-cambiado(volumen: float);
+    callback volumen-por-defecto();
+    callback fader-cambiado(segundos: float);
+    callback fader-por-defecto();
+    callback progreso-movido(segundos: float);
+    callback ciclar-formato-de-tiempo();
+    callback pulsar-efecto(indice: int);
+    // Tecla numerica: dispara el boton si tiene efecto.
+    callback tecla-de-efecto(indice: int);
+    callback asignar-efecto(indice: int);
+    callback quitar-efecto(indice: int);
+    callback editar-efecto(indice: int);
+    callback modo-libre-cambiado(libre: bool);
+    callback efecto-ajustado();
+    // Ajustes de los efectos (bajar la musica, ajuste inteligente y los
+    // deslizantes) a la vista o plegados tras el boton del engranaje.
+    in-out property <bool> ajustes-de-efectos-visibles;
+    callback ajustes-de-efectos-alternados(visibles: bool);
+    // Volumen, fader y opciones de reproduccion a la vista u ocultos tras el
+    // engranaje de la fila de transporte.
+    in-out property <bool> controles-visibles: true;
+    callback controles-alternados(visibles: bool);
+    // Ancho comun del reloj y del medidor de tiempo: asi la barra de
+    // progreso queda alineada con el panel de detalles. Entra el formato
+    // mas largo del medidor: "-1:02:33.4 / 1:02:33.4".
+    property <length> ancho-del-reloj: 270px;
+    callback detener-efecto();
+
+    property <length> ancho-posicion: 66px;
+    // Fondo de la pista que suena (ambar) y su icono.
+    property <color> color-sonando: #f59f00;
+    // Marcadores de bloque fijo y linea de las pistas que encierran (gris
+    // claro, distinto de todos los colores de genero).
+    property <color> color-de-bloque-fijo: Iconografia.color-de-bloque-fijo;
+    // Las columnas angostas muestran solo el icono del encabezado si su
+    // titulo no entra (se ve en el tooltip).
+    property <length> ancho-segundos: 80px;
+    property <length> ancho-overlay: 86px;
+    property <length> ancho-duracion: 86px;
+    // Entra "Publicidad" con su icono.
+    property <length> ancho-tipo: 114px;
+    property <length> ancho-ranking: 86px;
+    property <length> ancho-genero: 124px;
+    property <length> ancho-anio: 64px;
+    property <length> ancho-bpm: 66px;
+    property <length> alto-de-fila: 30px;
+    // Fondo de las tandas comerciales (verde azulado, distinto de los avisos naranjas).
+    property <color> color-comercial: Iconografia.color-comercial;
+    // Franja de cada tipo sin mezcla: comercial verde azulado, anuncio
+    // violeta, publicidad fucsia, efecto rojo, seco verde lima y el anuncio
+    // HTH celeste verdoso (ninguno se confunde con el naranja de la busqueda
+    // ni con el azul del fijado). Los mismos colores tiñen el icono del tipo.
+    // Franja de los temas con efecto fijado (azul, a la izquierda de la fila).
+    property <color> color-de-fijado: #339af0;
+    // Ancho de las franjas de color de la izquierda de cada fila.
+    property <length> ancho-de-franja: 8px;
+    pure function color-de-reservado(reservado: int) -> color {
+        return Iconografia.color-de-reservado(reservado);
+    }
+
+    // Texto de una fila: atenuado si hay una busqueda y no coincide.
+    pure function tono-de-fila(fila: FilaDePista) -> color {
+        if fila.seleccionada {
+            return Palette.selection-foreground;
+        }
+        return root.buscando && !fila.coincide ? Palette.foreground.transparentize(60%) : Palette.foreground;
+    }
+
+    MenuBar {
+        Menu {
+            title: @tr("Archivo");
+            MenuItem {
+                title: @tr("Cargar lista... (Ctrl+O)");
+                activated => { root.cargar-lista(); }
+            }
+            MenuItem {
+                title: @tr("Guardar lista (Ctrl+S)");
+                activated => { root.guardar-lista(); }
+            }
+            MenuItem {
+                title: @tr("Guardar lista como... (Ctrl+Mayus+S)");
+                activated => { root.guardar-lista-como(); }
+            }
+            MenuSeparator { }
+            MenuItem {
+                title: @tr("Buscar en el catalogo... (Ctrl+Mayus+F)");
+                activated => { root.buscar-en-el-catalogo(); }
+            }
+            MenuItem {
+                title: @tr("Pauta de tandas... (Ctrl+T)");
+                activated => { root.abrir-pauta(); }
+            }
+            MenuItem {
+                title: @tr("Ordenes de publicidad... (Ctrl+Mayus+T)");
+                activated => { root.abrir-ordenes(); }
+            }
+            MenuItem {
+                title: @tr("Anunciantes...");
+                activated => { root.abrir-anunciantes(); }
+            }
+            MenuItem {
+                title: @tr("Mantenimiento del catálogo...");
+                activated => { root.mantenimiento-del-catalogo(); }
+            }
+        }
+        Menu {
+            title: @tr("Ventana");
+            MenuItem {
+                title: @tr("Traer las ventanas a la ventana principal");
+                activated => { root.traer-editor(); }
+            }
+            MenuItem {
+                title: root.editor-centrado ? @tr("Editor siempre centrado: Sí") : @tr("Editor siempre centrado: No");
+                activated => { root.alternar-editor-centrado(); }
+            }
+            MenuItem {
+                title: root.ocultar-textos ? @tr("Ocultar textos de los botones: Sí") : @tr("Ocultar textos de los botones: No");
+                activated => { root.alternar-ocultar-textos(); }
+            }
+            // En los dos idiomas, para encontrarlo aunque no se entienda el actual.
+            Menu {
+                title: "Idioma / Language";
+                MenuItem {
+                    title: (root.idioma == 0 ? "✓ " : "") + "Español";
+                    activated => { root.elegir-idioma(0); }
+                }
+                MenuItem {
+                    title: (root.idioma == 1 ? "✓ " : "") + "English";
+                    activated => { root.elegir-idioma(1); }
+                }
+            }
+        }
+        Menu {
+            title: @tr("Ayuda");
+            MenuItem {
+                title: @tr("Manual");
+                activated => { root.abrir-manual(); }
+            }
+            MenuItem {
+                title: @tr("Acerca de MCP Raptor Player");
+                activated => { root.acerca-de(); }
+            }
+        }
+    }
+
+    // Las teclas 0 a 9 disparan el boton de ese numero de la hoja a la vista,
+    // aunque el panel de efectos este oculto. Les llegan las teclas que no
+    // usa el control con el foco.
+    forward-focus: teclas;
+    teclas := FocusScope {
+        key-pressed(evento) => {
+            if evento.modifiers.control && evento.modifiers.shift && (evento.text == "t" || evento.text == "T") {
+                root.abrir-ordenes();
+                return accept;
+            }
+            if evento.modifiers.control && (evento.text == "t" || evento.text == "T") {
+                root.abrir-pauta();
+                return accept;
+            }
+            if evento.modifiers.control && evento.modifiers.shift && (evento.text == "f" || evento.text == "F") {
+                root.buscar-en-el-catalogo();
+                return accept;
+            }
+            if evento.modifiers.control && (evento.text == "f" || evento.text == "F") {
+                buscador.focus();
+                buscador.select-all();
+                return accept;
+            }
+            if evento.modifiers.control && (evento.text == "o" || evento.text == "O") {
+                root.cargar-lista();
+                return accept;
+            }
+            if evento.modifiers.control && (evento.text == "s" || evento.text == "S") {
+                if evento.modifiers.shift {
+                    root.guardar-lista-como();
+                } else {
+                    root.guardar-lista();
+                }
+                return accept;
+            }
+            if !evento.modifiers.control && !evento.modifiers.alt && !evento.modifiers.meta
+                && evento.text.character-count == 1 && evento.text.is-float() {
+                root.tecla-de-efecto(evento.text.to-float());
+                return accept;
+            }
+            return reject;
+        }
+
+        HorizontalLayout {
+            VerticalLayout {
+                // Detalles de la pista marcada con el selector (o de la que suena)
+                // y el reloj; la lista queda abajo.
+                HorizontalLayout {
+                  padding-left: 8px;
+                  padding-right: 8px;
+                  padding-top: 8px;
+                  spacing: 8px;
+                  Rectangle {
+                    horizontal-stretch: 1;
+                    height: 80px;
+                    border-width: 1px;
+                    border-color: Palette.border;
+                    border-radius: 4px;
+                    background: Palette.alternate-background;
+                    if !root.ver-onda: GridLayout {
+                        padding-left: 10px;
+                        // Deja lugar al boton de la esquina.
+                        padding-right: 36px;
+                        padding-top: 6px;
+                        padding-bottom: 6px;
+                        spacing-horizontal: 12px;
+                        spacing-vertical: 4px;
+                        Row {
+                            Text {
+                                text: @tr("Carpeta: {}", root.detalle-carpeta);
+                                overflow: elide;
+                                horizontal-stretch: 1;
+                                min-width: 60px;
+                                if self.preferred-width > self.width: TouchArea { Tooltip { text: @markdown("\{root.detalle-carpeta}"); } }
+                            }
+                            Text {
+                                colspan: 2;
+                                text: @tr("Archivo: {}", root.detalle-archivo);
+                                font-weight: 700;
+                                overflow: elide;
+                                horizontal-stretch: 2;
+                                min-width: 60px;
+                                if self.preferred-width > self.width: TouchArea { Tooltip { text: @markdown("\{root.detalle-archivo}"); } }
+                            }
+                        }
+                        Row {
+                            Text {
+                                text: @tr("Tipo: {} · Género: {}", root.detalle-tipo, root.detalle-genero);
+                                overflow: elide;
+                                if self.preferred-width > self.width: TouchArea { Tooltip { text: @markdown("\{root.detalle-tipo} · \{root.detalle-genero}"); } }
+                            }
+                            Text {
+                                text: @tr("Ranking: {}", root.detalle-ranking);
+                                overflow: elide;
+                                if self.preferred-width > self.width: TouchArea { Tooltip { text: @markdown("\{root.detalle-ranking}"); } }
+                            }
+                            Text {
+                                text: @tr("Última reproducción: {}", root.detalle-ultima);
+                                overflow: elide;
+                                // El tiempo transcurrido (y la fecha, si no entra) se ven al pasar el mouse.
+                                if root.detalle-hace != "" || self.preferred-width > self.width: TouchArea {
+                                    Tooltip {
+                                        text: @markdown("\{root.detalle-ultima}\n\n\{root.detalle-hace}");
+                                    }
+                                }
+                            }
+                        }
+                        Row {
+                            Text {
+                                text: @tr("Álbum: {}", root.detalle-album);
+                                overflow: elide;
+                                if self.preferred-width > self.width: TouchArea { Tooltip { text: @markdown("\{root.detalle-album}"); } }
+                            }
+                            Text {
+                                text: @tr("Año: {}", root.detalle-anio);
+                                overflow: elide;
+                            }
+                            Text {
+                                text: @tr("Efecto fijado: {}", root.detalle-efecto);
+                                overflow: elide;
+                                if self.preferred-width > self.width: TouchArea { Tooltip { text: @markdown("\{root.detalle-efecto}"); } }
+                            }
+                        }
+                    }
+                    // Vista de onda: datos tecnicos del archivo arriba y barras de
+                    // nivel (la mitad superior de la onda) con las marcas y los
+                    // colores de la barra de progreso; con el tema que suena, lo
+                    // reproducido va en el color de la barra y un clic salta.
+                    if root.ver-onda: Rectangle {
+                        Text {
+                            x: 10px;
+                            y: 4px;
+                            width: parent.width - 46px;
+                            text: root.datos-tecnicos
+                                + (root.onda-de-la-que-suena || root.titulo-de-la-onda == "" ? ""
+                                    : (root.datos-tecnicos == "" ? "" : "  ·  ") + root.titulo-de-la-onda);
+                            font-size: 12px;
+                            color: Palette.foreground.transparentize(20%);
+                            overflow: elide;
+                        }
+                        // Mismo tramo horizontal que la pista de la barra de
+                        // progreso (16 px de cada lado): las marcas coinciden.
+                        zona-de-barras := Rectangle {
+                            x: 16px;
+                            y: 24px;
+                            width: parent.width - 32px;
+                            height: parent.height - 30px;
+                            property <float> avance: root.onda-de-la-que-suena && root.progreso-maximo > 0 ? root.progreso / root.progreso-maximo : -1;
+                            property <length> ancho-de-barra: root.barras.length > 0 ? self.width / root.barras.length : 0px;
+                            property <bool> hay-overlay: root.onda-overlay-inicio >= 0 && root.onda-overlay-fin > root.onda-overlay-inicio;
+                            property <bool> hay-outro: root.onda-outro-inicio >= 0 && root.onda-outro-fin > root.onda-outro-inicio;
+                            property <float> solapamiento-inicio: max(root.onda-overlay-inicio, root.onda-outro-inicio);
+                            property <float> solapamiento-fin: min(root.onda-overlay-fin, root.onda-outro-fin);
+                            function x-de(segundos: float) -> length {
+                                self.width * max(0, min(1, segundos / max(root.duracion-de-la-onda, 0.001)))
+                            }
+                            // Marcas por detras de las barras, como en la barra de progreso.
+                            if root.barras.length > 0 && self.hay-outro: Rectangle {
+                                x: zona-de-barras.x-de(root.onda-outro-inicio);
+                                width: max(2px, zona-de-barras.x-de(root.onda-outro-fin) - self.x);
+                                background: (root.onda-outro-manual ? Iconografia.color-outro-manual : Iconografia.color-outro-sugerida).with-alpha(0.35);
+                            }
+                            if root.barras.length > 0 && self.hay-overlay: Rectangle {
+                                x: zona-de-barras.x-de(root.onda-overlay-inicio);
+                                width: max(2px, zona-de-barras.x-de(root.onda-overlay-fin) - self.x);
+                                background: (root.onda-overlay-manual ? Iconografia.color-overlay-manual : Iconografia.color-overlay-sugerido).with-alpha(0.4);
+                            }
+                            if root.barras.length > 0 && self.hay-overlay && self.hay-outro && self.solapamiento-fin > self.solapamiento-inicio: Rectangle {
+                                x: zona-de-barras.x-de(zona-de-barras.solapamiento-inicio);
+                                width: max(2px, zona-de-barras.x-de(zona-de-barras.solapamiento-fin) - self.x);
+                                background: Iconografia.color-solapamiento.with-alpha(0.6);
+                            }
+                            for barra[indice] in root.barras: Rectangle {
+                                property <bool> sonada: (indice + 0.5) / root.barras.length <= zona-de-barras.avance;
+                                x: indice * zona-de-barras.ancho-de-barra;
+                                width: max(1px, zona-de-barras.ancho-de-barra - (zona-de-barras.ancho-de-barra >= 3px ? 1px : 0px));
+                                // Pico, mas tenue, y encima el nivel RMS.
+                                Rectangle {
+                                    y: parent.height - self.height;
+                                    height: max(1px, parent.height * barra.pico);
+                                    background: (parent.sonada ? Palette.accent-background : Palette.foreground).with-alpha(0.4);
+                                }
+                                Rectangle {
+                                    y: parent.height - self.height;
+                                    height: max(1px, parent.height * barra.rms);
+                                    background: parent.sonada ? Palette.accent-background : Palette.foreground.with-alpha(0.75);
+                                }
+                            }
+                            // La mezcla efectiva con la siguiente: recuadro rojo encima.
+                            if root.barras.length > 0 && root.onda-mezcla-inicio >= 0 && root.onda-mezcla-fin > root.onda-mezcla-inicio: Rectangle {
+                                x: zona-de-barras.x-de(root.onda-mezcla-inicio);
+                                width: max(3px, zona-de-barras.x-de(root.onda-mezcla-fin) - self.x);
+                                border-radius: 3px;
+                                border-width: 2px;
+                                border-color: Iconografia.color-mezcla;
+                                background: Iconografia.color-mezcla.with-alpha(0.15);
+                            }
+                            if self.avance >= 0: Rectangle {
+                                x: zona-de-barras.width * zona-de-barras.avance - 1px;
+                                width: 2px;
+                                background: Palette.accent-background;
+                            }
+                            if root.barras.length == 0: Text {
+                                text: root.estado-de-la-onda;
+                                color: Palette.foreground.transparentize(40%);
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                            if root.onda-de-la-que-suena && root.progreso-habilitado: TouchArea {
+                                mouse-cursor: pointer;
+                                clicked => { root.progreso-movido(self.mouse-x / self.width * root.progreso-maximo); }
+                            }
+                        }
+                    }
+                    // Alterna entre los datos y la onda; va en la linea del
+                    // encabezado, sin tapar las barras.
+                    Rectangle {
+                        x: parent.width - self.width - 6px;
+                        y: 3px;
+                        width: 20px;
+                        height: 20px;
+                        border-radius: 4px;
+                        background: area-de-la-vista.has-hover ? Palette.control-background : transparent;
+                        accessible-role: button;
+                        accessible-label: root.ver-onda ? @tr("Ver los datos del tema") : @tr("Ver la forma de onda");
+                        accessible-action-default => { root.alternar-vista-del-detalle(); }
+                        Image {
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            width: 16px;
+                            height: 16px;
+                            source: root.ver-onda ? @image-url("iconos/datos.svg") : @image-url("iconos/barras-de-nivel.svg");
+                            colorize: Palette.foreground.transparentize(15%);
+                        }
+                        area-de-la-vista := TouchArea {
+                            clicked => { root.alternar-vista-del-detalle(); }
+                            Tooltip { text: @markdown("\{root.ver-onda ? @tr("Ver los datos del tema") : @tr("Ver la forma de onda del tema: barras de nivel; con el tema que suena, un clic salta a ese punto")}"); }
+                        }
+                    }
+                  }
+                  Rectangle {
+                    height: 80px;
+                    width: root.ancho-del-reloj;
+                    border-width: 1px;
+                    border-color: Palette.border;
+                    border-radius: 4px;
+                    background: Palette.alternate-background;
+                    VerticalLayout {
+                        padding-left: 10px;
+                        padding-right: 10px;
+                        alignment: center;
+                        spacing: 2px;
+                        Text {
+                            text: root.hora-actual;
+                            font-family: root.fuente-monoespaciada;
+                            font-size: 20px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                        }
+                        Text {
+                            text: root.fecha-actual;
+                            font-size: 12px;
+                            horizontal-alignment: center;
+                            color: Palette.foreground.with-alpha(0.7);
+                        }
+                        // El clima de la localidad elegida; clic: cambiarla.
+                        if root.clima-del-reloj != "": Text {
+                            text: root.clima-del-reloj;
+                            font-size: 12px;
+                            horizontal-alignment: center;
+                            overflow: elide;
+                            color: root.clima-hth-sin-datos ? #ff8787 : Palette.foreground.transparentize(10%);
+                            TouchArea {
+                                mouse-cursor: pointer;
+                                clicked => { root.cambiar-localidad-del-clima(); }
+                                Tooltip { text: @markdown("\{root.clima-hth}\n\n\{@tr("Clic: cambiar la localidad del clima")}"); }
+                            }
+                        }
+                        if root.proxima-tanda != "": Text {
+                            text: root.proxima-tanda;
+                            font-size: 11px;
+                            horizontal-alignment: center;
+                            overflow: elide;
+                            color: #ffd43b;
+                            TouchArea {
+                                mouse-cursor: pointer;
+                                clicked => { root.abrir-pauta(); }
+                                Tooltip { text: @markdown("\{@tr("Abrir la pauta de tandas (Ctrl+T)")}"); }
+                            }
+                        }
+                    }
+                  }
+                }
+
+                // Panel de control
+                VerticalLayout {
+                    // Mismos margenes y separacion que la fila de los detalles y
+                    // el reloj: la barra y el medidor quedan alineados con ellos.
+                    padding-left: 8px;
+                    padding-right: 8px;
+                    padding-top: 6px;
+                    padding-bottom: 2px;
+                    spacing: 8px;
+                    // Las opciones de reproduccion comparten la linea del tema, y el
+                    // volumen y el fader van con el transporte: asi las dos filas
+                    // entran junto a la botonera abierta.
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Text {
+                            horizontal-stretch: 1;
+                            text: root.pista-actual;
+                            font-size: 22px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                            overflow: elide;
+                            // Doble clic: llevar el selector a la pista que suena. Si
+                            // no entra, el nombre completo en un tooltip.
+                            property <bool> recortado: self.preferred-width > self.width;
+                            TouchArea {
+                                double-clicked => { root.ir-a-pista-actual(); }
+                                if parent.recortado: Tooltip { text: @markdown("\{root.pista-actual}"); }
+                            }
+                        }
+                        if root.controles-visibles: HorizontalLayout {
+                        // Solo el ancho de su contenido: no se reparte el espacio.
+                        horizontal-stretch: 0;
+                        spacing: 8px;
+                        CheckBox {
+                            text: @tr("Desplazar");
+                            checked <=> root.desplazar;
+                            toggled => { root.desplazar-cambiado(self.checked); }
+                            Tooltip { text: @markdown("\{@tr("Mantiene la pista que suena en el centro de la lista: la desplaza en cada cambio de tema.")}"); }
+                        }
+                        CheckBox {
+                            text: @tr("Repetir lista");
+                            checked <=> root.repetir;
+                            toggled => { root.repetir-cambiado(self.checked); }
+                        }
+                        CheckBox {
+                            text: @tr("Crossfade inteligente");
+                            checked <=> root.crossfade-inteligente;
+                            toggled => { root.crossfade-inteligente-cambiado(self.checked); }
+                        }
+                        CheckBox {
+                            text: @tr("Nivelar volumen");
+                            checked <=> root.nivelar-volumen;
+                            toggled => { root.nivelar-volumen-cambiado(self.checked); }
+                        }
+                        ComboBox {
+                            width: 110px;
+                            model: [@tr("-14 LUFS"), @tr("-11 LUFS"), @tr("-8 LUFS")];
+                            current-index <=> root.objetivo-lufs;
+                            selected => { root.objetivo-lufs-cambiado(self.current-index); }
+                        }
+                        }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        DeslizanteDeProgreso {
+                            horizontal-stretch: 1;
+                            maximum: root.progreso-maximo;
+                            enabled: root.progreso-habilitado;
+                            value <=> root.progreso;
+                            overlay-inicio: root.progreso-overlay-inicio;
+                            overlay-fin: root.progreso-overlay-fin;
+                            outro-inicio: root.progreso-outro-inicio;
+                            outro-fin: root.progreso-outro-fin;
+                            overlay-manual: root.progreso-overlay-manual;
+                            outro-manual: root.progreso-outro-manual;
+                            mezcla-inicio: root.progreso-mezcla-inicio;
+                            mezcla-fin: root.progreso-mezcla-fin;
+                            changed(valor) => { root.progreso-movido(valor); }
+                            Tooltip { text: @markdown("\{@tr("Ventana de overlay: naranja si es sugerida, rosa si la fijo usted. Outro (desde donde el tema empieza a bajar): celeste si es sugerida, verde si la fijo usted. Violeta: donde el overlay se solapa con la outro. Recuadro rojo: la mezcla efectiva con la siguiente (con el crossfade inteligente dura de 2 a 12 s). Arrastre hasta una marca para probarla.")}"); }
+                        }
+                        // Tiempo del tema: lo mas destacado del panel; naranja
+                        // mientras dura una mezcla, como el boton Efectos.
+                        // Ancho para el formato mas largo con la fuente de ancho
+                        // fijo: "-1:02:33.4 / 1:02:33.4" (22 caracteres).
+                        Rectangle {
+                            width: root.ancho-del-reloj;
+                            height: 40px;
+                            border-radius: 4px;
+                            border-width: 1px;
+                            border-color: root.en-mezcla ? #d08a2e : Palette.border;
+                            background: root.en-mezcla ? #f0ad4e : Palette.alternate-background;
+                            Text {
+                                text: root.tiempo;
+                                font-family: root.fuente-monoespaciada;
+                                font-size: 20px;
+                                font-weight: 700;
+                                color: root.en-mezcla ? #1a1a1a : Palette.foreground;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                            TouchArea {
+                                clicked => { root.ciclar-formato-de-tiempo(); }
+                                Tooltip {
+                                    text: @markdown("\{@tr("Clic para alternar: transcurrido, restante, segundos restantes / totales o segundos transcurridos / totales. Naranja: mezclando con el tema siguiente.")}");
+                                }
+                            }
+                        }
+                    }
+                    // Transporte, volumen y fader en una sola linea.
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Button {
+                            // Iconos rellenos de Tabler Icons (MIT, ui/iconos), teñidos con
+                            // el color del texto de cada boton.
+                            icon: @image-url("iconos/anterior.svg");
+                            colorize-icon: true;
+                            text: root.botones-compactos ? "" : @tr("Anterior");
+                            enabled: root.anterior-habilitado;
+                            clicked => { root.anterior(); }
+                            if root.botones-compactos: Tooltip { text: @markdown("\{@tr("Anterior")}"); }
+                        }
+                        Button {
+                            min-width: root.botones-compactos ? 0px : 100px;
+                            icon: root.texto-reproducir == @tr("Pausa") ? @image-url("iconos/pausa.svg") : @image-url("iconos/reproducir.svg");
+                            colorize-icon: true;
+                            text: root.botones-compactos ? "" : root.texto-reproducir;
+                            clicked => { root.alternar-reproduccion(); }
+                            if root.botones-compactos: Tooltip { text: @markdown("\{root.texto-reproducir}"); }
+                        }
+                        // Mientras dura el fundido del fader, el boton que lo inicio
+                        // se resalta con el color de acento.
+                        Button {
+                            min-width: root.botones-compactos ? 0px : 100px;
+                            icon: @image-url("iconos/detener.svg");
+                            colorize-icon: true;
+                            text: root.botones-compactos ? "" : root.texto-detener;
+                            primary: root.deteniendo;
+                            clicked => { root.detener(); }
+                            if root.botones-compactos: Tooltip { text: @markdown("\{root.texto-detener}"); }
+                        }
+                        Button {
+                            min-width: root.botones-compactos ? 0px : 110px;
+                            icon: @image-url("iconos/siguiente.svg");
+                            colorize-icon: true;
+                            text: root.botones-compactos ? "" : root.texto-siguiente;
+                            primary: root.mezclando;
+                            enabled: root.siguiente-habilitado || root.mezclando;
+                            clicked => { root.siguiente(); }
+                            if root.botones-compactos: Tooltip { text: @markdown("\{root.texto-siguiente}"); }
+                        }
+                        // Muestra u oculta el volumen, el fader y las opciones.
+                        BotonAlternable {
+                            icono: @image-url("iconos/ajustes.svg");
+                            texto: root.controles-visibles ? @tr("Ocultar el volumen, el fader y las opciones de reproducción") : @tr("Mostrar el volumen, el fader y las opciones de reproducción (desplazar, repetir, crossfade inteligente y nivelar volumen)");
+                            solo-icono: true;
+                            activo <=> root.controles-visibles;
+                            alternado => { root.controles-alternados(root.controles-visibles); }
+                        }
+                        if root.controles-visibles: HorizontalLayout {
+                        // Solo el ancho de su contenido: no se reparte el espacio.
+                        horizontal-stretch: 0;
+                        spacing: 8px;
+                        // Icono en lugar del rotulo; el nombre va en el globo.
+                        VerticalLayout {
+                            alignment: center;
+                            Image {
+                                width: 18px;
+                                height: 18px;
+                                source: @image-url("iconos/volumen.svg");
+                                colorize: Palette.foreground.transparentize(15%);
+                                accessible-role: text;
+                                accessible-label: @tr("Volumen");
+                                TouchArea { Tooltip { text: @markdown("\{@tr("Volumen")}"); } }
+                            }
+                        }
+                        Deslizante {
+                            width: 110px;
+                            minimum: 0;
+                            maximum: 1;
+                            value <=> root.volumen;
+                            changed(valor) => { root.volumen-cambiado(valor); }
+                            doble-clic => { root.volumen-por-defecto(); }
+                            Tooltip { text: @markdown("\{@tr("Doble clic: volver al 80 %")}"); }
+                        }
+                        Text {
+                            min-width: 40px;
+                            text: Math.round(root.volumen * 100) + " %";
+                            vertical-alignment: center;
+                        }
+                        // Icono en lugar del rotulo; el nombre va en el globo.
+                        VerticalLayout {
+                            alignment: center;
+                            Image {
+                                width: 18px;
+                                height: 18px;
+                                source: @image-url("iconos/fader.svg");
+                                colorize: Palette.foreground.transparentize(15%);
+                                accessible-role: text;
+                                accessible-label: @tr("Fader");
+                                TouchArea { Tooltip { text: @markdown("\{@tr("Fader")}"); } }
+                            }
+                        }
+                        Deslizante {
+                            width: 120px;
+                            minimum: 0;
+                            maximum: 15;
+                            step: 1;
+                            value <=> root.fader;
+                            changed(valor) => { root.fader-cambiado(valor); }
+                            doble-clic => { root.fader-por-defecto(); }
+                            Tooltip {
+                                text: @markdown("\{@tr("Segundos de mezcla al pasar con Siguiente y de fundido al Detener; 0 los desactiva. Doble clic: 5 s")}");
+                            }
+                        }
+                        Text {
+                            min-width: 34px;
+                            text: Math.round(root.fader) + " s";
+                            vertical-alignment: center;
+                        }
+                        }
+                        Rectangle { horizontal-stretch: 1; }
+                    }
+                    // Estado a la izquierda y, a la derecha, el aviso del analisis de
+                    // mezcla (aca no compite con los controles de reproduccion).
+                    HorizontalLayout {
+                        spacing: 12px;
+                        Text {
+                            horizontal-stretch: 1;
+                            min-width: 0px;
+                            text: root.estado;
+                            overflow: elide;
+                            if self.preferred-width > self.width: TouchArea { Tooltip { text: @markdown("\{root.estado}"); } }
+                        }
+                        Text {
+                            min-width: 0px;
+                            text: root.analisis-de-mezcla;
+                            horizontal-alignment: right;
+                            overflow: elide;
+                            color: Palette.foreground.with-alpha(0.7);
+                            if self.preferred-width > self.width: TouchArea { Tooltip { text: @markdown("\{root.analisis-de-mezcla}"); } }
+                        }
+                    }
+                }
+                // Barra de archivos
+                HorizontalLayout {
+                    padding: 6px;
+                    spacing: 6px;
+                    // Agregar abre un menu: archivos sueltos o una carpeta entera.
+                    boton-agregar := Button {
+                        icon: @image-url("iconos/agregar.svg");
+                        colorize-icon: true;
+                        text: root.botones-compactos ? "" : @tr("Agregar");
+                        clicked => { menu-agregar.show(); }
+                        Tooltip { text: @markdown("\{@tr("Agregar archivos, una carpeta con sus subcarpetas, temas del catalogo o marcadores de bloque fijo (lo que queda entre el inicio y el fin no lo cambian Mezclar ni BPM). Lo nuevo se inserta despues de la seleccionada.")}"); }
+                    }
+                    menu-agregar := PopupWindow {
+                        x: boton-agregar.x;
+                        y: boton-agregar.y + boton-agregar.height + 2px;
+                        width: 280px;
+                        Rectangle {
+                            background: Palette.background;
+                            border-width: 1px;
+                            border-color: Palette.border;
+                            border-radius: 4px;
+                            VerticalLayout {
+                                padding: 4px;
+                                OpcionDeMenu {
+                                    icono: @image-url("iconos/agregar.svg");
+                                    texto: @tr("Archivos...");
+                                    elegida => { root.agregar-archivos(); }
+                                }
+                                OpcionDeMenu {
+                                    icono: @image-url("iconos/buscar-salidas.svg");
+                                    texto: @tr("Carpeta con subcarpetas...");
+                                    elegida => { root.agregar-carpeta(); }
+                                }
+                                OpcionDeMenu {
+                                    icono: @image-url("iconos/buscar-en-catalogo.svg");
+                                    texto: @tr("Desde el catalogo... (Ctrl+Mayus+F)");
+                                    elegida => { root.buscar-en-el-catalogo(); }
+                                }
+                                Rectangle { height: 1px; background: Palette.border; }
+                                OpcionDeMenu {
+                                    icono: @image-url("iconos/bloque-fijo.svg");
+                                    texto: @tr("Fijar la selección como bloque");
+                                    elegida => { root.fijar-seleccion-como-bloque(); }
+                                }
+                                OpcionDeMenu {
+                                    icono: @image-url("iconos/inicio-de-bloque.svg");
+                                    texto: @tr("Inicio de bloque fijo");
+                                    elegida => { root.insertar-marcador(1); }
+                                }
+                                OpcionDeMenu {
+                                    icono: @image-url("iconos/fin-de-bloque.svg");
+                                    texto: @tr("Fin de bloque fijo");
+                                    elegida => { root.insertar-marcador(2); }
+                                }
+                            }
+                        }
+                    }
+                    Button {
+                        icon: @image-url("iconos/quitar.svg");
+                        colorize-icon: true;
+                        text: root.botones-compactos ? "" : @tr("Quitar");
+                        enabled: root.hay-seleccion;
+                        clicked => { root.quitar-seleccionadas(); }
+                        Tooltip { text: @markdown("\{root.botones-compactos ? @tr("Quitar") + ": " : ""}\{@tr("Quita de la lista las pistas seleccionadas (no borra archivos). La que suena no se quita. Con un bloque fijo seleccionado, primero quita los marcadores y, pulsando otra vez, los temas.")}"); }
+                    }
+                    Button {
+                        icon: @image-url("iconos/limpiar.svg");
+                        colorize-icon: true;
+                        text: root.botones-compactos ? "" : @tr("Limpiar");
+                        enabled: root.filas.length > 0;
+                        clicked => { root.limpiar-lista(); }
+                        if root.botones-compactos: Tooltip { text: @markdown("\{@tr("Limpiar")}"); }
+                    }
+                    Button {
+                        icon: @image-url("iconos/editar.svg");
+                        colorize-icon: true;
+                        text: root.botones-compactos ? "" : @tr("Editar");
+                        enabled: root.filas.length > 0;
+                        clicked => { root.editar-pista(-1); }
+                        if root.botones-compactos: Tooltip { text: @markdown("\{@tr("Editar")}"); }
+                    }
+                    Button {
+                        icon: @image-url("iconos/subir.svg");
+                        colorize-icon: true;
+                        text: root.botones-compactos ? "" : @tr("Subir");
+                        enabled: root.hay-seleccion;
+                        clicked => { root.subir-seleccionada(); }
+                        if root.botones-compactos: Tooltip { text: @markdown("\{@tr("Subir")}"); }
+                    }
+                    Button {
+                        icon: @image-url("iconos/bajar.svg");
+                        colorize-icon: true;
+                        text: root.botones-compactos ? "" : @tr("Bajar");
+                        enabled: root.hay-seleccion;
+                        clicked => { root.bajar-seleccionada(); }
+                        if root.botones-compactos: Tooltip { text: @markdown("\{@tr("Bajar")}"); }
+                    }
+                    Button {
+                        icon: @image-url("iconos/mezclar.svg");
+                        colorize-icon: true;
+                        text: root.botones-compactos ? "" : @tr("Mezclar");
+                        enabled: root.filas.length > 1;
+                        clicked => { root.mezclar-lista(); }
+                        Tooltip { text: @markdown("\{root.botones-compactos ? @tr("Mezclar") + ": " : ""}\{@tr("Mezcla al azar (shuffle) toda la lista o, si hay varias pistas seleccionadas, solo esas entre ellas. La pista que suena queda primera.")}"); }
+                    }
+                    Button {
+                        icon: @image-url("iconos/ordenar-por-bpm.svg");
+                        colorize-icon: true;
+                        text: root.botones-compactos ? "" : @tr("BPM");
+                        enabled: root.filas.length > 1;
+                        clicked => { root.ordenar-por-bpm(); }
+                        Tooltip { text: @markdown("\{@tr("Ordena por BPM, de menor a mayor, toda la lista o, si hay varias pistas seleccionadas, solo esas entre ellas. A igual tempo, primero el de mayor ranking; los que no tienen tempo van al final.")}"); }
+                    }
+                    Button {
+                        icon: @image-url("iconos/validar.svg");
+                        colorize-icon: true;
+                        text: root.botones-compactos ? "" : @tr("Validar");
+                        enabled: root.filas.length > 0;
+                        clicked => { root.validar-lista(); }
+                        Tooltip { text: @markdown("\{root.botones-compactos ? @tr("Validar") + ": " : ""}\{@tr("Revisa que existan los archivos de la lista (ofrece quitar los que faltan) y busca temas repetidos: mismo titulo y artista en otro archivo. Por cada repetido pregunta si quitarlo.")}"); }
+                    }
+                    buscador := LineEdit {
+                        // Se achica hasta 140 px en ventanas angostas, pero no crece.
+                        min-width: 140px;
+                        preferred-width: 200px;
+                        horizontal-stretch: 0;
+                        placeholder-text: @tr("Buscar (Ctrl+F)");
+                        edited(texto) => { root.buscar(texto); }
+                        accepted => { root.ir-a-coincidencia(true); }
+                        key-pressed(evento) => {
+                            if evento.text == Key.DownArrow {
+                                root.ir-a-coincidencia(true);
+                                return accept;
+                            }
+                            if evento.text == Key.UpArrow {
+                                root.ir-a-coincidencia(false);
+                                return accept;
+                            }
+                            if evento.text == Key.Escape && self.text != "" {
+                                self.text = "";
+                                root.buscar("");
+                                return accept;
+                            }
+                            return reject;
+                        }
+                        Tooltip { text: IdiomaDeLaInterfaz.ingles ? @markdown("Searches by title, artist, genre, album or file (all the words, ignoring accents).\n\nUp and down arrows (or Enter): jump between the results. Escape: clear.\n\n- **#508**: jumps to position 508 (**#10..20**, a range)\n- **artist:sanz**, **title:**, **genre:**, **album:**, **type:**, **note:**, **file:** (phrases in quotes: genre:\"rock nacional\")\n- **rating:>=4**, **year:1990..1999**, **bpm:120-128**, **duration:<3:30** (=, >, >=, <, <= or ranges)\n- **played:today**, **yesterday**, **never**, **7d** (last 7 days), **>30d** (more than 30 ago), **2026-11-03**, **<01/10/2026**\n- A leading **-** negates: **-genre:cumbia**\n\nThe Spanish prefixes (artista:, titulo:, sonado:...) also work.") : @markdown("Busca por titulo, artista, genero, album o archivo (todas las palabras, sin importar acentos).\n\nFlechas arriba y abajo (o Enter): saltar entre los resultados. Escape: limpiar.\n\n- **#508**: salta a la posicion 508 (**#10..20**, un tramo)\n- **artista:sanz**, **titulo:**, **genero:**, **album:**, **tipo:**, **nota:**, **archivo:** (frases entre comillas: genero:\"rock nacional\")\n- **ranking:>=4**, **anio:1990..1999**, **bpm:120-128**, **duracion:<3:30** (=, >, >=, <, <= o tramos)\n- **sonado:hoy**, **ayer**, **nunca**, **7d** (ultimos 7 dias), **>30d** (hace mas de 30), **2026-11-03**, **<01/10/2026**\n- Un **-** adelante niega: **-genero:cumbia**"); }
+                    }
+                    Text {
+                        text: root.resultado-de-busqueda;
+                        vertical-alignment: center;
+                        color: root.buscando && (root.resultado-de-busqueda == @tr("Sin resultados") || root.resultado-de-busqueda == @tr("Búsqueda no válida")) ? #e03131 : Palette.foreground;
+                    }
+                    // Que pasa con los efectos, a la vista aunque el panel este oculto.
+                    Text {
+                        horizontal-stretch: 1;
+                        min-width: 0px;
+                        text: root.actividad-de-efectos;
+                        horizontal-alignment: right;
+                        vertical-alignment: center;
+                        overflow: elide;
+                        color: root.efecto-en-espera ? #f0ad4e : Palette.foreground;
+                        if self.preferred-width > self.width: TouchArea { Tooltip { text: @markdown("\{root.actividad-de-efectos}"); } }
+                    }
+                    // Se pone naranja si hay un efecto en espera, aunque el panel
+                    // de efectos este oculto.
+                    BotonAlternable {
+                        icono: @image-url("iconos/efectos.svg");
+                        texto: @tr("Efectos");
+                        solo-icono: root.botones-compactos;
+                        activo <=> root.botonera-visible;
+                        aviso: root.efecto-en-espera;
+                    }
+                }
+
+                // Tabla de pistas
+                VerticalLayout {
+                    padding-left: 8px;
+                    padding-right: 8px;
+                    padding-bottom: 6px;
+                    Rectangle {
+                        border-width: 1px;
+                        border-color: Palette.border;
+                        VerticalLayout {
+                            Rectangle {
+                                height: 28px;
+                                background: Palette.alternate-background;
+                                HorizontalLayout {
+                                    Encabezado { width: root.ancho-posicion; texto: "#"; }
+                                    Encabezado {
+                                        horizontal-stretch: 1;
+                                        preferred-width: 0px;
+                                        min-width: 40px;
+                                        texto: @tr("Título");
+                                        icono: @image-url("iconos/dato-titulo.svg");
+                                        ayuda: @tr("Título del tema, leido de sus etiquetas o corregido en el editor. Al pasar el puntero por un titulo se ve la ruta del archivo. Doble clic: reproducir.");
+                                    }
+                                    Encabezado {
+                                        horizontal-stretch: 1;
+                                        preferred-width: 0px;
+                                        min-width: 40px;
+                                        texto: @tr("Artista");
+                                        icono: @image-url("iconos/dato-artista.svg");
+                                        ayuda: @tr("Artista del tema, leido de sus etiquetas o corregido en el editor. Doble clic: reproducir.");
+                                    }
+                                    Encabezado {
+                                        width: root.ancho-duracion;
+                                        texto: @tr("Duración");
+                                        icono: @image-url("iconos/dato-duracion.svg");
+                                        alineacion: right;
+                                        ayuda: @tr("Duración del tema en minutos, segundos y decimas. Doble clic: abrir el editor.");
+                                    }
+                                    Encabezado {
+                                        width: root.ancho-tipo;
+                                        texto: @tr("Tipo");
+                                        icono: @image-url("iconos/dato-tipo.svg");
+                                        ayuda: @tr("Que es cada elemento: Tema, Tema editado, Comercial, Anuncio, Publicidad, Podcast, Efecto o Seco (vacio: sin clasificar, suena como un Tema). Se fija en el editor. Todo lo que no es un Tema (o Tema editado) suena sin mezcla, puede repetirse y lleva una franja de color; comercial, anuncio y publicidad ademas se pintan en verde azulado. Para que Mezclar no desarme una tanda, enciérrela en un bloque fijo. Doble clic: abrir el editor.");
+                                    }
+                                    Encabezado {
+                                        width: root.ancho-ranking;
+                                        texto: @tr("Ranking");
+                                        icono: @image-url("iconos/dato-ranking.svg");
+                                        ayuda: @tr("Valoración del tema, de 0 a 5 estrellas. Se fija en el editor; a igual tempo, el botón BPM pone primero los de mayor ranking. Doble clic: abrir el editor.");
+                                    }
+                                    Encabezado {
+                                        width: root.ancho-genero;
+                                        texto: @tr("Género");
+                                        icono: @image-url("iconos/dato-genero.svg");
+                                        ayuda: @tr("Estilo musical del tema, leido de sus etiquetas o corregido en el editor; no cambia como suena (eso lo decide el Tipo). Al pasar el puntero se ve completo. Doble clic: abrir el editor.");
+                                    }
+                                    Encabezado {
+                                        width: root.ancho-anio;
+                                        texto: @tr("Año");
+                                        icono: @image-url("iconos/dato-anio.svg");
+                                        alineacion: right;
+                                        ayuda: @tr("Año de edición del tema, leído de sus etiquetas, corregido en el editor o completado desde MusicBrainz. Se busca con anio:, por ejemplo anio:1990..1999. Doble clic: abrir el editor.");
+                                    }
+                                    Encabezado {
+                                        width: root.ancho-bpm;
+                                        texto: @tr("BPM");
+                                        icono: @image-url("iconos/dato-bpm.svg");
+                                        alineacion: right;
+                                        ayuda: @tr("Tempo del tema en golpes por minuto, estimado en el analisis. Con el boton BPM se ordena la lista por este valor. Doble clic: abrir el editor.");
+                                    }
+                                    Encabezado {
+                                        width: root.ancho-overlay;
+                                        texto: @tr("Overlay");
+                                        icono: @image-url("iconos/overlay.svg");
+                                        alineacion: right;
+                                        ayuda: @tr("Segundos de la ventana dentro de la cual un efecto en modo trabado puede sonar entero (en cursiva: sugerida por el análisis). Su inicio y su fin se ven al pasar el puntero, en el panel de detalle y en el editor. Doble clic: abrir el editor.");
+                                    }
+                                    Encabezado {
+                                        width: root.ancho-segundos;
+                                        texto: @tr("Mezcla");
+                                        icono: @image-url("iconos/puntos-de-mezcla.svg");
+                                        alineacion: right;
+                                        ayuda: @tr("Segundos que este tema se mezcla con el siguiente: el menor entre su outro y la intro del siguiente. Doble clic: abrir el editor.");
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                vertical-stretch: 1;
+                                lista-de-pistas := ListView {
+                                    for fila[indice] in root.filas: Rectangle {
+                                        height: root.alto-de-fila;
+                                        background: fila.sonando ? root.color-sonando.with-alpha(fila.seleccionada ? 0.55 : 0.38)
+                                            : fila.seleccionada ? Palette.selection-background
+                                            : fila.marcador > 0 ? root.color-de-bloque-fijo.with-alpha(0.22)
+                                            : fila.reservado > 0 && fila.reservado <= 3 ? root.color-comercial.with-alpha(Math.mod(indice, 2) == 1 ? 0.28 : 0.20)
+                                            : Math.mod(indice, 2) == 1 ? Palette.alternate-background : transparent;
+                                        // Franjas a la izquierda: tipo sin mezcla (aun seleccionada) o
+                                        // coincidencia, y a continuacion el efecto fijado.
+                                        if fila.reservado > 0 || (root.buscando && fila.coincide): Rectangle {
+                                            x: 0;
+                                            width: root.ancho-de-franja;
+                                            background: fila.reservado > 0 ? root.color-de-reservado(fila.reservado) : #f0ad4e;
+                                        }
+                                        if fila.fijado: Rectangle {
+                                            x: fila.reservado > 0 || (root.buscando && fila.coincide) ? root.ancho-de-franja : 0;
+                                            width: root.ancho-de-franja;
+                                            background: root.color-de-fijado;
+                                        }
+                                        menu-de-fila := ContextMenuArea {
+                                            Menu {
+                                                MenuItem {
+                                                    title: @tr("Reproducir");
+                                                    activated => { root.doble-clic-en-fila(indice); }
+                                                }
+                                                MenuItem {
+                                                    title: @tr("Encolar como siguiente");
+                                                    enabled: !fila.sonando;
+                                                    activated => { root.encolar-como-siguiente(indice); }
+                                                }
+                                                MenuItem {
+                                                    title: @tr("Editar pista...");
+                                                    activated => { root.editar-pista(indice); }
+                                                }
+                                                MenuItem {
+                                                    title: @tr("Quitar de la lista");
+                                                    activated => { root.quitar-fila(indice); }
+                                                }
+                                                // Los marcadores y los HTH no tienen etiquetas.
+                                                if fila.marcador == 0 && fila.hth == 0: Menu {
+                                                    title: @tr("Actualizar datos");
+                                                    MenuItem {
+                                                        title: @tr("Releer las etiquetas del archivo...");
+                                                        activated => { root.actualizar-datos-de-fila(indice, 0); }
+                                                    }
+                                                    MenuItem {
+                                                        title: @tr("Completar desde MusicBrainz...");
+                                                        activated => { root.actualizar-datos-de-fila(indice, 1); }
+                                                    }
+                                                }
+                                                // Los marcadores de bloque fijo y los HTH no son temas del catalogo.
+                                                if fila.marcador == 0 && fila.hth == 0: MenuItem {
+                                                    title: @tr("Descatalogar...");
+                                                    activated => { root.descatalogar-fila(indice); }
+                                                }
+                                                if fila.hth > 0: Menu {
+                                                    title: @tr("Base del anuncio HTH");
+                                                    for base[posicion] in root.bases-hth: MenuItem {
+                                                        title: base;
+                                                        activated => { root.cambiar-base-hth(indice, posicion); }
+                                                    }
+                                                    MenuSeparator { }
+                                                    MenuItem {
+                                                        title: @tr("Sin base (la voz sola)");
+                                                        enabled: fila.hth == 2;
+                                                        activated => { root.cambiar-base-hth(indice, -1); }
+                                                    }
+                                                }
+                                            }
+                                            TouchArea {
+                                                pointer-event(evento) => {
+                                                    if evento.kind == PointerEventKind.down && evento.button == PointerEventButton.left {
+                                                        root.clic-en-fila(indice, evento.modifiers.control, evento.modifiers.shift);
+                                                    }
+                                                    if evento.kind == PointerEventKind.down && evento.button == PointerEventButton.right {
+                                                        menu-de-fila.show({ x: self.mouse-x, y: self.mouse-y });
+                                                    }
+                                                }
+                                                double-clicked => { root.doble-clic-en-fila(indice); }
+                                            }
+                                        }
+                                        // Doble clic en numero, titulo o artista: reproducir; en las
+                                        // demas columnas: abrir el editor.
+                                        HorizontalLayout {
+                                            Celda {
+                                                width: root.ancho-posicion;
+                                                valor: fila.posicion;
+                                                tono: root.tono-de-fila(fila);
+                                                font-weight: fila.sonando ? 700 : 400;
+                                                clic(control, mayusculas) => { root.clic-en-fila(indice, control, mayusculas); }
+                                                doble-clic => { root.doble-clic-en-fila(indice); }
+                                                menu(x, y) => { menu-de-fila.show({ x: self.x + x, y: y }); }
+                                            }
+                                            Celda {
+                                                // Mismo ancho en todas las filas, sin importar el texto.
+                                                horizontal-stretch: 1;
+                                                preferred-width: 0px;
+                                                min-width: 40px;
+                                                valor: fila.titulo;
+                                                tono: root.tono-de-fila(fila);
+                                                alineacion: left;
+                                                con-nota: fila.nota != "";
+                                                ayuda: fila.nota != "" ? @tr("Nota: {}", fila.nota) + "\n\n" + fila.ruta : fila.ruta;
+                                                clic(control, mayusculas) => { root.clic-en-fila(indice, control, mayusculas); }
+                                                doble-clic => { root.doble-clic-en-fila(indice); }
+                                                menu(x, y) => { menu-de-fila.show({ x: self.x + x, y: y }); }
+                                            }
+                                            Celda {
+                                                // Mismo ancho en todas las filas, sin importar el texto.
+                                                horizontal-stretch: 1;
+                                                preferred-width: 0px;
+                                                min-width: 40px;
+                                                valor: fila.artista;
+                                                tono: root.tono-de-fila(fila);
+                                                alineacion: left;
+                                                clic(control, mayusculas) => { root.clic-en-fila(indice, control, mayusculas); }
+                                                doble-clic => { root.doble-clic-en-fila(indice); }
+                                                menu(x, y) => { menu-de-fila.show({ x: self.x + x, y: y }); }
+                                            }
+                                            Celda {
+                                                width: root.ancho-duracion;
+                                                valor: fila.duracion;
+                                                tono: root.tono-de-fila(fila);
+                                                clic(control, mayusculas) => { root.clic-en-fila(indice, control, mayusculas); }
+                                                doble-clic => { root.editar-pista(indice); }
+                                                menu(x, y) => { menu-de-fila.show({ x: self.x + x, y: y }); }
+                                            }
+                                            Celda {
+                                                width: root.ancho-tipo;
+                                                valor: Iconografia.nombre-de-tipo(fila.tipo);
+                                                tono: root.tono-de-fila(fila);
+                                                alineacion: left;
+                                                // Icono del tipo, con el color de su franja.
+                                                icono: Iconografia.icono-de-tipo(fila.tipo);
+                                                tono-del-icono: Iconografia.color-de-tipo(fila.tipo, root.tono-de-fila(fila));
+                                                clic(control, mayusculas) => { root.clic-en-fila(indice, control, mayusculas); }
+                                                doble-clic => { root.editar-pista(indice); }
+                                                menu(x, y) => { menu-de-fila.show({ x: self.x + x, y: y }); }
+                                            }
+                                            Celda {
+                                                width: root.ancho-ranking;
+                                                valor: fila.ranking;
+                                                tono: root.tono-de-fila(fila);
+                                                alineacion: left;
+                                                clic(control, mayusculas) => { root.clic-en-fila(indice, control, mayusculas); }
+                                                doble-clic => { root.editar-pista(indice); }
+                                                menu(x, y) => { menu-de-fila.show({ x: self.x + x, y: y }); }
+                                            }
+                                            Celda {
+                                                width: root.ancho-genero;
+                                                valor: fila.genero;
+                                                tono: root.tono-de-fila(fila);
+                                                alineacion: left;
+                                                ayuda: fila.genero;
+                                                clic(control, mayusculas) => { root.clic-en-fila(indice, control, mayusculas); }
+                                                doble-clic => { root.editar-pista(indice); }
+                                                menu(x, y) => { menu-de-fila.show({ x: self.x + x, y: y }); }
+                                            }
+                                            Celda {
+                                                width: root.ancho-anio;
+                                                valor: fila.anio;
+                                                tono: root.tono-de-fila(fila);
+                                                clic(control, mayusculas) => { root.clic-en-fila(indice, control, mayusculas); }
+                                                doble-clic => { root.editar-pista(indice); }
+                                                menu(x, y) => { menu-de-fila.show({ x: self.x + x, y: y }); }
+                                            }
+                                            Celda {
+                                                width: root.ancho-bpm;
+                                                valor: fila.bpm;
+                                                tono: root.tono-de-fila(fila);
+                                                clic(control, mayusculas) => { root.clic-en-fila(indice, control, mayusculas); }
+                                                doble-clic => { root.editar-pista(indice); }
+                                                menu(x, y) => { menu-de-fila.show({ x: self.x + x, y: y }); }
+                                            }
+                                            Celda {
+                                                width: root.ancho-overlay;
+                                                valor: fila.overlay;
+                                                tono: root.tono-de-fila(fila);
+                                                automatico: !fila.overlay-manual;
+                                                ayuda: fila.ventana-de-overlay;
+                                                clic(control, mayusculas) => { root.clic-en-fila(indice, control, mayusculas); }
+                                                doble-clic => { root.editar-pista(indice); }
+                                                menu(x, y) => { menu-de-fila.show({ x: self.x + x, y: y }); }
+                                            }
+                                            Celda {
+                                                width: root.ancho-segundos;
+                                                valor: fila.mezcla;
+                                                tono: root.tono-de-fila(fila);
+                                                clic(control, mayusculas) => { root.clic-en-fila(indice, control, mayusculas); }
+                                                doble-clic => { root.editar-pista(indice); }
+                                                menu(x, y) => { menu-de-fila.show({ x: self.x + x, y: y }); }
+                                            }
+                                        }
+                                        // Los marcadores llevan su icono junto al numero, y las pistas de
+                                        // un bloque fijo una linea gris a la derecha.
+                                        if fila.marcador > 0: Image {
+                                            x: 2 * root.ancho-de-franja + 2px;
+                                            width: 18px;
+                                            height: 18px;
+                                            y: (parent.height - self.height) / 2;
+                                            source: fila.marcador == 1 ? @image-url("iconos/inicio-de-bloque.svg") : @image-url("iconos/fin-de-bloque.svg");
+                                            colorize: root.color-de-bloque-fijo;
+                                        }
+                                        if fila.en-bloque-fijo: Rectangle {
+                                            x: parent.width - self.width;
+                                            width: 4px;
+                                            background: root.color-de-bloque-fijo;
+                                        }
+                                        // La que suena lleva un icono de reproducir junto al numero.
+                                        if fila.sonando: Image {
+                                            x: 2 * root.ancho-de-franja + 2px;
+                                            width: 18px;
+                                            height: 18px;
+                                            y: (parent.height - self.height) / 2;
+                                            source: @image-url("iconos/reproducir.svg");
+                                            colorize: #ffd43b;
+                                        }
+                                    }
+                                }
+                                if root.filas.length == 0: Text {
+                                    text: @tr("La lista esta vacia");
+                                    color: Palette.foreground.transparentize(40%);
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+                    }
+                    HorizontalLayout {
+                        height: 22px;
+                        spacing: 8px;
+                        ayuda-de-la-lista := Text {
+                            horizontal-stretch: 1;
+                            text: @tr("Doble clic en el numero, el titulo o el artista: reproducir. En las demas columnas: abrir el editor (overlay en cursiva: sugerido). En un marcador: seleccionar el bloque. Las pistas nuevas se insertan despues de la seleccionada.");
+                            color: Palette.foreground.transparentize(40%);
+                            font-size: 12px;
+                            vertical-alignment: center;
+                            overflow: elide;
+                            if self.preferred-width > self.width: TouchArea { Tooltip { text: @markdown("\{ayuda-de-la-lista.text}"); } }
+                        }
+                        Text {
+                            text: root.total-de-lista;
+                            font-weight: 600;
+                            vertical-alignment: center;
+                            TouchArea {
+                                Tooltip {
+                                    text: @markdown("\{@tr("Suma de las duraciones descontando los segundos de mezcla entre temas. El restante cuenta desde la posicion actual hasta el final de la lista.")}");
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            // Botonera de efectos; se oculta sin cortar los efectos en curso.
+            if root.botonera-visible: Rectangle {
+                width: root.botonera-ancha ? 360px : 280px;
+                border-width: 1px;
+                border-color: Palette.border;
+                desplazable := ScrollView {
+                    // Sin desplazamiento horizontal: el contenido se ajusta al ancho.
+                    content-width: self.visible-width;
+                    // Al menos el alto visible: los botones crecen hasta su alto
+                    // ideal y, si falta lugar, se achican antes de desplazar.
+                    content-height: max(contenido-de-botonera.min-height, self.visible-height);
+                    contenido-de-botonera := VerticalLayout {
+                        x: 0;
+                        y: 0;
+                        width: parent.width;
+                        height: parent.height;
+                        padding: 10px;
+                        spacing: 8px;
+                        alignment: start;
+                        // Hojas de 10 efectos: navegar, agregar y quitar.
+                        HorizontalLayout {
+                            spacing: 4px;
+                            Button {
+                                icon: @image-url("iconos/hoja-anterior.svg");
+                                colorize-icon: true;
+                                enabled: root.hay-hoja-anterior;
+                                clicked => { root.hoja-anterior(); }
+                                Tooltip { text: @markdown("\{@tr("Hoja anterior")}"); }
+                            }
+                            Text {
+                                horizontal-stretch: 1;
+                                min-width: 0px;
+                                text: root.hoja-de-efectos;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                                overflow: elide;
+                                if self.preferred-width > self.width: TouchArea { Tooltip { text: @markdown("\{root.hoja-de-efectos}"); } }
+                            }
+                            Button {
+                                icon: @image-url("iconos/hoja-siguiente.svg");
+                                colorize-icon: true;
+                                enabled: root.hay-hoja-siguiente;
+                                clicked => { root.hoja-siguiente(); }
+                                Tooltip { text: @markdown("\{@tr("Hoja siguiente")}"); }
+                            }
+                            Button {
+                                icon: @image-url("iconos/agregar.svg");
+                                colorize-icon: true;
+                                clicked => { root.agregar-hoja(); }
+                                Tooltip { text: @markdown("\{@tr("Agregar una hoja de efectos")}"); }
+                            }
+                            Button {
+                                icon: @image-url("iconos/quitar.svg");
+                                colorize-icon: true;
+                                enabled: root.puede-quitar-hoja;
+                                clicked => { root.quitar-hoja(); }
+                                Tooltip { text: @markdown("\{@tr("Quitar esta hoja de efectos")}"); }
+                            }
+                        }
+                        // Modo libre y, a la derecha, el engranaje que muestra u
+                        // oculta los ajustes (plegados queda toda la botonera a la vista).
+                        HorizontalLayout {
+                            spacing: 6px;
+                            CheckBox {
+                                horizontal-stretch: 1;
+                                text: @tr("Modo libre");
+                                checked <=> root.modo-libre;
+                                toggled => { root.modo-libre-cambiado(self.checked); }
+                            }
+                            BotonAlternable {
+                                icono: @image-url("iconos/ajustes.svg");
+                                texto: root.ajustes-de-efectos-visibles ? @tr("Ocultar los ajustes de los efectos") : @tr("Mostrar los ajustes de los efectos: bajar la música, ajuste inteligente, volumen del efecto, nivel de la música, atenuación y recuperación");
+                                solo-icono: true;
+                                activo <=> root.ajustes-de-efectos-visibles;
+                                alternado => { root.ajustes-de-efectos-alternados(root.ajustes-de-efectos-visibles); }
+                            }
+                        }
+                        if root.ajustes-de-efectos-visibles: CheckBox {
+                            text: @tr("Bajar la música durante el efecto");
+                            checked <=> root.atenuar;
+                            toggled => { root.efecto-ajustado(); }
+                        }
+                        if root.ajustes-de-efectos-visibles: CheckBox {
+                            text: @tr("Ajuste inteligente");
+                            checked <=> root.efecto-inteligente;
+                            toggled => { root.efecto-ajustado(); }
+                            Tooltip { text: @markdown("\{@tr("Iguala el efecto con la musica y baja la musica segun lo fuerte que suena ese tramo")}"); }
+                        }
+                        // Volumen del efecto, nivel de la musica y recuperacion:
+                        // rotulo, deslizante y valor en columnas.
+                        if root.ajustes-de-efectos-visibles: GridLayout {
+                            spacing-horizontal: 6px;
+                            spacing-vertical: 8px;
+                            Row {
+                                Text {
+                                    text: @tr("Efecto");
+                                    vertical-alignment: center;
+                                }
+                                Deslizante {
+                                    horizontal-stretch: 1;
+                                    minimum: -12;
+                                    maximum: 6;
+                                    step: 0.5;
+                                    value <=> root.volumen-de-efecto;
+                                    changed => { root.efecto-ajustado(); }
+                                    doble-clic => {
+                                        root.volumen-de-efecto = 0;
+                                        root.efecto-ajustado();
+                                    }
+                                    Tooltip { text: @markdown("\{@tr("Volumen del efecto. Con ajuste inteligente, 0 dB es la sonoridad de la musica. Doble clic: 0 dB")}"); }
+                                }
+                                Text {
+                                    min-width: 50px;
+                                    text: (root.volumen-de-efecto > 0 ? "+" : "") + Math.round(root.volumen-de-efecto * 10) / 10 + " dB";
+                                    horizontal-alignment: right;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            // Cuanto baja la musica: con ajuste inteligente, la
+                            // separacion respecto del efecto; si no, un nivel fijo.
+                            Row {
+                                Text {
+                                    text: root.efecto-inteligente ? @tr("Separación") : @tr("Música al");
+                                    vertical-alignment: center;
+                                }
+                                if root.efecto-inteligente: Deslizante {
+                                    horizontal-stretch: 1;
+                                    minimum: 4;
+                                    maximum: 24;
+                                    step: 1;
+                                    value <=> root.separacion;
+                                    changed => { root.efecto-ajustado(); }
+                                    doble-clic => {
+                                        root.separacion = 12;
+                                        root.efecto-ajustado();
+                                    }
+                                    Tooltip { text: @markdown("\{@tr("Con ajuste inteligente: cuántos dB por debajo del efecto queda la música (más, la baja más). También vale para la voz del anuncio HTH sobre su base. Doble clic: 12 dB")}"); }
+                                }
+                                if !root.efecto-inteligente: Deslizante {
+                                    horizontal-stretch: 1;
+                                    minimum: 0;
+                                    maximum: 1;
+                                    value <=> root.nivel-de-musica;
+                                    changed => { root.efecto-ajustado(); }
+                                    doble-clic => { root.nivel-de-musica-por-defecto(); }
+                                    Tooltip { text: @markdown("\{@tr("Sin ajuste inteligente. Doble clic: volver al 50 %")}"); }
+                                }
+                                Text {
+                                    min-width: 50px;
+                                    text: root.efecto-inteligente ? "-" + Math.round(root.separacion) + " dB" : Math.round(root.nivel-de-musica * 100) + " %";
+                                    horizontal-alignment: right;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            Row {
+                                Text {
+                                    text: @tr("Atenua en");
+                                    vertical-alignment: center;
+                                }
+                                Deslizante {
+                                    horizontal-stretch: 1;
+                                    minimum: 0.01;
+                                    maximum: 1;
+                                    step: 0.01;
+                                    value <=> root.anticipacion;
+                                    enabled: root.atenuar;
+                                    changed => { root.efecto-ajustado(); }
+                                    doble-clic => {
+                                        root.anticipacion = 0.04;
+                                        root.efecto-ajustado();
+                                    }
+                                    Tooltip { text: @markdown("\{@tr("Segundos en que la musica baja; la bajada termina justo cuando arranca el efecto. Doble clic: 40 ms (1/25 s)")}"); }
+                                }
+                                Text {
+                                    min-width: 50px;
+                                    text: root.anticipacion < 0.995 ? Math.round(root.anticipacion * 1000) + " ms" : Math.round(root.anticipacion * 10) / 10 + " s";
+                                    horizontal-alignment: right;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            Row {
+                                Text {
+                                    text: @tr("Vuelve en");
+                                    vertical-alignment: center;
+                                }
+                                Deslizante {
+                                    horizontal-stretch: 1;
+                                    minimum: 0.2;
+                                    maximum: 3;
+                                    step: 0.1;
+                                    value <=> root.recuperacion;
+                                    changed => { root.efecto-ajustado(); }
+                                    doble-clic => {
+                                        root.recuperacion = 0.8;
+                                        root.efecto-ajustado();
+                                    }
+                                    Tooltip { text: @markdown("\{@tr("Recuperacion: segundos en que la musica vuelve despues del efecto. Doble clic: 0,8 s")}"); }
+                                }
+                                Text {
+                                    min-width: 50px;
+                                    text: Math.round(root.recuperacion * 10) / 10 + " s";
+                                    horizontal-alignment: right;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+                        for fila in Math.ceil(root.botones.length / 2): HorizontalLayout {
+                            vertical-stretch: 1;
+                            spacing: 6px;
+                            for columna in 2: BotonDeLaBotonera {
+                                horizontal-stretch: 1;
+                                boton: root.botones[fila * 2 + columna];
+                                numero: fila * 2 + columna;
+                                pulsado => { root.pulsar-efecto(fila * 2 + columna); }
+                                asignar => { root.asignar-efecto(fila * 2 + columna); }
+                                quitar => { root.quitar-efecto(fila * 2 + columna); }
+                                insertar => { root.insertar-efecto(fila * 2 + columna); }
+                                editar => { root.editar-efecto(fila * 2 + columna); }
+                            }
+                        }
+                        // Detener el efecto, el anuncio de hora, temperatura y
+                        // humedad, y la carpeta de sus locuciones, en una fila.
+                        HorizontalLayout {
+                            spacing: 4px;
+                            Button {
+                                horizontal-stretch: 1;
+                                icon: @image-url("iconos/detener.svg");
+                                colorize-icon: true;
+                                text: root.ocultar-textos ? "" : @tr("Detener efecto");
+                                clicked => { root.detener-efecto(); }
+                                if root.ocultar-textos: Tooltip { text: @markdown("\{@tr("Detener efecto")}"); }
+                            }
+                            // El boton se queda con el clic derecho: un area encima
+                            // atiende los dos clics y abre el menu a mano.
+                            Rectangle {
+                                min-width: boton-hth.min-width;
+                                preferred-width: boton-hth.preferred-width;
+                                min-height: boton-hth.min-height;
+                                preferred-height: boton-hth.preferred-height;
+                                boton-hth := Button {
+                                    width: parent.width;
+                                    height: parent.height;
+                                    icon: @image-url("iconos/hth.svg");
+                                    colorize-icon: true;
+                                    text: root.ocultar-textos ? "" : @tr("HTH");
+                                }
+                                menu-hth := ContextMenuArea {
+                                    Menu {
+                                        MenuItem {
+                                            title: @tr("Insertar el anuncio HTH");
+                                            activated => { root.insertar-hth(); }
+                                        }
+                                        MenuSeparator { }
+                                        MenuItem {
+                                            title: @tr("Cambiar la localidad del clima...");
+                                            activated => { root.cambiar-localidad-del-clima(); }
+                                        }
+                                        MenuItem {
+                                            title: @tr("Actualizar el clima ahora");
+                                            activated => { root.actualizar-clima(); }
+                                        }
+                                        MenuItem {
+                                            title: @tr("Carpeta de las locuciones...");
+                                            activated => { root.elegir-locuciones(); }
+                                        }
+                                    }
+                                    TouchArea {
+                                        clicked => { root.insertar-hth(); }
+                                        pointer-event(evento) => {
+                                            if evento.kind == PointerEventKind.down && evento.button == PointerEventButton.right {
+                                                menu-hth.show({ x: self.mouse-x, y: self.mouse-y });
+                                            }
+                                        }
+                                        Tooltip { text: @markdown("\{root.ocultar-textos ? @tr("HTH") + ": " : ""}\{@tr("Inserta en la lista el anuncio de hora, temperatura y humedad, despues de la pista seleccionada. Se arma con la hora del momento en que sale al aire; con bases musicales, se dice sobre una base en su ventana de overlay. Clic derecho: cambiar la localidad del clima, actualizarlo ahora o elegir la carpeta de las locuciones")}"); }
+                                    }
+                                }
+                            }
+                            Button {
+                                icon: @image-url("iconos/carpeta.svg");
+                                colorize-icon: true;
+                                clicked => { root.elegir-locuciones(); }
+                                Tooltip { text: @markdown("\{@tr("Elegir la carpeta de las locuciones del anuncio HTH")}"); }
+                            }
+                        }
+                        if root.estado-de-botonera != "": Text {
+                            text: root.estado-de-botonera;
+                            wrap: word-wrap;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
