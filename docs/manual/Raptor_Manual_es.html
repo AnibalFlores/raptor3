@@ -358,13 +358,15 @@
 <p>Los combos de efectos del editor (efecto fijado y efecto de prueba) solo ofrecen los archivos de la botonera de tipo <strong>Efecto</strong> o <strong>Seco</strong>.</p>
 <p><strong>Catálogos de versiones anteriores.</strong> Antes, el género hacía de tipo. La primera vez que se abre esta versión, cada ficha recibe su tipo a partir de su género, sin distinguir mayúsculas ni acentos y en plural o compuestos («Anuncios», «Publicidad radial», «Efectos de sonido», «Tema seco»); cualquier otro género («Rock») pasa a Tema, y las fichas sin género quedan sin clasificar. El género no se toca, y antes de reescribir el catálogo se deja una copia, <code>mezcla.json.antes-del-tipo</code>. Lo mismo vale para un archivo nuevo: si sus etiquetas dicen «Comercial», entra como Comercial.</p>
 
+<p>La búsqueda por tipo (<code>tipo:</code> o <code>type:</code>) acepta los nombres en español y en inglés: <code>tipo:"tema editado"</code> y <code>type:"edited song"</code> encuentran lo mismo.</p>
+
 <h2>8. Datos guardados</h2>
 <p>El reproductor guarda todo en la carpeta <code>.mcp-raptor-player</code> dentro de la carpeta del usuario (en Windows, <code>C:\Users\&lt;usuario&gt;\.mcp-raptor-player</code>; en Linux, <code>~/.mcp-raptor-player</code>):</p>
 <table>
   <tr><th style="width:30%">Archivo o carpeta</th><th>Contenido</th></tr>
   <tr><td><code>mezcla.json</code></td><td>La ficha de cada archivo de audio: puntos de mezcla, ventana de overlay, tipo, título, artista, género, álbum, año, nota, ranking, BPM, efecto fijado y última reproducción. Si el archivo vuelve a la lista, recupera todo.</td></tr>
   <tr><td><code>botonera.json</code></td><td>Las hojas de efectos, el archivo de cada botón y los ajustes del panel de efectos.</td></tr>
-  <tr><td><code>preferencias.json</code></td><td>Fader, opciones de mezcla, última lista y último tema, posición del editor, salida y volumen de la preescucha, carpeta de las locuciones del anuncio HTH, localidad del clima, si los textos de los botones están ocultos y si los ajustes de los efectos están desplegados.</td></tr>
+  <tr><td><code>preferencias.json</code></td><td>Fader, opciones de mezcla, última lista y último tema, posición del editor, salida y volumen de la preescucha, carpeta de las locuciones del anuncio HTH, localidad del clima, idioma de la interfaz, si los textos de los botones están ocultos y si los ajustes de los efectos están desplegados.</td></tr>
   <tr><td><code>listas\lista.json</code></td><td>La lista en curso, que se recupera al abrir el programa.</td></tr>
   <tr><td><code>tandas.json</code></td><td>Las tandas programadas: avisos, horarios, tolerancia, duración máxima y la última salida atendida (para no repetirla si el programa se reinicia).</td></tr>
   <tr><td><code>anunciantes.json</code></td><td>Las fichas de los anunciantes: nombre comercial, razón social, CUIT, rubro, contacto, teléfono, correo, dirección, agencia, notas y si está activo.</td></tr>
@@ -422,7 +424,7 @@
 
 <h2>10. Primeros pasos</h2>
 <h3>Windows</h3>
-<p>Ejecute <code>mcp-raptor-player.exe</code>. Para tener el icono en la barra de tareas, ábralo y elija <em>Anclar a la barra de tareas</em>. Este manual se abre desde <span class="ui">Ayuda › Manual</span> si el archivo <code>Raptor_Manual_es.pdf</code> está junto al ejecutable.</p>
+<p>Ejecute <code>mcp-raptor-player.exe</code> (en los paquetes publicados, <code>MCPRaptorPlayer.exe</code>). Para tener el icono en la barra de tareas, ábralo y elija <em>Anclar a la barra de tareas</em>. Este manual se abre desde <span class="ui">Ayuda › Manual</span> si el archivo <code>Raptor_Manual_es.pdf</code> está junto al ejecutable.</p>
 <h3>Linux</h3>
 <p>El script <code>recursos/linux/instalar.sh</code> copia el programa a <code>~/.local/bin</code> e instala el lanzador y el icono, para que aparezca en el menú de aplicaciones.</p>
 <h3>Al abrir</h3>
@@ -433,7 +435,7 @@
   <li>Se traducen los menús, botones, columnas, ayudas, avisos y mensajes, los nombres de los tipos y el certificado de emisión.</li>
   <li>No cambian los datos guardados (el catálogo, las listas, las tandas, las órdenes y el registro de comerciales siguen igual en cualquier idioma) ni las descripciones de las herramientas MCP, que están en español.</li>
   <li>Las fechas se muestran como día/mes/año en los dos idiomas.</li>
-  <li>Este manual está en español.</li>
+  <li>Este manual está en español y en inglés: <span class="ui">Ayuda › Manual</span> abre el del idioma de la interfaz (<code>Raptor_Manual_es.pdf</code> o <code>Raptor_Manual_en.pdf</code>) y, si falta, el otro.</li>
 </ul>
 
 <h2>11. La ventana principal</h2>
@@ -443,7 +445,7 @@
 </figure>
 <p>De arriba hacia abajo:</p>
 <ol>
-  <li><strong>Menú</strong> <span class="ui">Archivo</span> (cargar y guardar listas, mantenimiento del catálogo), <span class="ui">Ventana</span> (ubicación del editor) y <span class="ui">Ayuda</span> (este manual y <em>Acerca de</em>, con botones para escribir al autor, abrir el repositorio en GitHub y donar por PayPal).</li>
+  <li><strong>Menú</strong> <span class="ui">Archivo</span> (cargar y guardar listas, mantenimiento del catálogo), <span class="ui">Ventana</span> (ubicación del editor, idioma) y <span class="ui">Ayuda</span> (este manual y <em>Acerca de</em>, con botones para escribir al autor, abrir el repositorio en GitHub y donar por PayPal).</li>
   <li><strong>Detalles</strong> del tema marcado (o del que suena): la carpeta y el nombre del archivo, tipo y género, álbum, ranking, año, última reproducción y efecto fijado (el título y el artista están en la lista y, del que suena, debajo, en grande). A la derecha, el <strong>reloj</strong> con la fecha. Con el botón de la esquina (<img class="icono" src="imagenes/iconos/barras-de-nivel.svg" alt="">) el panel muestra en cambio la <strong>forma de onda</strong> del tema (ver más abajo). A la derecha, el <strong>reloj</strong>: la hora, la fecha, el <strong>clima</strong> de la localidad elegida (temperatura, humedad y localidad; un clic permite cambiarla y al pasar el puntero se ve cuánto hace de la última lectura) y, si hay, la próxima tanda.</li>
   <li><strong>Lo que suena</strong> y, en la misma línea, las opciones <span class="ui">Desplazar</span>, <span class="ui">Repetir lista</span>, <span class="ui">Crossfade inteligente</span>, <span class="ui">Nivelar volumen</span> y el objetivo LUFS.</li>
   <li><strong>Barra de progreso</strong>: un clic o un arrastre salta a esa posición. Muestra la ventana de overlay (naranja si es sugerida, rosa si la fijó usted), la outro (celeste sugerida, verde fijada; desde ahí el tema empieza a bajar) y en violeta donde se solapan. Un <strong>recuadro rojo</strong> marca la <strong>mezcla efectiva</strong> con el tema siguiente: el tramo en que los dos suenan juntos, que con el crossfade inteligente dura de 2 a 12 s y puede ser más corto o más largo que la outro. A la derecha, el <strong>tiempo</strong>: un clic alterna entre transcurrido, restante y segundos restantes o transcurridos sobre el total; se pone naranja mientras mezcla con el tema siguiente.</li>
@@ -522,7 +524,7 @@
   <li><strong>Selección:</strong> clic para una pista, <kbd>Ctrl</kbd>+clic para sumar y <kbd>Mayús</kbd>+clic para un rango.</li>
   <li><strong>Doble clic</strong> en el número, el título o el artista: reproduce ese tema. En las demás columnas: abre el editor. En un marcador de bloque fijo: selecciona el bloque completo.</li>
   <li><strong>Clic derecho</strong> en una fila: <span class="ui">Reproducir</span>, <span class="ui">Encolar como siguiente</span> (lleva el tema justo después del que suena, para que el final del actual se mezcle con él sin seguir el orden de la lista; lo demás queda en su orden; si el tema está dentro de un bloque fijo y lo saca de él, pide confirmación), <span class="ui">Editar pista...</span>, <span class="ui">Quitar de la lista</span> y <span class="ui">Descatalogar...</span> (quita el tema y borra todos sus datos guardados; el archivo de audio no se borra). En un anuncio HTH aparece además <span class="ui">Base del anuncio HTH</span> (ver la sección 14).</li>
-  <li><strong>Listas con nombre:</strong> <span class="ui">Archivo › Cargar lista...</span> (<kbd>Ctrl</kbd>+<kbd>O</kbd>, también M3U), <span class="ui">Guardar lista</span> (<kbd>Ctrl</kbd>+<kbd>S</kbd>) y <span class="ui">Guardar lista como...</span> (<kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>S</kbd>). El título de la ventana muestra la lista abierta y un asterisco si tiene cambios sin guardar.</li>
+  <li><strong>Listas con nombre:</strong> <span class="ui">Archivo › Cargar lista...</span> (<kbd>Ctrl</kbd>+<kbd>O</kbd>, también M3U), <span class="ui">Guardar lista</span> (<kbd>Ctrl</kbd>+<kbd>S</kbd>) y <span class="ui">Guardar lista como...</span> (<kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>S</kbd>). El título de la ventana muestra la lista abierta y un asterisco si tiene cambios sin guardar. Las M3U de otros programas se abren aunque estén en la codificación de Windows (las de Winamp o el Reproductor de Windows) o tengan direcciones <code>file://</code> (las de VLC), y sus rutas relativas son relativas a la carpeta de la lista. Una lista guardada en otro equipo o por otro usuario conserva sus bloques fijos y sus anuncios HTH.</li>
 </ul>
 
 <h3>Bloques fijos</h3>
@@ -887,7 +889,7 @@
   <tr><td>No se puede agregar un archivo a la lista</td><td>Probablemente es de tipo Efecto: solo puede estar en la botonera.</td></tr>
   <tr><td>El control por MCP no responde</td><td>El reproductor debe estar abierto. Verifique el puerto 8765 (o el de <code>RAPTOR_MCP_PUERTO</code>) y que ningún otro programa lo use.</td></tr>
   <tr><td>El icono anclado en la barra de tareas no se actualiza</td><td>Desancle el programa y vuelva a anclarlo: Windows guarda los iconos en caché.</td></tr>
-  <tr><td><span class="ui">Ayuda › Manual</span> no abre este manual</td><td>Copie <code>Raptor_Manual_es.pdf</code> junto al ejecutable.</td></tr>
+  <tr><td><span class="ui">Ayuda › Manual</span> no abre este manual</td><td>Copie <code>Raptor_Manual_es.pdf</code> (o <code>Raptor_Manual_en.pdf</code>) junto al ejecutable.</td></tr>
 </table>
 <p>Ante cualquier error, la bitácora en la carpeta <code>logs</code> de los datos registra qué pasó.</p>
 

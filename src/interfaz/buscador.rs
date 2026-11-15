@@ -43,7 +43,7 @@ pub(crate) fn datos_de_la_ficha<'a>(nombre: &'a str, ruta: &'a str, ficha: &'a F
         artista: texto(&ficha.artista),
         genero: texto(&ficha.genero),
         album: texto(&ficha.album),
-        tipo: ficha.tipo.map(TipoDeElemento::nombre).unwrap_or_default(),
+        tipo: ficha.tipo.map(TipoDeElemento::para_buscar).unwrap_or_default(),
         nota: texto(&ficha.nota),
         archivo: nombre,
         ruta,

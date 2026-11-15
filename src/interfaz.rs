@@ -43,6 +43,12 @@ mod pruebas {
     }
 
     #[test]
+    fn el_manual_del_idioma_elegido_va_primero() {
+        assert_eq!(manuales_en_orden(Idioma::Ingles), ["Raptor_Manual_en.pdf", "Raptor_Manual_es.pdf"]);
+        assert_eq!(manuales_en_orden(Idioma::Espanol), ["Raptor_Manual_es.pdf", "Raptor_Manual_en.pdf"]);
+    }
+
+    #[test]
     fn el_reloj_muestra_dia_fecha_y_hora() {
         let lunes = momento("2026-11-02T14:05:03Z");
         assert_eq!(fecha_y_hora(&lunes), ("Lunes 02/11/2026".to_string(), "14:05:03".to_string()));
@@ -1054,7 +1060,6 @@ fn cablear_callbacks(ventana: &VentanaPrincipal) -> Result<(), String> {
     Ok(())
 }
 
-const MANUAL: &str = "Raptor_Manual_es.pdf";
 
 /// Correo de contacto del autor, en la ventana Acerca de. Es un reenvio
 /// (relay): no expone la casilla personal.
@@ -1066,31 +1071,50 @@ const REPOSITORIO: &str = env!("CARGO_PKG_REPOSITORY");
 /// Pagina de donaciones del autor en PayPal (boton Acerca de > Donar).
 const DONACIONES: &str = "https://www.paypal.com/donate/?hosted_button_id=SYCZZFULZ6TKE";
 
-/// Lugares donde se busca el manual: junto al ejecutable, en la carpeta de
+/// Archivo del manual en ese idioma: Raptor_Manual_es.pdf, Raptor_Manual_en.pdf.
+fn nombre_del_manual(idioma: Idioma) -> String {
+    format!("Raptor_Manual_{}.pdf", idioma.codigo())
+}
+
+/// Manuales a buscar, en orden: primero el del idioma de la interfaz y
+/// despues los demas, para abrir alguno aunque falte el preferido.
+fn manuales_en_orden(idioma: Idioma) -> Vec<String> {
+    std::iter::once(idioma)
+        .chain(Idioma::TODOS.into_iter().filter(|otro| *otro != idioma))
+        .map(nombre_del_manual)
+        .collect()
+}
+
+/// Lugares donde se busca un manual: junto al ejecutable, en la carpeta de
 /// trabajo y en la carpeta del proyecto o su docs/manual (versiones de desarrollo).
-fn ubicaciones_del_manual() -> Vec<PathBuf> {
+fn ubicaciones_del_manual(nombre: &str) -> Vec<PathBuf> {
     let mut ubicaciones = Vec::new();
     if let Some(carpeta) = std::env::current_exe().ok().and_then(|ejecutable| ejecutable.parent().map(Path::to_path_buf)) {
-        ubicaciones.push(carpeta.join(MANUAL));
+        ubicaciones.push(carpeta.join(nombre));
     }
     if let Ok(carpeta) = std::env::current_dir() {
-        ubicaciones.push(carpeta.join(MANUAL));
+        ubicaciones.push(carpeta.join(nombre));
     }
     let proyecto = Path::new(env!("CARGO_MANIFEST_DIR"));
-    ubicaciones.push(proyecto.join(MANUAL));
-    ubicaciones.push(proyecto.join("docs").join("manual").join(MANUAL));
+    ubicaciones.push(proyecto.join(nombre));
+    ubicaciones.push(proyecto.join("docs").join("manual").join(nombre));
     ubicaciones
 }
 
-/// Abre el manual en PDF con el visor del sistema, o avisa donde ponerlo.
+/// Abre el manual en PDF del idioma de la interfaz (o, si falta, el de otro
+/// idioma) con el visor del sistema, o avisa donde ponerlo.
 fn abrir_manual(ventana: &slint::Weak<VentanaPrincipal>) {
-    let ubicaciones = ubicaciones_del_manual();
-    let Some(manual) = ubicaciones.iter().find(|ubicacion| ubicacion.is_file()) else {
-        let buscado: Vec<String> = ubicaciones.iter().map(|ubicacion| format!("- {}", ubicacion.display())).collect();
+    let encontrado = manuales_en_orden(crate::idioma::actual())
+        .iter()
+        .flat_map(|nombre| ubicaciones_del_manual(nombre))
+        .find(|ubicacion| ubicacion.is_file());
+    let Some(manual) = encontrado.as_deref() else {
+        let preferido = nombre_del_manual(crate::idioma::actual());
+        let buscado: Vec<String> = ubicaciones_del_manual(&preferido).iter().map(|ubicacion| format!("- {}", ubicacion.display())).collect();
         let mut dialogo = rfd::MessageDialog::new()
             .set_level(rfd::MessageLevel::Info)
             .set_title("Manual")
-            .set_description(tr!("No se encontro {MANUAL}. Copielo junto a MCPRaptorPlayer.exe. Se busco en:\n{}", buscado.join("\n"), MANUAL = MANUAL))
+            .set_description(tr!("No se encontro {MANUAL}. Copielo junto a MCPRaptorPlayer.exe. Se busco en:\n{}", buscado.join("\n"), MANUAL = preferido))
             .set_buttons(rfd::MessageButtons::Ok);
         if let Some(ventana) = ventana.upgrade() {
             dialogo = dialogo.set_parent(&ventana.window().window_handle());
@@ -2027,8 +2051,7 @@ impl Controlador {
         if guardada.pistas.is_empty() {
             guardada = de_la_ultima.unwrap_or_default();
         }
-        // Los archivos reubicados en el mantenimiento se abren con su ruta nueva.
-        guardada.pistas = guardada.pistas.iter().map(|pista| self.repositorio_de_canciones.ruta_actual(pista)).collect();
+        guardada.pistas = guardada.pistas.iter().map(|pista| self.ruta_para_cargar(pista)).collect();
         if guardada.pistas.is_empty() {
             self.refrescar_titulo();
             return;
@@ -2098,6 +2121,16 @@ impl Controlador {
         self.con_ventana(|ventana| ventana.set_nombre_de_lista(format!("{nombre}{marca}").into()));
     }
 
+    /// Ruta con que entra a la lista una pista guardada: los marcadores de
+    /// bloque fijo y el anuncio HTH de otra carpeta de datos (otro equipo u
+    /// otro usuario) pasan a los de esta, y los archivos reubicados en el
+    /// mantenimiento, a su ruta nueva.
+    fn ruta_para_cargar(&self, ruta: &Path) -> PathBuf {
+        marcadores::marcador_en_esta_carpeta(ruta)
+            .or_else(|| hth::anuncio_hth_en_esta_carpeta(ruta))
+            .unwrap_or_else(|| self.repositorio_de_canciones.ruta_actual(ruta))
+    }
+
     /// Reemplaza la lista por la de un archivo (del reproductor o M3U). Si
     /// hay un tema sonando, sigue sonando: si esta en la lista nueva queda
     /// como actual y, si no, al terminar empieza la lista nueva.
@@ -2106,7 +2139,7 @@ impl Controlador {
         // Lo que se guarda como contenido de la lista es lo del archivo: si
         // hubo reubicaciones, la lista queda con cambios para guardarla al dia.
         let en_el_archivo: Vec<Pista> = leida.pistas.iter().map(Pista::new).collect();
-        leida.pistas = leida.pistas.iter().map(|pista| self.repositorio_de_canciones.ruta_actual(pista)).collect();
+        leida.pistas = leida.pistas.iter().map(|pista| self.ruta_para_cargar(pista)).collect();
         self.preparar_lista_con_anuncio_hth(&leida.pistas);
         self.preparar_lista_con_marcadores(&leida.pistas);
         let total = leida.pistas.len();
@@ -3895,7 +3928,7 @@ impl Controlador {
                             artista: ficha.and_then(|ficha| ficha.artista.as_deref()).unwrap_or_default(),
                             genero: ficha.and_then(|ficha| ficha.genero.as_deref()).unwrap_or_default(),
                             album: ficha.and_then(|ficha| ficha.album.as_deref()).unwrap_or_default(),
-                            tipo: ficha.and_then(|ficha| ficha.tipo).map(TipoDeElemento::nombre).unwrap_or_default(),
+                            tipo: ficha.and_then(|ficha| ficha.tipo).map(TipoDeElemento::para_buscar).unwrap_or_default(),
                             nota: ficha.and_then(|ficha| ficha.nota.as_deref()).unwrap_or_default(),
                             archivo: &ruta,
                             ruta: &ruta,

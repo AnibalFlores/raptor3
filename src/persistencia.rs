@@ -2371,20 +2371,83 @@ fn es_m3u(archivo: &Path) -> bool {
         .is_some_and(|extension| extension.eq_ignore_ascii_case("m3u") || extension.eq_ignore_ascii_case("m3u8"))
 }
 
+/// Caracteres de Windows-1252 entre 0x80 y 0x9F (el resto coincide con
+/// Latin-1); los cinco que no estan definidos quedan como el caracter de
+/// reemplazo.
+const WINDOWS_1252_ALTOS: [char; 32] = [
+    '€', '\u{fffd}', '‚', 'ƒ', '„', '…', '†', '‡', 'ˆ', '‰', 'Š', '‹', 'Œ', '\u{fffd}', 'Ž', '\u{fffd}', '\u{fffd}', '‘', '’', '“',
+    '”', '•', '–', '—', '˜', '™', 'š', '›', 'œ', '\u{fffd}', 'ž', 'Ÿ',
+];
+
+/// Texto de una M3U: UTF-8 si lo es (con o sin la marca BOM) y, si no,
+/// Windows-1252, como guardan las .m3u Winamp y el Reproductor de Windows.
+fn texto_de_m3u(bytes: Vec<u8>) -> String {
+    match String::from_utf8(bytes) {
+        Ok(texto) => texto,
+        Err(error) => error
+            .into_bytes()
+            .into_iter()
+            .map(|byte| match byte {
+                0x80..=0x9F => WINDOWS_1252_ALTOS[usize::from(byte - 0x80)],
+                otro => char::from(otro),
+            })
+            .collect(),
+    }
+}
+
+/// Ruta de una linea de M3U: una direccion file:// (como las guarda VLC, con
+/// los caracteres codificados) o una ruta, absoluta o relativa a la lista.
+fn ruta_de_linea_m3u(linea: &str, carpeta: &Path) -> PathBuf {
+    let Some(direccion) = linea.get(..7).filter(|inicio| inicio.eq_ignore_ascii_case("file://")).map(|_| &linea[7..]) else {
+        return carpeta.join(linea);
+    };
+    let ruta = decodificar_porcentajes(direccion);
+    // file:///D:/... en Windows es D:/...; file://servidor/... es //servidor/...
+    let ruta = match ruta.strip_prefix('/') {
+        Some(local) if cfg!(windows) && local.as_bytes().get(1) == Some(&b':') => local.to_string(),
+        Some(_) => ruta,
+        None => format!("//{ruta}"),
+    };
+    PathBuf::from(ruta)
+}
+
+/// Deshace la codificacion %XX de una direccion (los bytes forman UTF-8).
+fn decodificar_porcentajes(texto: &str) -> String {
+    let bytes = texto.as_bytes();
+    let mut resultado = Vec::with_capacity(bytes.len());
+    let mut indice = 0;
+    while indice < bytes.len() {
+        let par = bytes.get(indice + 1..indice + 3).and_then(|par| std::str::from_utf8(par).ok()).and_then(|par| u8::from_str_radix(par, 16).ok());
+        match (bytes[indice], par) {
+            (b'%', Some(byte)) => {
+                resultado.push(byte);
+                indice += 3;
+            }
+            (byte, _) => {
+                resultado.push(byte);
+                indice += 1;
+            }
+        }
+    }
+    String::from_utf8_lossy(&resultado).into_owned()
+}
+
 /// Lee una lista: del reproductor (JSON) o M3U, que usan otros programas. En
 /// una M3U las rutas relativas son relativas a la carpeta de la lista.
 pub fn leer_lista(archivo: &Path) -> Result<ListaGuardada, String> {
-    let texto = fs::read_to_string(archivo).map_err(|error| tr!("No se pudo leer {}: {error}", archivo.display(), error = error))?;
+    let error_de_lectura = |error: std::io::Error| tr!("No se pudo leer {}: {error}", archivo.display(), error = error);
     if es_m3u(archivo) {
+        let texto = texto_de_m3u(fs::read(archivo).map_err(error_de_lectura)?);
         let carpeta = archivo.parent().unwrap_or(Path::new(""));
         let pistas = texto
             .lines()
             .map(|linea| linea.trim().trim_start_matches('\u{feff}'))
             .filter(|linea| !linea.is_empty() && !linea.starts_with('#'))
-            .map(|linea| carpeta.join(linea))
+            .map(|linea| ruta_de_linea_m3u(linea, carpeta))
             .collect();
         return Ok(ListaGuardada { pistas, actual: None, repetir: false });
     }
+    let texto = fs::read_to_string(archivo).map_err(error_de_lectura)?;
     let raiz: Value =
         serde_json::from_str(&texto).map_err(|error| tr!("{} no es una lista valida: {error}", archivo.display(), error = error))?;
     let pistas: Vec<PathBuf> = raiz
@@ -2981,6 +3044,56 @@ mod pruebas {
         fs::write(carpeta.join("mala.json"), "{}").unwrap();
         assert!(leer_lista(&carpeta.join("mala.json")).is_err());
         assert!(leer_lista(&carpeta.join("no-existe.json")).is_err());
+        let _ = fs::remove_dir_all(&carpeta);
+    }
+
+    #[test]
+    fn una_m3u_de_otro_programa_se_lee_aunque_no_sea_utf8() {
+        let carpeta = carpeta_temporal("m3u-ansi");
+        fs::create_dir_all(&carpeta).unwrap();
+        // Winamp y el Reproductor de Windows guardan las .m3u en Windows-1252.
+        let mut ansi = b"#EXTM3U\r\n#EXTINF:215,Canci".to_vec();
+        ansi.extend([0xF3]);
+        ansi.extend(b"n\r\nD:\\M\xfasica\\Canci\xf3n \x96 en vivo.mp3\r\n");
+        fs::write(carpeta.join("winamp.m3u"), ansi).unwrap();
+        // En Windows la ruta es absoluta; en Linux, relativa a la lista: join
+        // da lo mismo que la lectura en los dos sistemas.
+        assert_eq!(leer_lista(&carpeta.join("winamp.m3u")).unwrap().pistas, vec![carpeta.join("D:\\Música\\Canción – en vivo.mp3")]);
+        // Con la marca BOM, es UTF-8 aunque la extension sea .m3u.
+        fs::write(carpeta.join("bom.m3u"), "\u{feff}#EXTM3U\nMúsica/Canción.mp3\n").unwrap();
+        assert_eq!(leer_lista(&carpeta.join("bom.m3u")).unwrap().pistas, vec![carpeta.join("Música/Canción.mp3")]);
+        let _ = fs::remove_dir_all(&carpeta);
+    }
+
+    #[test]
+    fn una_m3u_con_direcciones_file_se_lee_como_rutas() {
+        let carpeta = carpeta_temporal("m3u-uri");
+        fs::create_dir_all(&carpeta).unwrap();
+        // Asi guarda VLC: direcciones file:// con los caracteres codificados.
+        let texto = "#EXTM3U\nfile:///D:/M%C3%BAsica/Tema%20uno%20%28remix%29.mp3\nfile:///home/radio/b%C3%A1sico.flac\nfile://servidor/compartida/tema.mp3\n";
+        fs::write(carpeta.join("vlc.m3u8"), texto).unwrap();
+        let pistas = leer_lista(&carpeta.join("vlc.m3u8")).unwrap().pistas;
+        let esperadas = if cfg!(windows) {
+            ["D:/Música/Tema uno (remix).mp3", "/home/radio/básico.flac", "//servidor/compartida/tema.mp3"]
+        } else {
+            ["/D:/Música/Tema uno (remix).mp3", "/home/radio/básico.flac", "//servidor/compartida/tema.mp3"]
+        };
+        assert_eq!(pistas, esperadas.map(PathBuf::from));
+        let _ = fs::remove_dir_all(&carpeta);
+    }
+
+    #[test]
+    fn la_lista_conserva_rutas_con_acentos_espacios_y_comillas() {
+        let carpeta = carpeta_temporal("lista-rara");
+        let lista = ListaGuardada {
+            pistas: vec![carpeta.join("Canción \"en vivo\" #1.mp3"), carpeta.join("a b").join("ñandú;tema.flac"), carpeta.join("日本.ogg")],
+            actual: Some(1),
+            repetir: false,
+        };
+        for nombre in ["rara.json", "rara.m3u8", "rara.m3u"] {
+            escribir_lista(&carpeta.join(nombre), &lista).unwrap();
+            assert_eq!(leer_lista(&carpeta.join(nombre)).unwrap().pistas, lista.pistas, "{nombre}");
+        }
         let _ = fs::remove_dir_all(&carpeta);
     }
 

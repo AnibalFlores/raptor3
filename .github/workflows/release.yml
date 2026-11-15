@@ -1,5 +1,6 @@
 # Al subir una etiqueta vX.Y.Z, compila para Windows y Linux y publica un
-# release con el ejecutable, el manual en PDF, la licencia y el README.
+# release con el ejecutable, los manuales en PDF (español e inglés), las
+# licencias y los README.
 name: Release
 
 on:
@@ -51,7 +52,7 @@ jobs:
           $destino = "${{ matrix.paquete }}"
           New-Item -ItemType Directory $destino | Out-Null
           Copy-Item target/release/mcp-raptor-player.exe "$destino/MCPRaptorPlayer.exe"
-          Copy-Item docs/manual/Raptor_Manual_es.pdf, LICENSE, README.md $destino
+          Copy-Item docs/manual/Raptor_Manual_es.pdf, docs/manual/Raptor_Manual_en.pdf, LICENSE, ASSETS-LICENSES.md, README.md, README.es.md $destino
           Compress-Archive -Path "$destino/*" -DestinationPath "$destino.zip"
 
       - name: Empaquetar (Linux)
@@ -62,7 +63,7 @@ jobs:
           cp target/release/mcp-raptor-player "$destino/target/release/"
           cp recursos/linux/* "$destino/recursos/linux/"
           cp ui/iconos/ventana-raptor.svg "$destino/ui/iconos/"
-          cp docs/manual/Raptor_Manual_es.pdf LICENSE README.md "$destino/"
+          cp docs/manual/Raptor_Manual_es.pdf docs/manual/Raptor_Manual_en.pdf LICENSE ASSETS-LICENSES.md README.md README.es.md "$destino/"
           tar -czf "$destino.tar.gz" "$destino"
 
       - uses: actions/upload-artifact@v4

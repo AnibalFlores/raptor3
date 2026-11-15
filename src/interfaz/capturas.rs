@@ -17,8 +17,10 @@ use slint::platform::software_renderer::{MinimalSoftwareWindow, RepaintBufferTyp
 use slint::platform::{Platform, WindowAdapter, WindowEvent};
 use slint::{ComponentHandle, ModelRc, Rgb8Pixel, SharedString, VecModel};
 
+use crate::idioma::Idioma;
+
 use crate::{
-    AcercaDe, AnunciantesDeLaEmisora, AvisoDeTanda, FilaDeAnunciante, AvisoDelCatalogo, BotonDeEfecto, BuscadorDelCatalogo, EditorDePista, FichaDelCatalogo, FichaSinArchivo, FilaDePista,
+    AcercaDe, ActualizacionDeDatos, AnunciantesDeLaEmisora, AvisoDeTanda, CambioPropuesto, FilaDeAnunciante, AvisoDelCatalogo, BotonDeEfecto, BuscadorDelCatalogo, EditorDePista, FichaDelCatalogo, FichaSinArchivo, FilaDePista,
     FilaDeOrden, FilaDeTanda, LineaDePauta, MantenimientoDelCatalogo, OrdenesDePublicidad, PautaDeTandas, SelectorDeAvisos, SelectorDeLocalidad,
     VentanaPrincipal,
 };
@@ -59,10 +61,174 @@ const PANTALLAS: [Pantalla; 7] = [
     Pantalla { nombre: "uhd-150", ancho: 3840, alto: 2040, escala: 1.5 },
 ];
 
+/// Variable que pide las capturas con la interfaz en inglés (para el manual
+/// en inglés): `RAPTOR_CAPTURAS_IDIOMA=en`. Quedan en target/capturas/en.
+const VARIABLE_DE_IDIOMA: &str = "RAPTOR_CAPTURAS_IDIOMA";
+
 fn carpeta_de_capturas() -> PathBuf {
-    let carpeta = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target").join("capturas");
+    let mut carpeta = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target").join("capturas");
+    if crate::idioma::en_ingles() {
+        carpeta = carpeta.join("en");
+    }
     std::fs::create_dir_all(&carpeta).expect("carpeta de capturas");
     carpeta
+}
+
+/// Elige el idioma de las capturas segun `RAPTOR_CAPTURAS_IDIOMA` (por
+/// defecto, español): los textos de Slint, los de `tr!` y los de muestra.
+fn elegir_idioma_de_las_capturas() {
+    let idioma = std::env::var(VARIABLE_DE_IDIOMA).ok().and_then(|codigo| Idioma::desde_codigo(&codigo)).unwrap_or_default();
+    crate::idioma::establecer(idioma);
+    slint::select_bundled_translation(idioma.codigo_para_slint()).expect("traduccion de la interfaz");
+}
+
+/// Los datos de muestra en inglés: primero el texto completo y, si no esta,
+/// los fragmentos que arman los textos compuestos (titulos numerados, etc.).
+const MUESTRAS_COMPLETAS: &[(&str, &str)] = &[
+    ("Comercial", "Commercial"),
+    ("HTH", "TTH"),
+    ("HTH · Base 1", "TTH · Base 1"),
+    ("Seco", "Dry voice"),
+    ("Tema", "Song"),
+    ("Anuncio", "Announcement"),
+    ("Publicidad", "Advertising"),
+    ("Efecto", "Effect"),
+    ("Version editada para radio", "Radio edit"),
+    ("Rock alternativo latino", "Latin alternative rock"),
+    ("Hora, temperatura y humedad", "Time, temperature and humidity"),
+    ("Inicio de bloque fijo", "Locked block start"),
+    ("Fin de bloque fijo", "Locked block end"),
+    ("Mezclar y BPM no cambian lo que queda dentro", "Shuffle and BPM do not change what lies inside"),
+    ("Bloque fijo", "Locked block"),
+    ("Programa de la tarde *", "Afternoon show *"),
+    ("Proxima tanda: «Tanda A» 10:30 (en 4:12)", "Next break: «Break A» 10:30 (in 4:12)"),
+    ("Buenos Aires: 13,9 °C, humedad 84 %\nUltima lectura hace 4 min", "Buenos Aires: 13.9 °C, humidity 84 %\nLast reading 4 min ago"),
+    ("13,9 °C · humedad 84 % · Buenos Aires", "13.9 °C · humidity 84 % · Buenos Aires"),
+    ("Reproducir", "Play"),
+    ("Analizando 12 tema(s) para la mezcla y la nivelacion (a -11 LUFS)...", "Analyzing 12 song(s) for mixing and leveling (to -11 LUFS)..."),
+    ("Total 12:34:56  ·  Restante 11:22:33  (+3 sin duracion)", "Total 12:34:56  ·  Remaining 11:22:33  (+3 without length)"),
+    ("Grandes exitos de la orquesta, volumen tres (edicion de lujo)", "The orchestra's greatest hits, volume three (deluxe edition)"),
+    ("Grandes exitos de la orquesta, volumen tres", "The orchestra's greatest hits, volume three"),
+    ("Hace 3 horas", "3 hours ago"),
+    ("Miercoles 30/09/2026", "Wednesday 30/09/2026"),
+    ("Hoja 12 de 12", "Page 12 of 12"),
+    ("Boton 4: Aplausos del publico en vivo espera la ventana de overlay (faltan 12.5 s).", "Button 4: Live audience applause waits for the overlay window (12.5 s to go)."),
+    ("En espera: Aplausos del publico en vivo (faltan 12.5 s)", "Waiting: Live audience applause (12.5 s to go)"),
+    ("Version editada para radio: sin el solo de guitarra del final", "Radio edit: without the final guitar solo"),
+    ("(ninguno)", "(none)"),
+    ("Misma salida de la musica (con la musica detenida)", "Same output as the music (with the music stopped)"),
+    ("Audifono de los auriculares con microfono (4- Microsoft LifeChat LX-3000 )", "Headset earphone (4- Microsoft LifeChat LX-3000 )"),
+    ("Altavoces (FxSound Audio Enhancer)", "Speakers (FxSound Audio Enhancer)"),
+    ("Efecto a -3.5 dB, musica al 42 % en 40 ms y vuelve en 0.8 s", "Effect at -3.5 dB, music at 42 % in 40 ms and back in 0.8 s"),
+    ("Los cambios se aplican al guardar.", "Changes apply when saved."),
+    ("6 tema(s) coinciden", "6 song(s) match"),
+    ("Pop latino", "Latin pop"),
+    ("Autos", "Cars"),
+    ("Supermercados", "Supermarkets"),
+    ("Farmacias", "Pharmacies"),
+    ("ninguna", "none"),
+    ("falta razon social, CUIT, telefono o correo", "missing company name, tax ID, phone or email"),
+    ("sin ficha: elijalo y carguela", "no record: choose it and fill it in"),
+    ("Sol - Noviembre: cada 2 h de 08:00 a 20:00, lun a vie, del 2026-11-01 al 2026-11-30", "Sol - November: every 2 h from 08:00 to 20:00, Mon to Fri, from 2026-11-01 to 2026-11-30"),
+    ("Sol - Fin de semana: 3 por dia de 09:00 a 13:00, sab y dom, del 2026-11-01 al 2026-11-30", "Sol - Weekend: 3 per day from 09:00 to 13:00, Sat and Sun, from 2026-11-01 to 2026-11-30"),
+    ("Sol - Octubre (inactiva): cada 1 h de 08:00 a 20:00, lun a vie, del 2026-10-01 al 2026-10-31", "Sol - October (inactive): every 1 h from 08:00 to 20:00, Mon to Fri, from 2026-10-01 to 2026-10-31"),
+    ("3 anunciante(s) con ficha; 1 nombrado(s) en ordenes SIN FICHA; 1 con datos de facturacion incompletos.", "3 advertiser(s) with a record; 1 named in orders WITHOUT A RECORD; 1 with incomplete billing data."),
+    ("Agencia Norte", "North Agency"),
+    ("Factura a 30 dias", "Invoice at 30 days"),
+    ("Anunciante «Supermercado Sol» actualizado.", "Advertiser «Supermercado Sol» updated."),
+    ("Buenos Aires: 13,9 °C, humedad 84 % · Ultima lectura hace 4 min", "Buenos Aires: 13.9 °C, humidity 84 % · Last reading 4 min ago"),
+    ("3 localidad(es) para «Cordoba»; elija la suya por la region.", "3 location(s) for «Cordoba»; choose yours by its region."),
+    ("Capital, Córdoba, Argentina", "Capital, Córdoba, Argentina"),
+    ("Andalucía, España", "Andalusia, Spain"),
+    ("Veracruz, México", "Veracruz, Mexico"),
+    ("Ofertas de noviembre", "November deals"),
+    ("Campana de vacunacion", "Vaccination campaign"),
+    ("Municipalidad", "City council"),
+    ("ya esta", "already there"),
+    ("Vuelve el 0 km", "Brand-new cars are back"),
+    ("La hora", "The time"),
+    ("Emisora", "Station"),
+    ("Ofertas de fin de semana", "Weekend deals"),
+    ("sin archivo", "no file"),
+    ("Institucional", "Institutional"),
+    ("la tanda «Tanda A»", "the break «Break A»"),
+    (
+        "5 tema(s). En el catalogo hay 18 aviso(s) con tipo de tanda y 3 elemento(s) SIN TIPO: reviselos con el filtro «Sin tipo» y asigneles uno (un aviso sin tipo no puede ir en tandas ni ordenes).",
+        "5 song(s). The catalog has 18 spot(s) with a break type and 3 item(s) WITHOUT A TYPE: review them with the «No type» filter and give them one (a spot without a type cannot go in breaks or orders).",
+    ),
+    ("Promo fin de semana", "Weekend promo"),
+    ("18:00, sab y dom", "18:00, Sat and Sun"),
+    ("2 aviso(s), 0:58.0", "2 spot(s), 0:58.0"),
+    ("sab 07/11 18:00", "Sat 07/11 18:00"),
+    ("Tanda A", "Break A"),
+    ("10:30 y cada 30 min hasta 20:00, lun a vie", "10:30 and every 30 min until 20:00, Mon to Fri"),
+    ("4 aviso(s), 1:45.0", "4 spot(s), 1:45.0"),
+    ("vie 06/11 10:30 (en 4:12)", "Fri 06/11 10:30 (in 4:12)"),
+    ("Hora en punto", "Top of the hour"),
+    ("07:00 y cada 60 min hasta 22:00, todos los dias", "07:00 and every 60 min until 22:00, every day"),
+    ("Exacta (-1 min / +0 min)", "Exact (-1 min / +0 min)"),
+    ("1 aviso(s), 0:12.0", "1 spot(s), 0:12.0"),
+    ("vie 06/11 11:00 (en 34:12)", "Fri 06/11 11:00 (in 34:12)"),
+    ("Navidad", "Christmas"),
+    ("12:00, todos los dias", "12:00, every day"),
+    ("3 aviso(s), 1:20.0", "3 spot(s), 1:20.0"),
+    ("inactiva", "inactive"),
+    ("sin genero", "no genre"),
+    ("promo-nueva.mp3: no tiene genero; asignele Comercial, Publicidad o Anuncio", "promo-nueva.mp3: it has no genre; give it Commercial, Advertising or Announcement"),
+    (
+        "1 aviso(s) agregado(s); se guardan con el boton de abajo. 1 sin un genero valido para una tanda: elijalos y use Asignar genero.",
+        "1 spot(s) added; they are saved with the button below. 1 without a valid genre for a break: choose them and use Assign genre.",
+    ),
+    ("2026-11-01 al 2026-11-30", "2026-11-01 to 2026-11-30"),
+    ("Sol - Noviembre", "Sol - November"),
+    ("Ruta 3 - Noviembre", "Ruta 3 - November"),
+    ("cada 2 h de 08:00 a 20:00, lun a vie", "every 2 h from 08:00 to 20:00, Mon to Fri"),
+    ("3 por dia de 08:00 a 20:00, todos los dias", "3 per day from 08:00 to 20:00, every day"),
+    ("a las 10:00, 18:00 de 08:00 a 20:00, lun a vie", "at 10:00, 18:00 from 08:00 to 20:00, Mon to Fri"),
+    ("7 de 7", "7 of 7"),
+    ("3 de 3", "3 of 3"),
+    ("1 de 2", "1 of 2"),
+    ("Sol - ofertas de la semana", "Sol - deals of the week"),
+    ("Sol - carniceria", "Sol - butcher's"),
+    ("08:00 Tanda A: Sol - Noviembre (sol-1.mp3), Ruta 3 - Noviembre (ruta-2.mp3) | 1:35.0 de 3:00.0", "08:00 Break A: Sol - November (sol-1.mp3), Ruta 3 - November (ruta-2.mp3) | 1:35.0 of 3:00.0"),
+    ("10:00 Tanda A: Sol - Noviembre (sol-2.mp3), Luna - Promo (luna.mp3) (reposicion) | 1:50.0 de 3:00.0", "10:00 Break A: Sol - November (sol-2.mp3), Luna - Promo (luna.mp3) (make-good) | 1:50.0 of 3:00.0"),
+    ("SIN UBICAR 18:00 Luna - Promo: otro aviso de su rubro ocupa las tandas posibles", "NOT PLACED 18:00 Luna - Promo: another spot of its sector takes the possible breaks"),
+    ("1 salida(s) sin ubicar", "1 airing(s) not placed"),
+    ("Orden actualizada: «Sol - Noviembre» de Supermercado Sol (Supermercados) | hoy: 7 de 7", "Order updated: «Sol - November» from Supermercado Sol (Supermarkets) | today: 7 of 7"),
+    ("2 archivos con ese nombre: no se puede elegir uno", "2 files with that name: one cannot be chosen"),
+    ("No esta en la carpeta", "Not in the folder"),
+    ("4 de 1250 fichas del catalogo tienen un archivo que ya no existe", "4 of 1250 catalog records have a file that no longer exists"),
+    ("En E:\\musica se encontraron 2 de 4; 1 con varios archivos del mismo nombre", "In E:\\musica, 2 of 4 were found; 1 with several files of the same name"),
+];
+
+/// Fragmentos de los textos compuestos (se reemplazan en orden).
+const MUESTRAS_EN_FRAGMENTOS: &[(&str, &str)] = &[
+    ("Orquesta Sinfonica y Coro de la Ciudad", "City Symphony Orchestra and Choir"),
+    ("Orquesta Sinfonica", "City Symphony Orchestra"),
+    ("Tema numero ", "Song number "),
+    ("con un titulo bastante largo", "with a rather long title"),
+    ("(Remix extendido)", "(Extended remix)"),
+    ("Mezclando hacia ", "Mixing into "),
+    ("Efecto con un nombre muy largo de prueba para la cortina de la tarde", "Effect with a very long test name for the afternoon jingle"),
+    ("Aplausos del publico en vivo", "Live audience applause"),
+    ("Hoja ", "Page "),
+    (" de 340", " of 340"),
+    (
+        "Sugerida: 1:05.0 a 1:32.5 (27.5 s), en el tramo instrumental mas parejo despues del primer estribillo.",
+        "Suggested: 1:05.0 to 1:32.5 (27.5 s), in the most even instrumental section after the first chorus.",
+    ),
+];
+
+/// Texto de muestra: tal cual en español; en inglés, traducido si esta en
+/// las tablas de arriba.
+fn texto(valor: &str) -> SharedString {
+    if !crate::idioma::en_ingles() {
+        return valor.into();
+    }
+    if let Some((_, ingles)) = MUESTRAS_COMPLETAS.iter().find(|(espanol, _)| *espanol == valor) {
+        return (*ingles).into();
+    }
+    MUESTRAS_EN_FRAGMENTOS.iter().fold(valor.to_string(), |texto, (espanol, ingles)| texto.replace(espanol, ingles)).into()
 }
 
 /// Dibuja la ventana con ese tamano y escala, y guarda la imagen completa.
@@ -84,10 +250,6 @@ fn capturar(adaptador: &MinimalSoftwareWindow, ancho: u32, alto: u32, escala: f3
     codificador.set_depth(png::BitDepth::Eight);
     let datos: Vec<u8> = pixeles.iter().flat_map(|pixel| [pixel.r, pixel.g, pixel.b]).collect();
     codificador.write_header().expect("encabezado PNG").write_image_data(&datos).expect("imagen PNG");
-}
-
-fn texto(valor: &str) -> SharedString {
-    valor.into()
 }
 
 /// Datos de muestra largos, para que se note lo que no entra.
@@ -286,6 +448,8 @@ fn llenar_editor(editor: &EditorDePista) {
 fn capturas_de_las_ventanas() {
     slint::platform::set_platform(Box::new(PlataformaDeCaptura)).expect("plataforma de captura");
     let ventana = VentanaPrincipal::new().expect("ventana principal");
+    // Slint elige la traduccion recien cuando ya hay un componente creado.
+    elegir_idioma_de_las_capturas();
     llenar_ventana(&ventana);
     ventana.show().expect("mostrar ventana");
     let editor = EditorDePista::new().expect("editor");
@@ -335,6 +499,15 @@ fn capturas_de_las_ventanas() {
     for (ancho, alto, tamano) in [(680, 480, "inicial"), (520, 360, "minimo")] {
         capturar(&del_selector_de_localidad, ancho, alto, 1.0, &format!("localidad-{tamano}"));
     }
+    // Actualizar datos del catalogo: con las etiquetas releidas y con MusicBrainz.
+    let actualizacion = ActualizacionDeDatos::new().expect("actualizacion de datos");
+    actualizacion.show().expect("mostrar actualizacion de datos");
+    let de_la_actualizacion = VENTANAS.with(|ventanas| ventanas.borrow()[10].clone());
+    for musicbrainz in [false, true] {
+        llenar_actualizacion(&actualizacion, musicbrainz);
+        let origen = if musicbrainz { "musicbrainz" } else { "etiquetas" };
+        capturar(&de_la_actualizacion, 1120, 640, 1.0, &format!("actualizacion-{origen}"));
+    }
     for (ancho, alto, tamano) in [(1180, 780, "inicial"), (980, 640, "minimo")] {
         capturar(&de_los_anunciantes, ancho, alto, 1.0, &format!("anunciantes-{tamano}"));
     }
@@ -382,6 +555,8 @@ fn capturas_de_las_ventanas() {
     for (ancho, alto, tamano) in [(1100, 600, "inicial"), (900, 420, "minimo")] {
         capturar(&del_mantenimiento, ancho, alto, 1.0, &format!("mantenimiento-{tamano}"));
     }
+    // El idioma es global: se deja en español para las demas pruebas.
+    crate::idioma::establecer(Idioma::Espanol);
 }
 
 fn llenar_buscador(ventana: &BuscadorDelCatalogo) {
@@ -414,6 +589,61 @@ fn llenar_buscador(ventana: &BuscadorDelCatalogo) {
     ventana.set_texto(texto("artista:sanz sonado:>30d"));
     ventana.set_resumen(texto("6 tema(s) coinciden"));
     ventana.set_seleccionadas(2);
+}
+
+/// Cambios propuestos como los que arma la ventana real: releyendo las
+/// etiquetas o consultando MusicBrainz.
+fn llenar_actualizacion(ventana: &ActualizacionDeDatos, musicbrainz: bool) {
+    let cambio = |elegido: bool, tema: &str, campo: &str, actual: &str, nuevo: &str, nota: String| CambioPropuesto {
+        elegido,
+        tema: tema.into(),
+        ruta: "D:\\musica\\tema.mp3".into(),
+        campo: campo.into(),
+        actual: actual.into(),
+        nuevo: nuevo.into(),
+        nota: nota.into(),
+    };
+    let (origen, cambios, resumen) = if musicbrainz {
+        let cambios = vec![
+            cambio(true, "Amiga mía", "album", "", "Más", String::new()),
+            cambio(true, "Amiga mía", "anio", "", "1997", String::new()),
+            cambio(true, "Amiga mía", "genero", "", "Pop", String::new()),
+            cambio(true, "Mariposa tecknicolor", "album", "", "No sé si es Baires o Madrid", String::new()),
+            cambio(true, "Mariposa tecknicolor", "anio", "", "2008", String::new()),
+            cambio(true, "Rasguña las piedras", "album", "", "Adiós Sui Generis, parte 2", String::new()),
+            cambio(true, "Rasguña las piedras", "anio", "", "1993", String::new()),
+            cambio(false, "Rasguña las piedras", "genero", "Rock nacional", "Latin", tr!("corregido a mano")),
+        ];
+        let mut resumen = tr!("{} de {} tema(s) revisados: {} dato(s) distintos en {} tema(s)", 4, 4, 8, 3);
+        resumen.push_str(&tr!("; {} sin una coincidencia segura en MusicBrainz", 1));
+        (
+            tr!("MusicBrainz (musicbrainz.org), la base libre de datos musicales que usa Picard: se busca cada tema por titulo y artista, de a uno por segundo. Solo se marcan los datos que faltan; los demas, revíselos."),
+            cambios,
+            resumen,
+        )
+    } else {
+        let anterior = || tr!("ficha anterior: no registra correcciones");
+        let cambios = vec![
+            cambio(true, "amiga mia", "titulo", "amiga mia", "Amiga mía", String::new()),
+            cambio(false, "amiga mia", "artista", "A. Sanz", "Alejandro Sanz", tr!("corregido a mano")),
+            cambio(false, "Musica ligera", "titulo", "Musica ligera", "De música ligera", anterior()),
+            cambio(false, "Musica ligera", "artista", "Soda", "Soda Stereo", anterior()),
+            cambio(false, "Musica ligera", "genero", "Rock nacional", "Rock", anterior()),
+        ];
+        (
+            tr!("Etiquetas de los archivos: lo que escribio en ellos otro programa (Picard, Mp3tag...). Los datos que usted corrigio a mano no se marcan solos."),
+            cambios,
+            tr!("{} de {} tema(s) revisados: {} dato(s) distintos en {} tema(s)", 2, 2, 5, 2),
+        )
+    };
+    let elegidos = cambios.iter().filter(|cambio| cambio.elegido).count();
+    ventana.set_origen(origen.into());
+    ventana.set_resumen(resumen.into());
+    ventana.set_cambios(ModelRc::new(VecModel::from(cambios)));
+    ventana.set_elegidos(elegidos as i32);
+    ventana.set_trabajando(false);
+    ventana.set_progreso(1.0);
+    ventana.set_aviso("".into());
 }
 
 fn llenar_anunciantes(ventana: &AnunciantesDeLaEmisora) {
@@ -631,7 +861,7 @@ fn llenar_mantenimiento(ventana: &MantenimientoDelCatalogo) {
     let fichas = vec![
         ficha("We Are The Champions - Queen", "D:\\musica\\viejo\\Queen\\We Are The Champions.mp3", "E:\\musica\\Rock\\Queen\\We Are The Champions.mp3", true),
         ficha("Careless Whisper - George Michael", "D:\\musica\\viejo\\George Michael\\Careless Whisper.mp3", "E:\\musica\\Pop\\George Michael\\Careless Whisper.mp3", true),
-        ficha("Off - Dejate Llevar.mp3", "D:\\AHF\\Music\\Dias de Radio\\Radio Uno\\Offs\\Off - Dejate Llevar.mp3", "2 archivos con ese nombre: no se puede elegir uno", false),
+        ficha("Off - Dejate Llevar.mp3", "D:\\musica\\radio\\offs\\Off - Dejate Llevar.mp3", "2 archivos con ese nombre: no se puede elegir uno", false),
         ficha("Tema numero 3 con un titulo bastante largo (Remix extendido) - Orquesta Sinfonica", "D:\\musica\\viejo\\tema3.flac", "No esta en la carpeta", false),
     ];
     ventana.set_fichas(ModelRc::new(VecModel::from(fichas)));

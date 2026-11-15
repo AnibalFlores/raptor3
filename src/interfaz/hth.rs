@@ -72,6 +72,14 @@ pub(super) fn pista_del_anuncio_hth() -> &'static Pista {
     PISTA.get_or_init(|| Pista::new(carpeta_del_usuario().join("servicios").join(NOMBRE_DEL_ARCHIVO)))
 }
 
+/// Si la ruta es la del anuncio HTH guardado con otra carpeta de datos (otro
+/// equipo, otro usuario u otra RAPTOR_CARPETA_DE_DATOS), la del anuncio en
+/// esta: carpeta "servicios" y el nombre del archivo del anuncio.
+pub(super) fn anuncio_hth_en_esta_carpeta(ruta: &Path) -> Option<PathBuf> {
+    let (carpeta, nombre) = super::marcadores::carpeta_y_nombre(ruta)?;
+    (carpeta.eq_ignore_ascii_case("servicios") && nombre == NOMBRE_DEL_ARCHIVO).then(|| pista_del_anuncio_hth().archivo().to_path_buf())
+}
+
 /// Si el archivo es el del anuncio HTH.
 pub(super) fn es_anuncio_hth(archivo: &Path) -> bool {
     let anuncio = pista_del_anuncio_hth();
@@ -553,5 +561,16 @@ Sin conexion con el servicio del clima");
         assert!(es_anuncio_hth(&anuncio));
         assert!(!es_anuncio_hth(&PathBuf::from("D:/musica").join(NOMBRE_DEL_ARCHIVO)));
         assert!(!es_anuncio_hth(&anuncio.with_file_name("otro.wav")));
+    }
+
+    #[test]
+    fn el_anuncio_de_otra_carpeta_de_datos_pasa_a_la_de_este_equipo() {
+        let anuncio = pista_del_anuncio_hth().archivo().to_path_buf();
+        let de_windows = PathBuf::from(format!(r"C:\Users\otro\.mcp-raptor-player\servicios\{NOMBRE_DEL_ARCHIVO}"));
+        let de_linux = PathBuf::from(format!("/home/radio/.mcp-raptor-player/servicios/{NOMBRE_DEL_ARCHIVO}"));
+        assert_eq!(anuncio_hth_en_esta_carpeta(&de_windows), Some(anuncio.clone()));
+        assert_eq!(anuncio_hth_en_esta_carpeta(&de_linux), Some(anuncio));
+        assert_eq!(anuncio_hth_en_esta_carpeta(&PathBuf::from("D:/musica").join(NOMBRE_DEL_ARCHIVO)), None);
+        assert_eq!(anuncio_hth_en_esta_carpeta(&PathBuf::from("D:/servicios/otro.wav")), None);
     }
 }

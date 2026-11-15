@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MCP Raptor Player - User manual</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  :root {
+    --tinta: #1f2328; --suave: #57606a; --borde: #d0d7de; --fondo: #f6f8fa;
+    --acento: #fd7e14; --azul: #1971c2;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", "DejaVu Sans", Arial, sans-serif; font-size: 10.5pt; line-height: 1.5; color: var(--tinta); margin: 0; }
+  h1, h2, h3, h4 { line-height: 1.25; color: var(--tinta); }
+  h1 { font-size: 22pt; margin: 0 0 6mm; border-bottom: 3px solid var(--acento); padding-bottom: 3mm; page-break-before: always; }
+  h2 { font-size: 14.5pt; margin: 8mm 0 3mm; border-bottom: 1px solid var(--borde); padding-bottom: 1.5mm; }
+  h3 { font-size: 12pt; margin: 6mm 0 2mm; }
+  h4 { font-size: 10.5pt; margin: 4mm 0 1mm; }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin: 0 0 1mm; }
+  code, kbd { font-family: Consolas, "DejaVu Sans Mono", monospace; font-size: 9.5pt; }
+  code { background: var(--fondo); border: 1px solid var(--borde); border-radius: 3px; padding: 0 3px; }
+  kbd { background: #fff; border: 1px solid var(--borde); border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9.8pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--borde); padding: 1.6mm 2.2mm; text-align: left; vertical-align: top; }
+  th { background: var(--fondo); font-weight: 600; }
+  figure { margin: 3mm 0 5mm; page-break-inside: avoid; text-align: center; }
+  figure img { max-width: 100%; border: 1px solid var(--borde); border-radius: 4px; }
+  figure.diagrama svg { width: 100%; height: auto; }
+  figcaption { font-size: 9pt; color: var(--suave); margin-top: 1.5mm; }
+  .nota { border-left: 4px solid var(--azul); background: #eef5fc; padding: 2.5mm 3.5mm; margin: 3mm 0 4mm; page-break-inside: avoid; }
+  .aviso { border-left: 4px solid var(--acento); background: #fff4e6; padding: 2.5mm 3.5mm; margin: 3mm 0 4mm; page-break-inside: avoid; }
+  .franja { display: inline-block; width: 8px; height: 13px; border-radius: 1px; vertical-align: -2px; margin-right: 5px; }
+.icono { width: 15px; height: 15px; vertical-align: -3px; margin-right: 4px; }
+  .ui { font-weight: 600; }
+  .portada { height: 250mm; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+  .portada .logo { width: 34mm; height: 34mm; margin: 0 auto 8mm; }
+  .portada h1 { page-break-before: avoid; border: none; font-size: 32pt; margin: 0 0 3mm; }
+  .portada .sub { font-size: 15pt; color: var(--suave); margin-bottom: 18mm; }
+  .portada .datos { font-size: 10pt; color: var(--suave); }
+  .indice { columns: 2; column-gap: 10mm; }
+  .indice ol { padding-left: 5mm; }
+  .indice li { margin-bottom: 0.8mm; }
+  .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+</style>
+</head>
+<body>
+
+<section class="portada">
+  <svg class="logo" viewBox="0 0 24 24" fill="#fd7e14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10m0 5h-2a1 1 0 0 0 -1 1v8a1 1 0 0 0 1 1l.117 -.007a1 1 0 0 0 .883 -.993v-2.332l2.2 2.932a1 1 0 0 0 1.4 .2l.096 -.081a1 1 0 0 0 .104 -1.319l-1.903 -2.538l.115 -.037a3.001 3.001 0 0 0 -1.012 -5.825m0 2a1 1 0 0 1 0 2h-1v-2z"/></svg>
+  <h1>MCP Raptor Player</h1>
+  <div class="sub">User manual</div>
+  <div class="datos">Version 1.0.0 · November 2026<br>Windows 10/11 and Linux</div>
+</section>
+
+<h1>A bit of history</h1>
+<p><strong>MCP Raptor Player</strong> is an anniversary tribute version, brought up to this century by its author. It takes up the original idea —handling the music, the commercials and the effects that go on air from a single screen— with today's tools: automatic analysis of every song, smart mixing, its own audio engine and control from artificial intelligence assistants through MCP.</p>
+<div class="aviso"><strong>Enjoy it!</strong> And don't ask for support: el Inyenieri made this out of radio nostalgia and as a hobby. You have been warned: use it at your own risk. Thank you.<br>If you find it useful, suggestions and <a href="https://www.paypal.com/donate/?hosted_button_id=SYCZZFULZ6TKE">donations through PayPal</a> are welcome; the <span class="ui">Donate with PayPal</span> button in <span class="ui">Help › About</span> opens the same page.</div>
+<p>Raptor was born in mid-1997 as a radio automation solution. Its author, <strong>Aníbal H. Flores</strong>, developed the first version, Raptor 1, with the technologies of the time: Windows 95, one of the first versions of Delphi and its VCL audio components. It was followed by Raptor II, whose last version dates from 2007.</p>
+<figure>
+  <img src="imagenes/raptor-ii.jpg" alt="Raptor II screen">
+  <figcaption>Raptor II in its last version, from 2007.</figcaption>
+</figure>
+
+<h1>Contents</h1>
+<div class="indice">
+<p><strong>Part I · Technical features</strong></p>
+<ol>
+  <li>What MCP Raptor Player is</li>
+  <li>Requirements and formats</li>
+  <li>Architecture and audio engine</li>
+  <li>Automatic analysis of the songs</li>
+  <li>Mixing between songs and leveling</li>
+  <li>Effects, overlay and effects board</li>
+  <li>Item types</li>
+  <li>Saved data</li>
+  <li>Remote control through MCP</li>
+</ol>
+<p><strong>Part II · Using the interface</strong></p>
+<ol start="10">
+  <li>Getting started</li>
+  <li>The main window</li>
+  <li>Building and managing the playlist</li>
+  <li>Playing and mixing</li>
+  <li>The effects panel</li>
+  <li>The track editor</li>
+  <li>Classifying the catalog by type</li>
+  <li>Scheduled breaks and commercials log</li>
+  <li>Keyboard shortcuts</li>
+  <li>Catalog maintenance</li>
+  <li>Troubleshooting</li>
+  <li>Design decisions</li>
+</ol>
+<p><strong>Appendix</strong></p>
+<ol type="A">
+  <li>Plug-ins that improve the sound</li>
+</ol>
+</div>
+
+<!-- =============================================================== -->
+<h1>Part I · Technical features</h1>
+
+<h2>1. What MCP Raptor Player is</h2>
+<p>MCP Raptor Player is a desktop player designed for radio broadcasting. It brings together in a single window:</p>
+<ul>
+  <li><strong>A sequential playlist</strong> that goes from one song to the next with a mix (crossfade), either manual or calculated from the analysis of each song.</li>
+  <li><strong>An effects board</strong> with 10 buttons per page, and as many pages as needed, to fire effects, voice-overs and jingles over the music (<em>overlay</em>, talking or playing over the song).</li>
+  <li><strong>A track editor</strong> with a waveform to adjust the start and end of each song, its intro, its outro, the window where it can be talked over and its data (type, title, artist, genre, rating, BPM).</li>
+  <li><strong>A built-in MCP server</strong> (<em>Model Context Protocol</em>) that lets an AI assistant such as Claude operate the player: build the playlist, fire effects, mix or ask what is playing.</li>
+</ul>
+
+<h2>2. Requirements and formats</h2>
+<table>
+  <tr><th style="width:32%">Operating system</th><td>Windows 10 or 11. Linux with PulseAudio or PipeWire (it also works on WSL2 with WSLg); without a sound server it uses ALSA.</td></tr>
+  <tr><th>Screen</th><td>At least Full HD (1920 × 1080), with Windows scaling at 100 %, 125 % or 150 %. At 150 % the toolbar buttons show only their icon so that the effects board fits too (see <span class="ui">Hide button labels</span>, in the Window menu). On larger screens (QHD, 4K) the interface uses the extra space; texts that do not fit show a tooltip with the whole text.</td></tr>
+  <tr><th>Audio formats</th><td>MP3, WAV, AIFF (<code>.aif</code>, <code>.aiff</code>), AAC (<code>.aac</code>, <code>.m4a</code>), FLAC and Ogg Vorbis (<code>.ogg</code>, <code>.oga</code>).</td></tr>
+  <tr><th>Playlists</th><td>Its own format (JSON) and M3U to load playlists from other programs.</td></tr>
+  <tr><th>Audio output</th><td>The system's default output for the music. The editor's preview can use another sound card (for example, headphones).</td></tr>
+</table>
+
+<h2>3. Architecture and audio engine</h2>
+
+<h3>Block diagram</h3>
+<p>The diagram shows the parts of the program and how they relate: at the top, where the commands come from; in the middle, the logic that decides what plays and when; at the bottom, the path of the audio to the sound cards.</p>
+<figure class="diagrama">
+<svg viewBox="0 0 760 600" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, DejaVu Sans, Arial, sans-serif" role="img" aria-label="Block diagram of MCP Raptor Player">
+  <defs>
+    <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#495057"/>
+    </marker>
+    <style>
+      .linea { stroke: #495057; stroke-width: 1.6; fill: none; }
+      .punteada { stroke-dasharray: 5 4; }
+      .titulo { font-size: 13px; font-weight: 700; fill: #1f2328; text-anchor: middle; }
+      .detalle { font-size: 10.5px; fill: #444c56; text-anchor: middle; }
+      .rotulo { font-size: 10px; fill: #57606a; font-style: italic; }
+      .capa { font-size: 10px; font-weight: 700; fill: #868e96; letter-spacing: 1px; }
+      .entrada { fill: #e7f1fb; stroke: #1971c2; }
+      .logica { fill: #fff4e6; stroke: #e8590c; }
+      .datos { fill: #f3f0ff; stroke: #7048e8; }
+      .audio { fill: #ebfbee; stroke: #2f9e44; }
+      .placa { fill: #f1f3f5; stroke: #495057; }
+      rect { stroke-width: 1.6; }
+    </style>
+  </defs>
+
+  <!-- Capas -->
+  <text class="capa" x="10" y="14">COMMANDS</text>
+  <text class="capa" x="10" y="104">LOGIC</text>
+  <text class="capa" x="10" y="294">AUDIO</text>
+  <text class="capa" x="10" y="534">OUTPUT</text>
+
+  <!-- Ordenes -->
+  <rect class="entrada" x="20" y="22" width="210" height="52" rx="6"/>
+  <text class="titulo" x="125" y="44">Main window</text>
+  <text class="detalle" x="125" y="61">playlist, transport, effects board</text>
+
+  <rect class="entrada" x="275" y="22" width="210" height="52" rx="6"/>
+  <text class="titulo" x="380" y="44">Track editor</text>
+  <text class="detalle" x="380" y="61">marks, data, preview</text>
+
+  <rect class="entrada" x="530" y="22" width="210" height="52" rx="6"/>
+  <text class="titulo" x="635" y="44">MCP server</text>
+  <text class="detalle" x="635" y="61">AI assistant · 127.0.0.1:8765</text>
+
+  <!-- Logica -->
+  <rect class="datos" x="20" y="112" width="160" height="58" rx="6"/>
+  <text class="titulo" x="100" y="135">Saved data</text>
+  <text class="detalle" x="100" y="152">records, effects board,</text>
+  <text class="detalle" x="100" y="165">playlists, preferences, log</text>
+
+  <rect class="logica" x="215" y="112" width="330" height="58" rx="6"/>
+  <text class="titulo" x="380" y="135">Controller</text>
+  <text class="detalle" x="380" y="152">playlist and selector, rules of each</text>
+  <text class="detalle" x="380" y="165">type, periodic cycle</text>
+
+  <rect class="datos" x="580" y="112" width="160" height="58" rx="6"/>
+  <text class="titulo" x="660" y="135">Analysis</text>
+  <text class="detalle" x="660" y="152">in the background: waveform,</text>
+  <text class="detalle" x="660" y="165">points, BPM, LUFS, voice</text>
+
+  <rect class="logica" x="20" y="210" width="230" height="56" rx="6"/>
+  <text class="titulo" x="135" y="232">Playback manager</text>
+  <text class="detalle" x="135" y="250">sequence, mixing, leveling</text>
+
+  <rect class="logica" x="265" y="210" width="230" height="56" rx="6"/>
+  <text class="titulo" x="380" y="232">Effects manager</text>
+  <text class="detalle" x="380" y="250">free / locked mode, effect plan</text>
+
+  <rect class="logica" x="510" y="210" width="230" height="56" rx="6"/>
+  <text class="titulo" x="625" y="232">Preview output</text>
+  <text class="detalle" x="625" y="250">same output or another card</text>
+
+  <!-- Audio: motores -->
+  <rect class="audio" x="20" y="302" width="110" height="56" rx="6"/>
+  <text class="titulo" x="75" y="325">Engine A</text>
+  <text class="detalle" x="75" y="342">music</text>
+
+  <rect class="audio" x="140" y="302" width="110" height="56" rx="6"/>
+  <text class="titulo" x="195" y="325">Engine B</text>
+  <text class="detalle" x="195" y="342">music</text>
+
+  <rect class="audio" x="265" y="302" width="230" height="56" rx="6"/>
+  <text class="titulo" x="380" y="325">Effects engine</text>
+  <text class="detalle" x="380" y="342">board effect or pinned effect</text>
+
+  <rect class="audio" x="510" y="302" width="230" height="56" rx="6"/>
+  <text class="titulo" x="625" y="325">Preview engine</text>
+  <text class="detalle" x="625" y="342">editor song (+ test effect)</text>
+
+
+  <!-- Audio: mezcladores -->
+  <rect class="audio" x="20" y="412" width="475" height="70" rx="6"/>
+  <text class="titulo" x="257" y="436">Main mixer</text>
+  <text class="detalle" x="257" y="454">sums 4 voices · frame clock · shared attenuator</text>
+  <text class="detalle" x="257" y="469">(ducks the music during effects) · soft clipper</text>
+
+  <rect class="audio" x="510" y="412" width="230" height="70" rx="6"/>
+  <text class="titulo" x="625" y="436">Separate mixer</text>
+  <text class="detalle" x="625" y="454">optional: test song and</text>
+  <text class="detalle" x="625" y="469">effect, with its attenuator</text>
+
+  <!-- Salida -->
+  <rect class="placa" x="120" y="542" width="275" height="46" rx="6"/>
+  <text class="titulo" x="257" y="562">Main sound card</text>
+  <text class="detalle" x="257" y="578">on-air output (the default one)</text>
+
+  <rect class="placa" x="510" y="542" width="230" height="46" rx="6"/>
+  <text class="titulo" x="625" y="562">Another card</text>
+  <text class="detalle" x="625" y="578">for example, headphones</text>
+
+  <!-- Flechas: ordenes -> controlador -->
+  <path class="linea" d="M125 74 L125 92 L300 92 L300 112" marker-end="url(#flecha)"/>
+  <path class="linea" d="M380 74 L380 112" marker-end="url(#flecha)"/>
+  <path class="linea" d="M635 74 L635 92 L460 92 L460 112" marker-end="url(#flecha)"/>
+
+  <!-- Controlador <-> datos y analisis -->
+  <path class="linea" d="M182 141 L213 141" marker-start="url(#flecha)" marker-end="url(#flecha)"/>
+  <path class="linea" d="M547 141 L578 141" marker-start="url(#flecha)" marker-end="url(#flecha)"/>
+
+  <!-- Controlador -> gestores -->
+  <path class="linea" d="M300 170 L300 190 L135 190 L135 210" marker-end="url(#flecha)"/>
+  <path class="linea" d="M380 170 L380 210" marker-end="url(#flecha)"/>
+  <path class="linea" d="M460 170 L460 190 L625 190 L625 210" marker-end="url(#flecha)"/>
+
+  <!-- Gestores -> motores -->
+  <path class="linea" d="M100 266 L75 302" marker-end="url(#flecha)"/>
+  <path class="linea" d="M170 266 L195 302" marker-end="url(#flecha)"/>
+  <path class="linea" d="M380 266 L380 302" marker-end="url(#flecha)"/>
+  <path class="linea" d="M625 266 L625 302" marker-end="url(#flecha)"/>
+
+  <!-- Motores -> mezcladores -->
+  <path class="linea" d="M75 358 L75 412" marker-end="url(#flecha)"/>
+  <path class="linea" d="M195 358 L195 412" marker-end="url(#flecha)"/>
+  <path class="linea" d="M380 358 L380 412" marker-end="url(#flecha)"/>
+  <path class="linea" d="M625 358 L625 412" marker-end="url(#flecha)"/>
+  <path class="linea punteada" d="M560 358 L560 392 L470 392 L470 412" marker-end="url(#flecha)"/>
+  <text class="rotulo" x="476" y="404">same output</text>
+  <text class="rotulo" x="631" y="392">another card</text>
+
+  <!-- Mezcladores -> placas -->
+  <path class="linea" d="M257 482 L257 542" marker-end="url(#flecha)"/>
+  <path class="linea" d="M625 482 L625 542" marker-end="url(#flecha)"/>
+</svg>
+<figcaption>Parts of the program: commands (blue), logic (orange), data (purple), audio (green) and sound cards (grey). The dotted line is the preview when it shares the music output. Each engine decodes its file in its own thread and leaves it in a 1 s buffer.</figcaption>
+</figure>
+
+<h3>What each part does</h3>
+<table>
+  <tr><th style="width:28%">Block</th><th>Function</th></tr>
+  <tr><td><strong>Main window, editor and MCP server</strong></td><td>They receive the commands: from the user (clicks, keys) or from an AI assistant connected through MCP. All three inputs reach the same controller, so the same rules apply.</td></tr>
+  <tr><td><strong>Controller</strong></td><td>The center of the program. It keeps the playlist and the selector, applies the rules (for example, that an Effect does not go into the playlist), updates the screen and, in a periodic cycle, tells the managers to move forward.</td></tr>
+  <tr><td><strong>Saved data</strong></td><td>Reads and writes the records of each file, the effects board, the playlists, the preferences and the commercials log (see section 8).</td></tr>
+  <tr><td><strong>Analysis</strong></td><td>Works in the background without slowing down the interface: it reads tags and calculates the waveform, mix points, tempo, loudness and the suggested overlay window. Its results go back to the controller and are saved in the records.</td></tr>
+  <tr><td><strong>Playback manager</strong></td><td>Decides the sequence: which song comes next, when the mix starts, how long it lasts and at what volume (leveling). It alternates engines A and B: while one ends, the other comes in.</td></tr>
+  <tr><td><strong>Effects manager</strong></td><td>Decides when an effect plays (free mode or locked to the overlay window), at what volume and how much the music is ducked. It schedules the ducking and the return of the music in the mixer's attenuator.</td></tr>
+  <tr><td><strong>Preview output</strong></td><td>Chooses where the editor's preview plays: through the preview voice of the main mixer (with the music stopped) or through a separate mixer on another sound card.</td></tr>
+  <tr><td><strong>Engines</strong></td><td>Each one opens a file, decodes it and resamples it to the sound card's rate in its own thread, and leaves the audio ready in a buffer. They know the position of their song and can start on an exact frame.</td></tr>
+  <tr><td><strong>Main mixer</strong></td><td>Sums the four voices (engines A and B, effects and preview) with their volume, applies the shared attenuator to the music and the soft clipper, and delivers the result to the sound card. It keeps the frame clock that mixes and effects are synchronized with.</td></tr>
+  <tr><td><strong>Separate mixer</strong></td><td>It only exists if another output was chosen for the preview. It has its own clock and its own attenuator, so testing does not touch what goes on air.</td></tr>
+</table>
+
+<h3>Engine features</h3>
+<ul>
+  <li><strong>Native decoding</strong> of every format, without depending on system codecs, and high-quality resampling to the sound card's rate.</li>
+  <li><strong>Its own four-voice mixer:</strong> two alternate for the music (while one ends, the other comes in), one plays the effects board and the fourth is the editor's preview.</li>
+  <li><strong>Sync to the audio frame:</strong> the track that comes in on a mix and the effects are scheduled at the exact instant of the output, not "when the interface gets there".</li>
+  <li><strong>Shared attenuator:</strong> while an effect plays, the music goes down with smooth scheduled ramps; a mix that starts during the effect already comes in ducked.</li>
+  <li><strong>Soft clipper</strong> on the final sum: above a certain level the signal is compressed toward the maximum without the click of hard clipping.</li>
+  <li><strong>One second of buffer</strong> per voice, so a busy computer does not cause dropouts.</li>
+  <li><strong>Preview through another output:</strong> if another sound card is chosen, the preview opens its own mixer there (song and test effect), so you can preview while the music is on air.</li>
+</ul>
+
+<h2>4. Automatic analysis of the songs</h2>
+<p>Every file that enters the playlist is analyzed in the background, without slowing down the interface. The result is saved and is not calculated again.</p>
+<ul>
+  <li><strong>Tags:</strong> title, artist, genre, album, year and length.</li>
+  <li><strong>Waveform</strong>, used in the editor and for all the following analysis (it is cached).</li>
+  <li><strong>Automatic points:</strong> start and end of the song without the silences, intro (how far the instrumental beginning goes) and outro (from where the song starts to fade).</li>
+  <li><strong>Tempo (BPM)</strong> and beat phase, estimated in three bands (low, mid and high), so a song without a kick drum also marks the pulse.</li>
+  <li><strong>Loudness</strong> in LUFS and true peak, to level the volume between songs.</li>
+  <li><strong>Suggested overlay window:</strong> it looks for an instrumental section of at least 4 seconds (without sung vocals) where the song can be talked over. It gets it right on most songs with vocals; with heavily processed vocals, choirs or rap it may fail, and it can always be corrected by hand.</li>
+</ul>
+<div class="nota">Everything the analysis proposes is shown as <strong>Automatic</strong>. If the user changes it, it becomes <strong>Manual</strong> and the analysis no longer touches it. The editor's <span class="ui">Back to automatic</span> button undoes the manual changes.</div>
+
+<h2>5. Mixing between songs and leveling</h2>
+<h3>Fader (manual mix)</h3>
+<p>The <span class="ui">Fader</span> slider sets the mix seconds (0 to 15) when moving on with <span class="ui">Next</span> and the fade-out seconds when pressing <span class="ui">Stop</span>. When a song ends on its own and moves on to the next one, they overlap for as many seconds as the shorter of the outgoing song's outro and the incoming song's intro (the <em>Mix</em> column of the playlist shows them).</p>
+<h3>How the outgoing song goes down</h3>
+<ul>
+  <li><strong>From the outro:</strong> if the outro starts before the mix, the outgoing song already starts going down from the beginning of its outro, evenly, until it is 6 dB lower when the next one comes in. That way the ending does not stay at full volume waiting for the mix.</li>
+  <li><strong>During the mix:</strong> it goes down with a slope that gets steeper toward the end: halfway through the mix it is 12 dB lower and at three quarters, more than 24 dB lower, so it does not cover the incoming song. The incoming song rises quickly at first (a sine curve with smart crossfade, a straight line without it).</li>
+  <li>If the outgoing song has a <strong>natural fade</strong> (it goes down on its own in the recording), it is not attenuated before the mix: during the mix it is only followed in a straight line down to silence.</li>
+</ul>
+<h3>Smart crossfade</h3>
+<p>With the <span class="ui">Smart crossfade</span> option, the mix is decided from the analysis of both songs:</p>
+<ul>
+  <li><strong>No dead silences:</strong> the outgoing song ends at its end mark and the incoming one starts at its start mark.</li>
+  <li><strong>Adapted length:</strong> the mix lasts as long as the longer of the outgoing song's outro and the incoming song's intro, with a minimum of 2 and a maximum of 12 seconds.</li>
+  <li><strong>Even volume:</strong> the incoming song rises with a power curve and the outgoing one goes down as explained above. If the incoming song already has a natural fade in that section, it is not attenuated again, to avoid a volume "dip".</li>
+  <li><strong>Beat alignment:</strong> if the end of the outgoing song and the beginning of the incoming one have the same tempo (or one is double the other), the incoming song is moved earlier or later by less than half a beat so that the beats of both match.</li>
+</ul>
+<h3>Level volume</h3>
+<p>The <span class="ui">Level volume</span> option brings every song to the same loudness, chosen in the combo box next to it: <strong>−14 LUFS</strong> (more dynamic range), <strong>−11 LUFS</strong> (the default) or <strong>−8 LUFS</strong> (louder). Each target has limits for raising and lowering and a true-peak ceiling.</p>
+
+<h2>6. Effects, overlay and effects board</h2>
+<ul>
+  <li><strong>Effects board:</strong> 10 buttons (0 to 9) per page and as many pages as needed. Each button has an audio file; they are fired with a click or with the <kbd>0</kbd>–<kbd>9</kbd> keys. Hovering over a button shows its file and, if it has one, its <strong>note</strong> (for example, "Short applause: use at the end of the show"); buttons with a note have a small icon at the bottom left. The note is written with the button's <span class="ui">Edit...</span>, on the <span class="ui">Data</span> tab.</li>
+  <li><strong>Overlay window:</strong> the section of each song where it can be talked over (usually instrumental). It is suggested automatically and can be adjusted in the editor.</li>
+  <li><strong>Free mode</strong>: the effect plays as soon as it is pressed. <strong>Locked mode</strong> (without <span class="ui">Free mode</span>): the effect must play entirely within the overlay window of the current song. Before the window, it waits for it to open. Inside, it plays if it still fits completely. If it no longer fits, it waits for the next song's window. A song without a window lets the effect play right away.</li>
+  <li><strong>Music ducking:</strong> the music goes down an instant before the effect and comes back with a ramp when it ends. With <span class="ui">Smart adjustment</span>, the effect's volume is matched to the music and the music goes down according to how loud that section is.</li>
+  <li><strong>Pinned effect:</strong> a song can have a pinned effect that plays on its own, every time the song airs, within its window.</li>
+  <li><strong>Effect section:</strong> if the start and end of an effect's file are set by hand in the editor, only that section plays.</li>
+</ul>
+
+<h2>7. Item types</h2>
+<p>Every item in the catalog has a <strong>type</strong> that decides how it is handled: <strong>Song</strong>, <strong>Edited song</strong>, <strong>Commercial</strong>, <strong>Announcement</strong>, <strong>Advertising</strong>, <strong>Podcast</strong>, <strong>Effect</strong> or <strong>Dry voice</strong>. The <strong>genre</strong> is left free for the musical style (Rock, Pop, Institutional...) and changes nothing about how it sounds: a song of genre "Advertising" is still a Song. An <em>unclassified</em> item plays like a Song, but cannot go in breaks or orders.</p>
+<table>
+  <tr><th style="width:19%">Type</th><th style="width:7%">Stripe</th><th>What it is</th><th style="width:27%">In the playlist</th></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-tema.svg" alt=""><strong>Song</strong></td><td></td><td><strong>Music</strong>: it mixes with the previous and the next one.</td><td>Yes. Validation marks duplicates.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-tema-editado.svg" alt=""><strong>Edited song</strong></td><td></td><td>A song with a <strong>special voice-over or edit for radio</strong> (radio edit, voiced intro, shortened version). It is handled like a Song; the type helps to recognize it and search for it (<code>type:"edited song"</code>). Its icon is golden.</td><td>Yes, like a Song: it mixes and validation marks duplicates.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-comercial.svg" alt=""><strong>Commercial</strong></td><td><span class="franja" style="background:#12b886"></span></td><td><strong>Billable, scheduled</strong> advertising: spots booked with air times.</td><td>Yes. It forms a break; it is written to the commercials log.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-anuncio.svg" alt=""><strong>Announcement</strong></td><td><span class="franja" style="background:#845ef7"></span></td><td><strong>The station's own message</strong> (programming promos, institutional notices).</td><td>Yes. It forms a break; it is not written to the log (it is not billed).</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-publicidad.svg" alt=""><strong>Advertising</strong></td><td><span class="franja" style="background:#e64980"></span></td><td><strong>Billable but unscheduled</strong> advertising (it airs when there is room).</td><td>Yes. It forms a break; it is written to the commercials log.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/efectos.svg" alt=""><strong>Effect</strong></td><td><span class="franja" style="background:#fa5252"></span></td><td><strong>Short audio clips for overlay</strong>: used to play over the songs.</td><td><strong>No.</strong> They can only be on the effects board.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-seco.svg" alt=""><strong>Dry voice</strong></td><td><span class="franja" style="background:#94d82d"></span></td><td><strong>Voice-overs.</strong> They are also used to play over songs, but they can also be inserted in the playlist as separators.</td><td>Yes, as a separator; it is not written to the log.</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/tipo-podcast.svg" alt=""><strong>Podcast</strong></td><td><span class="franja" style="background:#be4bdb"></span></td><td><strong>A complete pre-recorded show.</strong> It can be <strong>scheduled</strong>: it is booked in the break schedule to air at a certain time (section 17).</td><td>Yes, without mixing. It can go in a break; it is not written to the log (it is not billed).</td></tr>
+</table>
+<p>Each type has its <strong>icon</strong>, shown next to the type in the playlist, the catalog, the spots, the breaks, the orders and the editor; the icon of the types without mixing has the color of their stripe. An item without a type is marked with <img class="icono" src="imagenes/iconos/sin-tipo.svg" alt="">in the spot selectors, and the TTH announcement <img class="icono" src="imagenes/iconos/hth.svg" alt="">and the locked blocks <img class="icono" src="imagenes/iconos/bloque-fijo.svg" alt="">have their own.</p>
+<p>A <strong>Song</strong> or an <strong>Edited song</strong> mixes with the previous and the next one. The other six types share these rules:</p>
+<ul>
+  <li>They play <strong>without mixing</strong>: they do not mix with the previous song or the next one; the next one starts when the previous one ends.</li>
+  <li>They can <strong>repeat in the playlist</strong> (for example, a commercial in several breaks); validation does not mark them as duplicates.</li>
+  <li><strong>They have no overlay window or pinned effect.</strong> In locked mode they do not accept effects (the effect waits for the next song); in free mode, they do.</li>
+  <li>When the playlist is shuffled, they are shuffled like any song. For a <strong>break</strong> to stay whole, in its place and in its order, enclose it in a locked block (section 12).</li>
+</ul>
+<p>The editor's effect combo boxes (pinned effect and test effect) only offer the effects board files of type <strong>Effect</strong> or <strong>Dry voice</strong>.</p>
+<p><strong>Catalogs from earlier versions.</strong> Before, the genre worked as the type. The first time this version is opened, each record gets its type from its genre, regardless of case or accents, and in plural or compound forms ("Anuncios", "Publicidad radial", "Efectos de sonido", "Tema seco"); any other genre ("Rock") becomes Song, and records without a genre are left unclassified. The genre is not touched, and before rewriting the catalog a copy is left, <code>mezcla.json.antes-del-tipo</code>. The same goes for a new file: if its tags say "Comercial", it comes in as Commercial.</p>
+<p>Searching by type (<code>type:</code> or <code>tipo:</code>) accepts the names in English and in Spanish: <code>type:"edited song"</code> and <code>tipo:"tema editado"</code> find the same items.</p>
+
+<h2>8. Saved data</h2>
+<p>The player saves everything in the <code>.mcp-raptor-player</code> folder inside the user's folder (on Windows, <code>C:\Users\&lt;user&gt;\.mcp-raptor-player</code>; on Linux, <code>~/.mcp-raptor-player</code>):</p>
+<table>
+  <tr><th style="width:30%">File or folder</th><th>Contents</th></tr>
+  <tr><td><code>mezcla.json</code></td><td>The record of each audio file: mix points, overlay window, type, title, artist, genre, album, year, note, rating, BPM, pinned effect and last play. If the file comes back to the playlist, it gets everything back.</td></tr>
+  <tr><td><code>botonera.json</code></td><td>The effects pages, the file of each button and the effects panel settings.</td></tr>
+  <tr><td><code>preferencias.json</code></td><td>Fader, mixing options, last playlist and last song, editor position, preview output and volume, folder of the TTH announcement voice clips, weather location, interface language, whether the button labels are hidden and whether the effects settings are expanded.</td></tr>
+  <tr><td><code>listas\lista.json</code></td><td>The current playlist, restored when the program opens.</td></tr>
+  <tr><td><code>tandas.json</code></td><td>The scheduled breaks: spots, times, tolerance, maximum length and the last airing handled (so it is not repeated if the program restarts).</td></tr>
+  <tr><td><code>anunciantes.json</code></td><td>The advertisers' records: trade name, company name, tax ID (CUIT), sector, contact, phone, email, address, agency, notes and whether it is active.</td></tr>
+  <tr><td><code>ordenes.json</code></td><td>The advertising orders: advertiser, sector, validity, days, time slot, frequency, spots in rotation and allowed breaks.</td></tr>
+  <tr><td><code>pauta\YYYY-MM-DD.json</code></td><td>The schedule of each day (where each order spot went and what did not fit) and the pending make-goods. They are kept for three months, like the log.</td></tr>
+  <tr><td><code>certificados\</code></td><td>The proof-of-broadcast certificates per advertiser, in CSV.</td></tr>
+  <tr><td><code>comerciales\YYYY-MM.csv</code></td><td>The log of on-air airings of billable advertising (Commercial and Advertising), one file per month. The current month and the two previous ones are kept.</td></tr>
+  <tr><td><code>reubicaciones.json</code></td><td>The files relocated in catalog maintenance (old path and new path), so playlists saved with the old path open with the new one.</td></tr>
+  <tr><td><code>servicios\</code></td><td>The last time, temperature and humidity announcement built and the last voice said over a bed (they are rebuilt every time they air).</td></tr>
+  <tr><td><code>ondas\</code></td><td>Waveform cache (it can be deleted; it is calculated again). Catalog maintenance deletes the ones no longer used.</td></tr>
+  <tr><td><code>logs\</code></td><td>The program's log, useful to diagnose problems.</td></tr>
+</table>
+<p>The <code>RAPTOR_CARPETA_DE_DATOS</code> environment variable lets you use another folder (for example, one per studio).</p>
+
+<h2>9. Remote control through MCP</h2>
+<p>The player includes an MCP server that listens <strong>only on the computer itself</strong>, at <code>http://127.0.0.1:8765/mcp</code>, and rejects requests from web pages. The <code>RAPTOR_MCP_PUERTO</code> variable changes the port; with <code>0</code> the server is disabled.</p>
+<p>To connect it with Claude Code:</p>
+<p><code>claude mcp add --transport http raptor http://127.0.0.1:8765/mcp</code></p>
+<p>The available tools are (their names and descriptions are in Spanish; the assistant understands them in any language):</p>
+<table>
+  <tr><th style="width:30%">Tool</th><th>What it does</th></tr>
+  <tr><td><code>listar_pistas</code></td><td>Lists the tracks with their data, mix points and which one is playing.</td></tr>
+  <tr><td><code>agregar_pistas</code>, <code>quitar_pistas</code></td><td>Adds files or folders, with or without their subfolders (at a position), or removes tracks by position or path.</td></tr>
+  <tr><td><code>mover_pista</code>, <code>ordenar_lista</code></td><td>Moves a track or sorts the playlist.</td></tr>
+  <tr><td><code>definir_mezcla</code>, <code>sugerir_puntos</code></td><td>Sets start, end, intro, outro and overlay window, or asks what the analysis proposes.</td></tr>
+  <tr><td><code>definir_datos</code></td><td>Sets the type (Tema, Comercial, Anuncio, Publicidad, Efecto or Seco, the catalog names in Spanish; empty leaves it unclassified) and corrects title, artist, genre, album, year, note, rating, BPM or pinned effect. By path it also works for an effects board effect or a song that is not in the playlist. If the track is unclassified and a genre that names a type is given ("Comercial"), it takes that type.</td></tr>
+  <tr><td><code>estado_del_reproductor</code></td><td>What is playing, position, next track, controls and effects board.</td></tr>
+  <tr><td><code>controlar_reproduccion</code>, <code>seleccionar_pista</code></td><td>Play, pause, stop, next, previous; mark the next track.</td></tr>
+  <tr><td><code>ajustar_controles</code></td><td>Volume, fader, repeat, crossfade, leveling and effects options.</td></tr>
+  <tr><td><code>asignar_efecto</code>, <code>quitar_efecto</code>, <code>disparar_efecto</code>, <code>detener_efecto</code>, <code>hojas_de_efectos</code></td><td>Handles the effects board and its pages.</td></tr>
+  <tr><td><code>abrir_editor</code></td><td>Opens the editor with a track from the playlist.</td></tr>
+  <tr><td><code>programar_tanda</code></td><td>Schedules a break (or replaces the one with the same name): spots, first time, interval, time limit, days, tolerance before and after, mode (<code>tolerancia</code> or <code>exacta</code>), priority and maximum length (<code>duracion_maxima_segundos</code>).</td></tr>
+  <tr><td><code>encolar_tanda</code></td><td>Queues a scheduled break right away at the next cut, outside its time.</td></tr>
+  <tr><td><code>listar_tandas</code></td><td>The scheduled breaks with their rule, their spots, the next airing and the last one handled.</td></tr>
+  <tr><td><code>quitar_tanda</code></td><td>Removes a break from the schedule (what was already queued stays in the playlist).</td></tr>
+  <tr><td><code>registro_de_comerciales</code></td><td>On-air airings between two dates, with their break and their order; it can be filtered by advertiser, title or break.</td></tr>
+  <tr><td><code>programar_orden</code></td><td>Loads an advertising order (or replaces the one with the same name): advertiser, sector, validity, days, time slot, a frequency (<code>cada_minutos</code>, <code>veces_por_dia</code> or <code>horarios</code>), spots, allowed breaks and priority.</td></tr>
+  <tr><td><code>listar_ordenes</code></td><td>The orders with how many of the airings they ask for were placed today.</td></tr>
+  <tr><td><code>quitar_orden</code></td><td>Removes an order: its spots are no longer distributed.</td></tr>
+  <tr><td><code>pauta_del_dia</code></td><td>Where each order spot goes in the breaks of a day and what could not be placed, with the reason.</td></tr>
+  <tr><td><code>certificado_de_emision</code></td><td>Certificate for an advertiser between two dates: booked, aired complete, cut and fulfillment per order; it is also saved as a CSV.</td></tr>
+  <tr><td><code>registrar_anunciante</code></td><td>Loads or updates an advertiser's record; omitted data keeps its value. It validates the tax ID (CUIT) and the email. With <code>nombre_anterior</code> it renames it and its orders move to the new name.</td></tr>
+  <tr><td><code>listar_anunciantes</code></td><td>The advertisers with their record, their orders and what is missing to bill them, and those named in orders that have no record.</td></tr>
+  <tr><td><code>quitar_anunciante</code></td><td>Removes the record of an advertiser without orders (if it has some, they must be removed or the advertiser deactivated).</td></tr>
+  <tr><td><code>encolar_pista</code></td><td>Queues a track as the next one: it goes right after the one playing and mixes with its end. If that takes it out of a locked block, it says so and asks to confirm with <code>sacar_del_bloque</code>.</td></tr>
+  <tr><td><code>buscar_en_catalogo</code></td><td>Searches the catalog by title, artist, type, genre, album or file, or with the search prefixes (<code>rating:&gt;=4 -played:&lt;30d</code>, section 12), and returns their paths, to insert them with <code>agregar_pistas</code>.</td></tr>
+  <tr><td><code>bloque_fijo</code></td><td>Encloses a section of the playlist in a locked block, which Shuffle and BPM do not change.</td></tr>
+  <tr><td><code>base_hth</code></td><td>Changes the music bed of a TTH announcement in the playlist or removes it.</td></tr>
+  <tr><td><code>insertar_hth</code></td><td>Inserts the time, temperature and humidity announcement (with a music bed, if there is one) at a position or after the selected one.</td></tr>
+</table>
+<div class="nota">A connected assistant can, for example: "after the song that is playing, add an hour of songs that haven't been played in a long time, with a BPM no higher than 70" or "play effect 4 of page 1 over the song". The same rules as in the interface apply through MCP: a file of type Effect does not go into the playlist and a song in the playlist cannot become an Effect.</div>
+
+<!-- =============================================================== -->
+<h1>Part II · Using the interface</h1>
+
+<h2>10. Getting started</h2>
+<h3>Windows</h3>
+<p>Run <code>mcp-raptor-player.exe</code> (in the published packages, <code>MCPRaptorPlayer.exe</code>). To have the icon on the taskbar, open it and choose <em>Pin to taskbar</em>. This manual opens from <span class="ui">Help › Manual</span> if the file <code>Raptor_Manual_en.pdf</code> is next to the executable.</p>
+<h3>Linux</h3>
+<p>The <code>recursos/linux/instalar.sh</code> script copies the program to <code>~/.local/bin</code> and installs the launcher and the icon, so it shows up in the applications menu.</p>
+<h3>On opening</h3>
+<p>The window is maximized and restores the last playlist, with the last song marked. If the MCP server cannot use its port, the player works anyway, without remote control.</p>
+<h3>Language</h3>
+<p>The interface is available in <strong>Spanish</strong> and <strong>English</strong>. The first time, it opens in English if the system account is in English, and in Spanish otherwise. To change it, use <span class="ui">Window › Idioma / Language</span> (the menu has the same name in both languages, so you can find it even if you don't understand the current one). The change is immediate, without restarting, and is remembered for next time.</p>
+<ul>
+  <li>Menus, buttons, columns, help, notices and messages are translated, as well as the type names and the proof-of-broadcast certificate.</li>
+  <li>The saved data does not change (the catalog, the playlists, the breaks, the orders and the commercials log stay the same in any language), nor do the descriptions of the MCP tools, which are in Spanish.</li>
+  <li>Dates are shown as day/month/year in both languages.</li>
+  <li>This manual exists in Spanish and in English: <span class="ui">Help › Manual</span> opens the one in the interface language (<code>Raptor_Manual_es.pdf</code> or <code>Raptor_Manual_en.pdf</code>) and, if it is missing, the other one.</li>
+</ul>
+
+<h2>11. The main window</h2>
+<figure>
+  <img src="imagenes/en/ventana-principal.png" alt="Main window">
+  <figcaption>Main window with a sample playlist.</figcaption>
+</figure>
+<p>From top to bottom:</p>
+<ol>
+  <li><strong>Menu</strong> <span class="ui">File</span> (open and save playlists, catalog maintenance), <span class="ui">Window</span> (editor position, language) and <span class="ui">Help</span> (this manual and <em>About</em>, with buttons to write to the author, open the repository on GitHub and donate through PayPal).</li>
+  <li><strong>Details</strong> of the marked song (or the one playing): the folder and file name, type and genre, album, rating, year, last play and pinned effect (the title and artist are in the playlist and, for the one playing, below, in large type). With the button in the corner (<img class="icono" src="imagenes/iconos/barras-de-nivel.svg" alt="">) the panel shows the song's <strong>waveform</strong> instead (see below). On the right, the <strong>clock</strong>: the time, the date, the <strong>weather</strong> of the chosen location (temperature, humidity and location; a click lets you change it and hovering shows how long ago the last reading was) and, if there is one, the next break.</li>
+  <li><strong>What is playing</strong> and, on the same line, the options <span class="ui">Scroll</span>, <span class="ui">Repeat playlist</span>, <span class="ui">Smart crossfade</span>, <span class="ui">Level volume</span> and the LUFS target.</li>
+  <li><strong>Progress bar</strong>: a click or a drag jumps to that position. It shows the overlay window (orange if suggested, pink if you set it), the outro (light blue suggested, green set; from there the song starts going down) and in purple where they overlap. A <strong>red box</strong> marks the <strong>effective mix</strong> with the next song: the section where both play together, which with smart crossfade lasts 2 to 12 s and can be shorter or longer than the outro. On the right, the <strong>time</strong>: a click toggles between elapsed, remaining and remaining or elapsed seconds over the total; it turns orange while mixing into the next song.</li>
+  <li><strong>Transport</strong> (<span class="ui">Previous</span>, <span class="ui">Play</span>/<span class="ui">Pause</span>, <span class="ui">Stop</span>, <span class="ui">Next</span>), the <strong>gear</strong> (<img class="icono" src="imagenes/iconos/ajustes.svg" alt="">) and the <strong>volume</strong> (<img class="icono" src="imagenes/iconos/volumen.svg" alt="">, double-click: 80 %) and <strong>fader</strong> (<img class="icono" src="imagenes/iconos/fader.svg" alt="">, mix and fade seconds; double-click: 5 s) sliders. The gear shows or hides the volume, the fader and the playback options: when hidden, there is more room for the song name and the window looks cleaner. The choice is remembered.</li>
+  <li><strong>Playlist toolbar</strong>: <span class="ui">Add</span>, <span class="ui">Remove</span>, <span class="ui">Clear</span>, <span class="ui">Edit</span>, <span class="ui">Up</span>, <span class="ui">Down</span>, <span class="ui">Shuffle</span>, <span class="ui">BPM</span>, <span class="ui">Validate</span>, the search box and the <span class="ui">Effects</span> button, which shows or hides the effects board.</li>
+  <li><strong>The playlist</strong>: position, title, artist, duration, type (with its icon), rating, genre, year, BPM, overlay window and mix seconds with the next one; each header has the icon of its data. The track that is playing (or paused) has an <strong>amber background</strong>, the number in bold and a play icon next to the number.</li>
+  <li><strong>Status bar</strong>: help, notices and, on the right, the total of the playlist and what is left to play (discounting the mixes).</li>
+</ol>
+<h3>Waveform in the details panel</h3>
+<p>The button in the corner of the details panel toggles between the song's <strong>data</strong> and its <strong>waveform</strong>: level bars with the upper half of the wave (the peak, fainter, and on top of it the average level), scaled to the loudest point of the song. It shows at a glance where it starts, where it builds up and where it ends. The choice is remembered.</p>
+<figure>
+  <img src="imagenes/panel-onda.png" alt="Details panel with the waveform of the song that is playing">
+  <figcaption>Waveform of the song that is playing, with its technical data on top: what has been played is in the progress bar color, the overlay window in orange and the mix with the next song in the red box.</figcaption>
+</figure>
+<ul>
+  <li>It shows the same song as the data: the one marked with the selector or, if there is none, the one playing.</li>
+  <li>At the top is the file's <strong>technical data</strong>: format, sample rate, bits per sample (in lossless formats), channels and average bitrate in kbps (for example, <em>MP3 · 44.1 kHz · stereo · 320 kbps</em>) and, at the end, the title and artist; these are omitted for the song that is playing, because they are already shown below, in large type.</li>
+  <li>The progress bar has the same width as the panel, and the time display the same as the clock: the marks of the waveform and those of the bar line up one above the other.</li>
+  <li>It uses the <strong>same colors as the progress bar</strong>: the overlay window in orange (pink if you set it), the outro in light blue (green if you set it), purple where they overlap and the <strong>red box</strong> of the effective mix with the next song.</li>
+  <li>If it is the song that is playing, the part already played is in the progress bar color, with a line at the position, and <strong>a click jumps to that point</strong>.</li>
+  <li>It is built from the waveform the playlist analysis already saved, in another thread and with 200 bars: it does not read the audio again or affect playback. If the song is still being analyzed, it appears when the analysis finishes.</li>
+</ul>
+<h3>Data icons</h3>
+<p>Each piece of data has an icon, the same in every window: in the column headers (playlist, catalog, spots, breaks, orders, advertisers and maintenance) and in the labels of the editor's <span class="ui">Data</span> tab. Hovering over a header shows what the column contains. If a column gets too narrow (small window or large font), the header shows only the icon and the full title appears in the tooltip.</p>
+<table>
+  <tr><th style="width:8%">Icon</th><th style="width:22%">Data</th><th style="width:8%">Icon</th><th>Data</th></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-titulo.svg" alt=""></td><td>Title, name of a break</td><td><img class="icono" src="imagenes/iconos/dato-artista.svg" alt=""></td><td>Artist</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-duracion.svg" alt=""></td><td>Duration</td><td><img class="icono" src="imagenes/iconos/dato-tipo.svg" alt=""></td><td>Type (in each row, the type's icon: see section 7)</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-ranking.svg" alt=""></td><td>Rating</td><td><img class="icono" src="imagenes/iconos/dato-genero.svg" alt=""></td><td>Genre</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-bpm.svg" alt=""></td><td>BPM (tempo)</td><td><img class="icono" src="imagenes/iconos/overlay.svg" alt=""></td><td>Overlay window</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/puntos-de-mezcla.svg" alt=""></td><td>Mix seconds</td><td><img class="icono" src="imagenes/iconos/dato-album.svg" alt=""></td><td>Album</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-anio.svg" alt=""></td><td>Year</td><td><img class="icono" src="imagenes/iconos/nota.svg" alt=""></td><td>Note</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-sonado.svg" alt=""></td><td>Last play (Played)</td><td><img class="icono" src="imagenes/iconos/dato-en-lista.svg" alt=""></td><td>Already in the playlist</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-anunciante.svg" alt=""></td><td>Advertiser</td><td><img class="icono" src="imagenes/iconos/dato-razon-social.svg" alt=""></td><td>Company name</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-cuit.svg" alt=""></td><td>Tax ID (CUIT)</td><td><img class="icono" src="imagenes/iconos/dato-rubro.svg" alt=""></td><td>Sector</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-contacto.svg" alt=""></td><td>Contact</td><td><img class="icono" src="imagenes/iconos/dato-orden.svg" alt=""></td><td>Advertising order</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-activa.svg" alt=""></td><td>Active</td><td><img class="icono" src="imagenes/iconos/dato-estado.svg" alt=""></td><td>Status</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/pauta.svg" alt=""></td><td>Times of a break</td><td><img class="icono" src="imagenes/iconos/dato-entrada.svg" alt=""></td><td>Entry (tolerance or exact time)</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-avisos.svg" alt=""></td><td>Spots of a break</td><td><img class="icono" src="imagenes/iconos/dato-proxima.svg" alt=""></td><td>Next airing</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-salidas.svg" alt=""></td><td>Airings of an order</td><td><img class="icono" src="imagenes/iconos/dato-vigencia.svg" alt=""></td><td>Validity</td></tr>
+  <tr><td><img class="icono" src="imagenes/iconos/dato-hoy.svg" alt=""></td><td>Airings placed today</td><td><img class="icono" src="imagenes/iconos/dato-ubicacion-anterior.svg" alt=""><img class="icono" src="imagenes/iconos/dato-ubicacion-nueva.svg" alt=""></td><td>Old and new location of a file (maintenance)</td></tr>
+</table>
+<h3>Color stripes in the playlist</h3>
+<p>On the left of each row there can be one or two stripes:</p>
+<table>
+  <tr><th style="width:8%">Color</th><th>Meaning</th></tr>
+  <tr><td><span class="franja" style="background:#12b886"></span></td><td>Commercial (the row also has a teal background, like Announcement and Advertising)</td></tr>
+  <tr><td><span class="franja" style="background:#845ef7"></span></td><td>Announcement</td></tr>
+  <tr><td><span class="franja" style="background:#e64980"></span></td><td>Advertising</td></tr>
+  <tr><td><span class="franja" style="background:#94d82d"></span></td><td>Dry voice</td></tr>
+  <tr><td><span class="franja" style="background:#be4bdb"></span></td><td>Podcast</td></tr>
+  <tr><td><span class="franja" style="background:#fa5252"></span></td><td>Effect (only seen if a file changes type while playing; it cannot stay in the playlist)</td></tr>
+  <tr><td><span class="franja" style="background:#22b8cf"></span></td><td>Time, temperature and humidity announcement (TTH)</td></tr>
+  <tr><td><span class="franja" style="background:#ced4da"></span></td><td>Locked block start or end marker (the whole row in grey, with its icon). The tracks inside the block have this line on the right.</td></tr>
+  <tr><td><span class="franja" style="background:#339af0"></span></td><td>The song has a pinned effect</td></tr>
+  <tr><td><span class="franja" style="background:#f0ad4e"></span></td><td>Matches the search</td></tr>
+</table>
+
+<h2>12. Building and managing the playlist</h2>
+<ul>
+  <li><span class="ui">Add</span> opens a menu with these options:
+    <ul>
+      <li><span class="ui">Files...</span>: the file picker (several can be chosen).</li>
+      <li><span class="ui">Folder with subfolders...</span>: you choose a folder and it is scanned with all its subfolders. Before adding, a notice says how many audio files it found and in how many subfolders, and asks for confirmation. They come in folder by folder: first the files of each folder by name and then those of its subfolders.</li>
+      <li><span class="ui">From the catalog...</span> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>): opens the catalog search (see below).</li>
+      <li><span class="ui">Lock the selection as a block</span>, <span class="ui">Locked block start</span> and <span class="ui">Locked block end</span>: locked block markers (see below).</li>
+    </ul>
+    New tracks go in <strong>after the selected one</strong>, or at the end if there is no selection. When done, the status bar sums up how many were added and why the rest did not go in: those already in the playlist are skipped and those of type Effect are left out.</li>
+  <li><span class="ui">Remove</span> takes out the selected tracks; <span class="ui">Clear</span>, the whole playlist. Neither deletes files from disk. The track that is playing (or paused) <strong>is not removed</strong>: if it is in the selection, the others are removed and it stays. If the selection has locked block markers and songs, the first <span class="ui">Remove</span> takes out only the markers and leaves the songs selected; a second <span class="ui">Remove</span> takes them out.</li>
+  <li><span class="ui">Up</span> and <span class="ui">Down</span> move the selection.</li>
+  <li><span class="ui">Shuffle</span> randomly reorders the whole playlist or, if several tracks are selected, only those. The song that is playing stays first. What is inside a <strong>locked block</strong> is not touched: so that a commercial break does not come apart, enclose it in a locked block.</li>
+  <li><span class="ui">BPM</span> sorts by tempo, from lowest to highest (with the same tempo, the one with the higher rating first). It does not touch locked blocks either.</li>
+  <li><span class="ui">Validate</span> checks that the files exist (it offers to remove the missing ones) and looks for repeated songs: same title and artist in another file. It asks one by one whether to remove them.</li>
+  <li><strong>Search</strong> (<kbd>Ctrl</kbd>+<kbd>F</kbd>): searches by title, artist, type, genre, album or file. <code>#508</code> jumps to track 508, and with prefixes you search by a specific piece of data: rating, year, BPM, length or date of last play (see <em>Search with prefixes</em>, below). <kbd>↑</kbd> <kbd>↓</kbd> or <kbd>Enter</kbd> jump between results; <kbd>Esc</kbd> clears.</li>
+  <li><strong>Columns:</strong> number, <em>Title</em>, <em>Artist</em>, <em>Duration</em>, <em>Type</em>, <em>Rating</em> (0 to 5 stars, set in the editor), <em>Genre</em>, <em>Year</em>, <em>BPM</em>, <em>Overlay</em> and <em>Mix</em>. A song with a <strong>note</strong> shows a small icon to the right of the title; hovering over the title shows the note and the file path. <em>Overlay</em> shows only how many seconds the overlay window lasts (in italics if it is the one suggested by the analysis); its start and end are shown on hover, in the details panel and in the editor.</li>
+  <li><strong>Selection:</strong> click for one track, <kbd>Ctrl</kbd>+click to add and <kbd>Shift</kbd>+click for a range.</li>
+  <li><strong>Double-click</strong> on the number, title or artist: plays that song. On the other columns: opens the editor. On a locked block marker: selects the whole block.</li>
+  <li><strong>Right-click</strong> on a row: <span class="ui">Play</span>, <span class="ui">Queue as next</span> (moves the song right after the one playing, so the end of the current one mixes into it regardless of the playlist order; the rest stays in its order; if the song is inside a locked block and this takes it out, it asks for confirmation), <span class="ui">Edit track...</span>, <span class="ui">Remove from the playlist</span> and <span class="ui">Remove from the catalog...</span> (removes the song and deletes all its saved data; the audio file is not deleted). On a TTH announcement there is also <span class="ui">TTH announcement bed</span> (see section 14).</li>
+  <li><strong>Named playlists:</strong> <span class="ui">File › Open playlist</span> (<kbd>Ctrl</kbd>+<kbd>O</kbd>, also M3U), <span class="ui">Save playlist</span> (<kbd>Ctrl</kbd>+<kbd>S</kbd>) and <span class="ui">Save playlist as</span> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>). The window title shows the open playlist and an asterisk if it has unsaved changes. M3U playlists from other programs open even if they use the Windows encoding (those from Winamp or Windows Media Player) or have <code>file://</code> addresses (those from VLC), and their relative paths are relative to the playlist's folder. A playlist saved on another computer or by another user keeps its locked blocks and TTH announcements.</li>
+</ul>
+
+<h3>Locked blocks</h3>
+<p>A <strong>locked block</strong> is a section of the playlist that <span class="ui">Shuffle</span> and <span class="ui">BPM</span> do not change: for example, a break in its order, a show put together by hand or what must air at a given time. It is marked with two special rows, a <strong>start</strong> and an <strong>end</strong>, shown in grey with their own icon; the tracks between them have a grey line on the right.</p>
+<ul>
+  <li><span class="ui">Add › Lock the selection as a block</span> puts a start before the first selected track and an end after the last one. <span class="ui">Locked block start</span> and <span class="ui">Locked block end</span> insert just one, after the selected one.</li>
+  <li>When shuffling or sorting, what is inside stays in its place and in its order, and only what is outside is reordered. The status bar says how many songs were left unchanged.</li>
+  <li>The markers <strong>do not play</strong>: playback and mixes go right past them, without notice, and the mix happens between the previous song and the next one. They add no length and are saved with the playlist.</li>
+  <li>A start without an end locks until the end of the playlist; an end without a start locks from the previous end (or from the beginning).</li>
+  <li><strong>Double-click</strong> on the start or the end selects the whole block, with its two markers.</li>
+  <li>With the block selected, <span class="ui">Remove</span> <strong>undoes</strong> it: it takes out the markers and the songs stay in their place, selected. If <span class="ui">Remove</span> is pressed again, the songs are removed too. A loose marker is removed like any row, and is moved with <span class="ui">Up</span> and <span class="ui">Down</span>.</li>
+</ul>
+
+<h3>Search the catalog</h3>
+<p>The <strong>catalog</strong> keeps the data of every song that ever entered the playlist. <span class="ui">File › Search the catalog...</span>, <span class="ui">Add › From the catalog...</span> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> open a search window to bring them back without browsing folders.</p>
+<figure>
+  <img src="imagenes/en/buscador.png" alt="Catalog search">
+  <figcaption>Alejandro Sanz songs that have not been played for more than 30 days ("artista:sanz sonado:>30d", the same as "artist:sanz played:>30d"); two chosen to insert.</figcaption>
+</figure>
+<ul>
+  <li>It searches as you type, by title, artist, type, genre, album or file name. All the words must appear, regardless of case and accents. It also understands the prefixes of <em>Search with prefixes</em> (for example <code>rating:&gt;=4 played:&gt;30d</code>). With empty text it shows the whole catalog, by artist and title (up to 500 songs: if there are more, refine the search).</li>
+  <li>The <em>Played</em> column shows the day of the last play (empty if it never aired).</li>
+  <li>You choose as in the playlist: click, <kbd>Ctrl</kbd>+click and <kbd>Shift</kbd>+click.</li>
+  <li><span class="ui">Insert after the selected one</span> (or <kbd>Enter</kbd>, or double-click on a song) puts them in the playlist after the track selected in the main window; <span class="ui">Add at the end</span>, at the end. Those already in the playlist are not repeated.</li>
+  <li>The <em>In playlist</em> column marks those already there. Those listed as <em>no file</em> were moved or deleted: they are not inserted (see section 19). Those of type Effect do not appear, because they only go on the effects board.</li>
+  <li><kbd>Esc</kbd> clears the search and, with empty text, closes the window.</li>
+</ul>
+
+<h3>Search with prefixes</h3>
+<p>The playlist search (<kbd>Ctrl</kbd>+<kbd>F</kbd>) and the catalog search (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>) understand, besides single words, <strong>conditions with a prefix</strong> to search by a specific piece of data. Several can be combined, separated by spaces: the song must meet all of them. The prefix ignores case and accents (<code>Genre:</code> is the same as <code>genre:</code>). Hovering over the search box shows a summary. Prefixes can be written <strong>in English or in Spanish</strong>, in either interface language; the Spanish ones are <code>titulo:</code>, <code>artista:</code>, <code>genero:</code>, <code>tipo:</code>, <code>nota:</code>, <code>archivo:</code>, <code>anio:</code>, <code>ranking:</code>, <code>duracion:</code> and <code>sonado:</code>, with <code>hoy</code>, <code>ayer</code>, <code>nunca</code> and the units <code>s</code> (weeks) and <code>a</code> (years).</p>
+<table>
+  <tr><th style="width:24%">Type</th><th>Finds</th></tr>
+  <tr><td><code>#508</code></td><td>Track 508 of the playlist: the selector jumps to it. <code>#10..20</code> (or <code>#10-20</code>) marks a range. Only in the playlist: the catalog has no positions.</td></tr>
+  <tr><td><code>title:</code> <code>artist:</code> <code>genre:</code> <code>album:</code> <code>type:</code> <code>note:</code></td><td>The text only in that field: <code>artist:sanz</code>, <code>type:commercial</code>, <code>note:request</code>. For a phrase with spaces, in quotes: <code>genre:"rock nacional"</code>. Abbreviations: <code>t:</code>, <code>a:</code>, <code>g:</code>.</td></tr>
+  <tr><td><code>file:</code> or <code>path:</code></td><td>The text in the full path of the file, with its folders: <code>file:medleys</code>. (Without a prefix, the catalog searches only in the file name.)</td></tr>
+  <tr><td><code>rating:</code> (or <code>r:</code>, <code>stars:</code>)</td><td>By stars: <code>rating:5</code>, <code>rating:&gt;=4</code>, <code>rating:&lt;2</code>.</td></tr>
+  <tr><td><code>year:</code></td><td>By year: <code>year:1997</code>, <code>year:1990..1999</code> (or <code>1990-1999</code>), <code>year:&gt;=2000</code>.</td></tr>
+  <tr><td><code>bpm:</code></td><td>By tempo, the one set or the analyzed one: <code>bpm:120</code> (from 119.5 to 120.5), <code>bpm:118..126</code>, <code>bpm:&gt;128</code>.</td></tr>
+  <tr><td><code>duration:</code> (or <code>dur:</code>)</td><td>By length, in minutes or in minutes and seconds: <code>duration:4</code> (from 4:00 to 4:59), <code>duration:&lt;3:30</code>, <code>duration:3..5</code>.</td></tr>
+  <tr><td><code>played:</code> (or <code>last:</code>)</td><td>By the <strong>last play</strong>, in local time:
+    <ul>
+      <li><code>played:today</code>, <code>played:yesterday</code>, <code>played:never</code> (never aired).</li>
+      <li>How long ago: <code>played:7d</code> or <code>played:&lt;7d</code> (in the last 7 days), <code>played:&gt;30d</code> (more than 30 days ago). Units: <code>h</code> hours, <code>d</code> days, <code>w</code> weeks, <code>m</code> months, <code>y</code> years.</li>
+      <li>A date: <code>played:2026-11-03</code>, <code>played:03/11/2026</code>, <code>played:3/11</code> (this year) or a whole month, <code>played:2026-11</code>. Dates are written day/month/year.</li>
+      <li>Before or after a date, or between two: <code>played:&lt;01/10/2026</code>, <code>played:&gt;=2026-11-01</code>, <code>played:2026-10-01..2026-10-15</code>.</li>
+    </ul></td></tr>
+  <tr><td><code>-</code> in front</td><td>Negates any condition or word: <code>-genre:cumbia</code>, <code>-sanz</code>. <code>-played:&lt;30d</code> finds what did not play in the last 30 days, <strong>including what never played</strong> (whereas <code>played:&gt;30d</code> leaves out what never played).</td></tr>
+</table>
+<p>Numeric data is compared with <code>=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code> and <code>&lt;=</code>, or with a range <code>from..to</code> (one side can be left open: <code>year:..1979</code>, <code>bpm:130..</code>). A song without the data (no year, no BPM, never played) does not meet the condition. If a prefix has a value that cannot be understood, the search box shows <em>Invalid search</em> and the status bar explains what to write. A word with a colon that is not a prefix (<code>12:30</code>) is searched as text.</p>
+<p>Examples:</p>
+<ul>
+  <li><code>genre:"rock nacional" rating:&gt;=4 -played:&lt;15d</code>: Argentine rock with 4 or 5 stars that has not aired in the last two weeks.</li>
+  <li><code>a:soda year:1980..1989</code>: Soda Stereo from the eighties.</li>
+  <li><code>bpm:120..128 duration:&lt;4</code>: songs for segueing, under 4 minutes.</li>
+  <li><code>type:commercial played:today</code>: the spots that have already aired today.</li>
+  <li><code>played:never</code>: what has not aired yet.</li>
+</ul>
+
+<h2>13. Playing and mixing</h2>
+<ul>
+  <li><span class="ui">Play</span> starts or resumes; the same button pauses.</li>
+  <li><span class="ui">Next</span> moves to the song marked with the selector (or the following one) <strong>mixing</strong> for the fader's seconds. To prepare the next song, mark it with a click: it becomes the next one.</li>
+  <li><span class="ui">Previous</span> goes back to the previous song, without mixing.</li>
+  <li><span class="ui">Stop</span> stops with a fade of the fader's seconds; pressed again (or with the fader at 0), it stops instantly.</li>
+  <li>Into or out of something that is not a Song (commercial, dry voice...), <span class="ui">Next</span> fades out and what comes next starts afterwards, without mixing.</li>
+  <li><strong>Missing files:</strong> if the file of a song in the playlist was moved or deleted, the sequence (and <span class="ui">Next</span>) skips it and goes on with the next one that exists, without cutting the broadcast. The status bar says which song was skipped; <span class="ui">Validate</span> offers to remove it from the playlist.</li>
+  <li><span class="ui">Scroll</span> keeps the song that is playing in the center of the playlist. <span class="ui">Repeat playlist</span> goes back to the beginning when it ends.</li>
+  <li>While new songs are being analyzed, the status line says "Analyzing N song(s)".</li>
+</ul>
+
+<h2>14. The effects panel</h2>
+<figure>
+  <img src="imagenes/en/ventana-con-efectos.png" alt="Main window with the effects panel">
+  <figcaption>The effects panel opens with the Effects button.</figcaption>
+</figure>
+<h3>Buttons</h3>
+<ul>
+  <li>A click (or the <kbd>0</kbd>–<kbd>9</kbd> key) fires the button's effect. If the button is waiting, the click cancels the wait. An empty button shows a <strong>+</strong>: a click assigns a file to it.</li>
+  <li>Each button shows its number, the catalog <strong>title</strong> (or, if it has none, the file name without the extension) in up to two lines —a longer name is cut with "…" and the full one shows in the tooltip, along with the path— and the length (that of the section, if it was trimmed). In <strong>orange</strong> with an hourglass: waiting for its window. In <strong>green</strong> with a speaker: playing.</li>
+  <li><strong>Right-click</strong>: <span class="ui">Assign file...</span>, <span class="ui">Edit...</span> (opens the editor with that file, to set its type or the section that plays), <span class="ui">Clear</span> and <span class="ui">Insert in the playlist</span> (disabled for the Effect type).</li>
+  <li>The arrows change the page; <strong>+</strong> adds a page and <strong>−</strong> removes the one in view.</li>
+  <li><span class="ui">Stop effect</span> cuts the effect that is playing (or the one waiting) and brings the music back to its level.</li>
+</ul>
+<h3>Time, temperature and humidity announcement (TTH)</h3>
+<p>At the bottom of the panel, below the effects board messages, the <span class="ui">TTH</span> button inserts the time, temperature and humidity service in the playlist, after the selected track. In the playlist it shows as "Time, temperature and humidity", with type <em>TTH</em> and a teal stripe.</p>
+<p>The <strong>weather</strong> the announcement will say is shown in the main window's clock: temperature, humidity and location; on hover, how long ago the last reading was (for example "Buenos Aires: 13.9 °C, humidity 84 % — Last reading 4 min ago"). It is queried from Open-Meteo every 10 minutes from the moment the program opens. If there is no connection the clock shows it in red as <strong>no data</strong>, with the age of the last reading if there was one; while the data is less than an hour old it is still used, and after an hour the announcement says only the time.</p>
+<p><strong>Right-click on <span class="ui">TTH</span></strong> opens a menu with:</p>
+<ul>
+  <li><span class="ui">Insert the TTH announcement</span>: the same as a click.</li>
+  <li><span class="ui">Change the weather location...</span>: opens the <em>Weather location</em> window. Type the name of the city (for example "Rosario") and press Enter: the search is done on the free Open-Meteo service, without a key, and shows up to 20 locations with their district, province or state and country, to tell apart those with the same name. Choose one and press <span class="ui">Use this location</span> (or double-click). The weather of the previous location is discarded and the new one is queried at once; the choice is saved. A click on the clock's weather opens the same window.</li>
+  <li><span class="ui">Update the weather now</span>: queries the weather without waiting the 10 minutes (for example, when the connection comes back).</li>
+  <li><span class="ui">Voice clips folder...</span>: the same as the folder button.</li>
+</ul>
+<figure>
+  <img src="imagenes/en/localidad.png" alt="Weather location window">
+  <figcaption>The Weather location window: each result shows its region so you can choose the right one.</figcaption>
+</figure>
+<ul>
+  <li><strong>It is built when it goes on air</strong>, not when it is inserted: right before playing, the clock's time is joined with the last known weather, so it says the real time even if it was inserted an hour earlier. The voice clips are in Spanish, for example: «Son las quince y treinta. Temperatura: diecisiete grados. Humedad: setenta y seis por ciento.» ("It's three thirty. Temperature: seventeen degrees. Humidity: seventy-six percent.")</li>
+  <li><strong>No internet needed for the voice:</strong> it comes from pre-recorded voice clips, joined by trimming their silences and with a short pause between phrases. Each clip can have two takes of the same phrase (for example <code>15.mp3</code> and <code>15'.mp3</code>, one with more emphasis and one flatter): in each announcement one of the two is chosen at random for each piece, so it does not always sound the same.</li>
+  <li><strong>The weather</strong> (temperature and humidity of the chosen location; Buenos Aires by default) is queried every 10 minutes on the free Open-Meteo service, from the moment the program opens (the main window's clock shows it). Without a connection, or if the last data is more than an hour old, the announcement says only the time. The location is changed with a <strong>right-click on <span class="ui">TTH</span></strong> or with a click on the weather text.</li>
+  <li><strong>With music beds:</strong> if the voice clips folder has a <code>bases</code> subfolder with short jingles, the button inserts a bed chosen at random (without repeating the previous one). In the playlist it shows as "TTH · bed name", with the same stripe.
+    <ul>
+      <li>The bed is a regular song: it is analyzed, <strong>mixes</strong> with the previous and the next song, and is edited in the editor like any other (start, end, intro, outro).</li>
+      <li>The bed's <strong>overlay window</strong> marks where the announcement is said. When the bed starts playing, the voice is built with the time at which that window opens and plays there, like a pinned effect. While it speaks, the bed always goes down (even if <span class="ui">Duck the music during the effect</span> is unchecked) and comes back when it ends, with the effects panel settings. Without a set window the one suggested by the analysis is used; without any, the voice starts with the bed.</li>
+      <li>The voice lasts about 9 seconds: if the window is shorter, the status bar warns about it when saving the bed in the editor and when it plays.</li>
+      <li>The same bed can be in the playlist several times: Validate does not count it as a repeated song.</li>
+      <li><strong>Changing or removing the bed:</strong> with a right-click on the announcement's row, <span class="ui">TTH announcement bed</span> lists the beds to choose another one, and <span class="ui">No bed (voice only)</span> leaves it without background music. It also gives a bed to an announcement that had none. The announcement that is playing is not changed.</li>
+    </ul>
+  </li>
+  <li><strong>Without beds</strong>, the announcement is the voice alone and plays <strong>without mixing</strong>, like a commercial: the previous song ends and the announcement starts afterwards. It is not analyzed, edited or counted as a play, and it can be in the playlist several times.</li>
+  <li>The <strong>folder</strong> button, next to <span class="ui">TTH</span>, chooses the voice clips folder. The first time <span class="ui">TTH</span> is pressed with no folder chosen, it asks for it too. It must have the subfolders <code>hora</code> (<code>00</code> to <code>23</code>) and <code>minutos</code> (<code>00</code> to <code>59</code>, where <code>00</code> is "o'clock"); <code>temperatura</code> (<code>-10</code> to <code>50</code>), <code>humedad</code> (<code>000</code> to <code>100</code>) and <code>bases</code> are optional. A <code>locuciones</code> folder next to the program is also found automatically. The voice clips are not included with the program: <code>herramientas/generar_locuciones.py</code> in the repository generates them with ElevenLabs and your own key.</li>
+  <li>If it cannot be built (for example, the voice clips folder was deleted), the announcement is skipped and the next song follows, so as not to say an old time.</li>
+</ul>
+<h3>Settings</h3>
+<p>Next to <span class="ui">Free mode</span> is the <strong>gear</strong> button, which shows or hides the rest of the settings (from <span class="ui">Duck the music during the effect</span> to <span class="ui">Returns in</span>). Collapsed, the ten buttons, <span class="ui">Stop effect</span>, <span class="ui">TTH</span> and the voice clips folder stay in view without scrolling, even in Full HD with 150 % scaling. The settings stay active even when hidden, and the program remembers whether they were collapsed or expanded. If height is short, the effect buttons shrink before the panel needs to scroll.</p>
+<table>
+  <tr><th style="width:34%">Control</th><th>What it does</th></tr>
+  <tr><td><span class="ui">Free mode</span></td><td>Checked: the effect plays when pressed. Unchecked (locked): it waits for the song's overlay window.</td></tr>
+  <tr><td><span class="ui">Duck the music during the effect</span></td><td>Turns on music ducking.</td></tr>
+  <tr><td><span class="ui">Smart adjustment</span></td><td>Matches the effect to the music and decides how much to duck it according to how loud that section is.</td></tr>
+  <tr><td><span class="ui">Effect</span> (dB)</td><td>Effect volume. With smart adjustment, 0 dB is the loudness of the music. Double-click: 0 dB.</td></tr>
+  <tr><td><span class="ui">Separation</span> (with smart adjustment)</td><td>How many dB below the effect the music stays: with more separation, the music goes down more. Depending on how loud the section is, it goes down by up to the separation plus 6 dB. It ranges from 4 to 24 dB; double-click: 12 dB. It also applies to the <strong>TTH announcement voice over its bed</strong>, which always ducks the bed with smart adjustment, even if the panel says otherwise: if the voice gets lost in the bed, raise the separation.</td></tr>
+  <tr><td><span class="ui">Music at</span> (without smart adjustment)</td><td>Fixed level of the music during the effect. Double-click: 50 %. The same slider shows the separation or this level, depending on whether smart adjustment is on.</td></tr>
+  <tr><td><span class="ui">Ducks in</span></td><td>How long the music takes to go down; it ends right when the effect starts. Double-click: 40 ms.</td></tr>
+  <tr><td><span class="ui">Returns in</span></td><td>How long the music takes to come back after the effect. Double-click: 0.8 s.</td></tr>
+</table>
+
+<h2>15. The track editor</h2>
+<p>It opens with a double-click on the data columns of a row, with <span class="ui">Edit</span> on the toolbar, with the row's context menu or, for an effect, with <span class="ui">Edit...</span> in the button's menu. It remembers its last position and size.</p>
+<div class="nota"><strong>Several monitors.</strong> If the editor was left on a monitor that is no longer connected, it appears centered over the main window when opened. The <span class="ui">Window</span> menu also offers <span class="ui">Bring the windows to the main window</span>, which centers the editor and the other open windows (search, maintenance, schedule, orders and About) right away, and <span class="ui">Editor always centered</span>, which toggles between Yes and No: with Yes, the editor always opens centered over the main window instead of where it was last time.<br>The windows opened from the menus (catalog search, maintenance, break schedule, advertising orders, spot selector, advertisers and About) always appear centered over the main window. If one is already open on another screen, or on one that was disconnected, asking for it again brings it back over the main window; if it is on the same screen, it just comes to the front.</div>
+<div class="nota"><strong>Hide button labels.</strong> In the <span class="ui">Window</span> menu, <span class="ui">Hide button labels</span> toggles between Yes and No and is remembered when the program is opened again. With Yes, the main window buttons (transport, playlist toolbar, <span class="ui">Effects</span>, <span class="ui">Stop effect</span> and <span class="ui">TTH</span>) show only their icon, and the name appears in the tooltip on hover. With No, the labels are shown except when the window is narrow: below about 1400 logical px wide with the effects board open (1120 without it), for example in Full HD with 150 % scaling, the transport and playlist toolbar buttons show only the icon so that everything fits, effects board included. The main window can be shrunk down to 1180 × 600 logical px.</div>
+<figure>
+  <img src="imagenes/en/editor-solapa0.png" alt="Editor: mix points">
+  <figcaption>Track editor, Mix points tab.</figcaption>
+</figure>
+<h3>Waveform</h3>
+<ul>
+  <li>A click moves the <strong>cursor</strong>. The marks (Start, Intro, Overlay, Outro, End) are dragged with the mouse; the orange area of the overlay window is dragged as a whole.</li>
+  <li><span class="ui">Zoom in</span>, <span class="ui">Zoom out</span> and <span class="ui">Show all</span> control the zoom (also <kbd>+</kbd> and <kbd>−</kbd>).</li>
+</ul>
+<h3>Mix points tab</h3>
+<ul>
+  <li><strong>Start and End</strong> (first line): where the song starts and stops playing; what is outside is skipped.</li>
+  <li><strong>Intro and Outro</strong> (second line): length of the beginning and the ending used for mixing.</li>
+  <li>Each value is edited with a click on its field (<kbd>Enter</kbd> confirms) or with its <span class="ui">Cursor</span> button, which sets it to the cursor position. The <strong>undo</strong> button next to it restores the previous value.</li>
+  <li>The <strong>Automatic</strong> / <strong>Manual</strong> label shows the origin; <span class="ui">Back to automatic</span> goes back to what the analysis proposes.</li>
+</ul>
+<figure>
+  <img src="imagenes/en/editor-solapa1.png" alt="Editor: overlay">
+  <figcaption>Overlay tab: window, pinned effect and ducking.</figcaption>
+</figure>
+<h3>Overlay tab</h3>
+<ul>
+  <li><span class="ui">Use the suggested one</span> takes the window proposed by the analysis; <span class="ui">Remove window</span> / <span class="ui">Create window</span>.</li>
+  <li><strong>From</strong> and <strong>To</strong>, with their <span class="ui">Cursor (V)</span> and <span class="ui">Cursor (B)</span> buttons and their undo buttons.</li>
+  <li><strong>Pinned effect</strong>: the combo box chooses the effect that plays on its own with the song. If the combo box shows "(none)", the <span class="ui">Pinned effect</span> button directly pins the effect chosen for testing (the combo box next to <span class="ui">Window with effect</span>). The undo button next to it goes back to the previous choice. Only effects board effects of type Effect or Dry voice are offered.</li>
+  <li>The volume and ducking settings are the same as in the effects panel.</li>
+</ul>
+<figure>
+  <img src="imagenes/en/editor-solapa2.png" alt="Editor: data">
+  <figcaption>Data tab.</figcaption>
+</figure>
+<h3>Data tab</h3>
+<p>Title, artist, <strong>type</strong> (the combo box on the left: Unclassified, Song, Edited song, Commercial, Announcement, Advertising, Podcast, Effect or Dry voice), genre (free text; the button on the right drops down every genre that already exists in the catalog, in alphabetical order, so the list grows with the ones you use; it scrolls with the wheel or the bar and you choose with a click), rating from 0 to 5, BPM (empty: the analyzed one; <span class="ui">Calculate</span>, <span class="ui">×2</span> and <span class="ui">÷2</span> correct it), album, year and <strong>note</strong>: a free remark about the song or item ("radio edit", "night use only"). The note is shown when hovering over the title in the playlist and over the effect button; leaving it empty deletes it.</p>
+<h3>Preview</h3>
+<table>
+  <tr><th style="width:30%">Button</th><th>What it plays</th></tr>
+  <tr><td><span class="ui">Preview</span></td><td>The whole song, from the start mark to the end mark.</td></tr>
+  <tr><td><span class="ui">Window with effect</span> (amber)</td><td>From 3 s before the window to 2 s after it, with the pinned effect (or, if there is none, the one chosen in the test combo box) playing when the window opens, with the same ducking as on air.</td></tr>
+  <tr><td><span class="ui">From the cursor</span> (<kbd>Space</kbd>)</td><td>From the cursor to the end. <kbd>Space</kbd> again stops.</td></tr>
+  <tr><td><span class="ui">Intro</span> (green)</td><td>From the start to 3 s after the intro.</td></tr>
+  <tr><td><span class="ui">Outro</span> (light blue)</td><td>From 3 s before the outro to the end.</td></tr>
+  <tr><td><span class="ui">Stop</span></td><td>Stops the preview.</td></tr>
+</table>
+<p><strong>Output and volume.</strong> The <span class="ui">Output</span> combo box chooses where the preview plays:</p>
+<ul>
+  <li><em>Same output as the music</em>: you can only preview with the music stopped or paused.</li>
+  <li><strong>Another output</strong> (for example, headphones): you can preview while the music is on air, and the test effect also plays there. It cannot be the same output as the music; if the card is disconnected, the preview goes back to the music output on its own and says so.</li>
+</ul>
+<p>The magnifying glass button searches for the outputs again. <span class="ui">Volume</span> is the preview's own volume (song and test effect). The output and the volume are remembered.</p>
+<h3>Saving</h3>
+<p><span class="ui">Save</span> applies the changes and remembers them for that file; <span class="ui">Cancel</span> discards them.</p>
+
+<h2>16. Classifying the catalog by type</h2>
+<ul>
+  <li>To classify a file, open it in the editor and choose the <span class="ui">Type</span> on the <span class="ui">Data</span> tab. Spots can also be classified several at a time from the spot selector (section 17), and through MCP with <code>definir_datos</code>.</li>
+  <li>If a song that changes type had a <strong>pinned effect</strong> or an <strong>overlay window</strong>, the program warns that they will be removed (along with the intro and the outro) and asks for confirmation. <span class="ui">Cancel</span> goes back to the previous type.</li>
+  <li><strong>Effects:</strong> assign them to the effects board and mark them with type Effect from the button's <span class="ui">Edit...</span>. There you can also trim their section with Start and End. An Effect file does not go into the playlist: <span class="ui">Add</span> leaves it out with a notice, <span class="ui">Insert in the playlist</span> is disabled and a song already in the playlist cannot become an Effect (it must be removed first).</li>
+  <li><strong>Dry voices:</strong> they can go on the effects board, to play over songs like an effect, and also in the playlist as separators (with <span class="ui">Insert in the playlist</span> or <span class="ui">Add</span>).</li>
+  <li><strong>Podcast:</strong> a pre-recorded show. For it to air at a fixed time, schedule it as a break with a single spot (section 17); it can also be inserted in the playlist by hand.</li>
+  <li><strong>Commercial, Announcement and Advertising</strong> are inserted in the playlist and form breaks; from the effects board, <span class="ui">Insert in the playlist</span> adds them even if they are already there (they can air in several breaks).</li>
+</ul>
+
+<h2>17. Scheduled breaks and commercials log</h2>
+<h3>Scheduled breaks</h3>
+<p>A <strong>scheduled break</strong> is a group of spots that airs on its own at set times, for example "at 10:30 and every 30 minutes until 20:00, Monday to Friday". It is scheduled in the <span class="ui">File › Break schedule...</span> window (<kbd>Ctrl</kbd>+<kbd>T</kbd>) or through MCP with <code>programar_tanda</code>. A break can carry Commercial, Advertising, Announcement, Podcast or Dry voice: for a <strong>podcast</strong> to air, for example, every Saturday at 21:00, build a break with that single spot and choose <em>Fade out what is playing at the exact time</em> if it has to start on the dot.</p>
+<figure>
+  <img src="imagenes/en/pauta.png" alt="Break schedule">
+  <figcaption>The schedule: at the top, the breaks with their next airing; at the bottom, the form of the chosen one and its spots (in red, one without a valid type).</figcaption>
+</figure>
+<ul>
+  <li><strong>The table</strong> shows each break with its times, how it goes in, its spots (in red if one is missing or has no valid type) and the next airing with its countdown. The <span class="ui">Active</span> checkbox suspends or resumes it without deleting it; when resumed, what already passed does not count as lost.</li>
+  <li><strong>The form:</strong> name, first time, <span class="ui">Repeat every</span> (0 = once a day), <span class="ui">To</span> (last time of the day), days, tolerance before and after, what to do with <span class="ui">No gap in time</span>, <span class="ui">Maximum length</span> (how long it can last with the order spots; 0 = no limit), priority and whether it is active. <span class="ui">Schedule break</span> or <span class="ui">Save changes</span> applies it; <span class="ui">Discard changes</span> goes back to what was saved. When renamed, it keeps its last airing.</li>
+  <li><strong>The spots</strong> air in the order of the list: <span class="ui">Add from the catalog...</span> opens the spot selector (see below) and the arrows sort them. If a spot has no type, choose it and use <span class="ui">Assign type</span> (Commercial, Advertising or Announcement; it is saved in the catalog, not in the file).</li>
+  <li><span class="ui">Queue now</span> puts the break at the next cut, outside its time, without changing its schedule (for example, to make up for a lost airing).</li>
+  <li><strong>Below the clock</strong> of the main window you can see the next break and how long until it airs ("Next break: «Break A» 10:30 (in 4:12)"); a click opens the schedule.</li>
+</ul>
+<ul>
+  <li><strong>Without cutting songs:</strong> the break goes in at the natural gap between two songs closest to its time, within the tolerance (by default, up to 3 minutes before or 2 after). If the song ends early and the next one would run too long, it goes in earlier; if the song that is playing ends after the window, it airs late, at the end of that song.</li>
+  <li><strong>As a locked block:</strong> a few minutes before, its spots are queued after the song that is playing, enclosed in a locked block (Shuffle and BPM do not break them up). If the song that is playing is inside another locked block, the break goes after that block; if another break is already coming, it goes behind it.</li>
+  <li><strong>Break types only:</strong> the spots must be of type Commercial, Advertising, Announcement or Dry voice. That way they do not mix with the music or with each other: the previous song plays to its end and each spot airs whole.</li>
+  <li><strong>Fixed times:</strong> each time comes from the rule, not from adding the interval to the last airing, so a late break does not push the following ones. The airings handled are recorded, and are not repeated even if the program restarts.</li>
+  <li><strong>Exact time:</strong> if the break is marked <span class="ui">Fade out what is playing at the exact time</span> and there is no natural gap within its tolerance, it is queued shortly before and, at the scheduled time minus the fader seconds, the song that is playing fades out so that the first spot airs on the dot. A spot or a locked block is not cut: in that case it goes in at the end, as with tolerance. It is useful for the top of the hour or a network link.</li>
+  <li><strong>Priority:</strong> from 1 to 9. If two breaks have the same time, the one with the higher priority airs first and the other goes right behind it.</li>
+  <li><strong>Lost airings:</strong> if nothing is playing during a break's window (player stopped or paused, or the program closed), that airing is considered lost, a notice appears in the status bar and it is recorded in the log.</li>
+</ul>
+<p>Through MCP, <code>listar_tandas</code> shows each break with its next airing, <code>encolar_tanda</code> queues it right away and <code>quitar_tanda</code> removes it from the schedule.</p>
+<h3>Catalog spot selector</h3>
+<p>The spots of the breaks and the orders are chosen from the <strong>station catalog</strong> (everything that ever entered the playlist), not from the file browser. <span class="ui">Add from the catalog...</span>, in the schedule or in the orders, opens the selector for the break or order being edited.</p>
+<figure>
+  <img src="imagenes/en/avisos.png" alt="Catalog spot selector">
+  <figcaption>The selector with two spots chosen; at the top, in orange, the warning about catalog items that have no type.</figcaption>
+</figure>
+<ul>
+  <li><strong>Search and filter:</strong> you search by title, advertiser (the record's artist), type, genre, album or file. The filter shows the <em>Spots</em> (break types: Commercial, Advertising, Announcement or Dry voice), the <em>No type</em> items or the <em>Whole catalog</em> (except effects, which only go on the effects board).</li>
+  <li><strong>Validation:</strong> only those with a file and a break type are added. The rest show in red in the <span class="ui">Status</span> column with their reason ("no type: assign one", "Song: does not go in breaks", "no file"), and if chosen they are not added: the notice at the bottom says which and why. Those already in the break or order are marked "already there" and are not repeated.</li>
+  <li><strong>Missing types warning:</strong> the summary counts the catalog's spots and, in orange, the items <strong>without a type</strong>. With the <em>No type</em> filter you review them all and, choosing several, <span class="ui">Assign type</span> gives them Commercial, Advertising, Announcement or Dry voice at once. The type stays in the catalog and applies to the playlist, the breaks and the orders; the genre does not change.</li>
+  <li><strong>From a file...</strong> is for a new spot that is not yet in the catalog. It goes in even without a type, but with a warning, and the break or order is not saved until one is assigned; once done, it stays in the catalog.</li>
+</ul>
+<h3>Advertising orders</h3>
+<p>An <strong>advertising order</strong> is what an advertiser books: for example, "advertiser A, from November 1 to 30, every 2 hours from 08:00 to 20:00" or "advertiser B, 3 times a day". They are loaded in <span class="ui">File › Advertising orders...</span> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd>) or through MCP with <code>programar_orden</code>. Their spots are not placed by hand: they are distributed on their own in the scheduled breaks.</p>
+<figure>
+  <img src="imagenes/en/ordenes.png" alt="Advertising orders">
+  <figcaption>The orders with how many airings were placed today; at the bottom, today's schedule with one airing not placed because of competition.</figcaption>
+</figure>
+<ul>
+  <li><strong>Frequency:</strong> <em>every so many minutes</em> from the start of the time slot (every 120 = every 2 hours: 08:00, 10:00… 20:00); <em>times per day</em>, one in each equal part of the time slot (3 per day from 08 to 20: one in the morning, one in the afternoon and one in the evening, in the least loaded break of each part); or <em>at fixed times</em> (mentions), in the closest break up to 15 minutes before or after.</li>
+  <li><strong>Validity, days and time slot:</strong> the order only asks for airings between its dates, on its days and within its time slot. <span class="ui">Only in breaks</span> limits it to certain breaks (empty: any).</li>
+  <li><strong>Spots in rotation:</strong> each airing carries the spot whose turn it is, and the rotation continues from one day to the next. They are added with <span class="ui">Add from the catalog...</span>, as in the breaks, and must be of type Commercial, Advertising, Announcement or Dry voice.</li>
+  <li><strong>The distribution (daily schedule)</strong> places the hardest airings first, those with the fewest possible breaks, and with the same difficulty those with the highest priority. It respects the <strong>maximum length</strong> of each break, and does not put two spots of the same <strong>sector</strong> in the same break (competitive separation) nor two of the same order. When the break is queued, its fixed spots go first and then those of the orders.</li>
+  <li><strong>Not placed:</strong> what does not fit stays in red in <span class="ui">Today's schedule</span> with its reason ("there are no breaks between…", "the possible breaks are full", "another spot of its sector…"), so it can be solved <strong>before</strong> going on air: add a break, extend its length or the order's time slot. The <span class="ui">Today</span> column shows how many of the airings the order asks for were placed.</li>
+  <li><strong>Make-good:</strong> if a break is lost (nothing was playing at its time) or an order spot airs cut, that spot is made good on its own in the next possible break of the same day, within the order's time slot. Pending make-goods survive a restart.</li>
+  <li><strong>Proof-of-broadcast certificate:</strong> <span class="ui">Monthly certificate</span> builds, for the advertiser of the chosen order, a CSV in the <code>certificados</code> folder with the booked airings, those aired complete, those cut and the fulfillment of each order, plus the detail of each airing (time, spot, order and break), and opens it. Through MCP, <code>certificado_de_emision</code> accepts any date range within the three months that are kept.</li>
+</ul>
+<h3>Advertisers</h3>
+<p>Each advertiser's record keeps the data to bill and reach them: <strong>trade name</strong> (the one their orders use), <strong>company name</strong>, <strong>tax ID (CUIT)</strong>, sector, contact person, phone, email, address, agency that represents them and notes. It is loaded in <span class="ui">File › Advertisers...</span>, with <span class="ui">Record...</span> from the order or through MCP with <code>registrar_anunciante</code>.</p>
+<figure>
+  <img src="imagenes/en/anunciantes.png" alt="Advertisers">
+  <figcaption>The advertisers with their orders; at the bottom, the record of the chosen one. In red, one named in orders that does not have a record yet.</figcaption>
+</figure>
+<ul>
+  <li><strong>Validation:</strong> the CUIT (the Argentine tax ID) must have 11 digits and a correct check digit; it is accepted with or without dashes and saved as 30-71234567-1. The email and phone are checked. The trade name ignores case and accents: "Almacén Luna" and "almacen luna" are the same advertiser.</li>
+  <li><strong>What is missing:</strong> the <span class="ui">Status</span> column warns in orange if the company name, the CUIT or a phone or email is missing. In red appear the advertisers named in orders <strong>without a record</strong>: when chosen, the form is filled in with their name and the sector of their orders.</li>
+  <li><strong>With the orders:</strong> below the advertiser of an order you can see their company name and CUIT, or the warning that they have no record. An order from an advertiser with a record takes their name exactly as written in the record and, if it does not state a sector, the record's. <span class="ui">New order for the advertiser</span> opens the orders with that advertiser and their sector.</li>
+  <li><strong>Renaming, deactivating and removing:</strong> when renamed, their orders move to the new name. An <em>inactive</em> advertiser keeps their record and orders, but does not accept new orders. Only the record of an advertiser without orders can be removed.</li>
+  <li><strong>Certificate:</strong> the proof-of-broadcast certificate carries the advertiser's company name, CUIT and contact in its header.</li>
+</ul>
+<h3>Commercials log</h3>
+<p>Every on-air airing of billable advertising, items of type <strong>Commercial</strong> or <strong>Advertising</strong>, is recorded in the <code>comerciales</code> folder of the data, in one file per month (<code>2026-11.csv</code>), with a semicolon separator, to open it in a spreadsheet. The column names are in Spanish:</p>
+<table>
+  <tr><th>Inicio</th><th>Fin</th><th>Segundos emitidos</th><th>Duracion</th><th>Completo</th><th>Titulo</th><th>Artista</th><th>Genero</th><th>Archivo</th><th>Tanda</th><th>Orden</th><th>Tipo</th></tr>
+  <tr><td>2026-11-02 14:05:33</td><td>2026-11-02 14:06:03</td><td>30,0</td><td>30,2</td><td>Si</td><td>…</td><td>…</td><td>Pop</td><td>…</td><td>Tanda A 14:00</td><td>Sol - Noviembre</td><td>Comercial</td></tr>
+</table>
+<p>The columns are: start, end, seconds aired, length, complete, title, artist, genre, file, break, order and type. <em>Completo</em> ("Si" or "No") says whether it aired whole or was cut (by Next or Stop). The seconds use a decimal comma. <em>Tanda</em> is the scheduled break that aired it and its scheduled time; it is empty if the spot was placed by hand. <em>Orden</em> is the spot's advertising order, if it belongs to one. <em>Tipo</em> (Comercial or Publicidad) goes last so that the spreadsheets of earlier months, which do not have it, can still be read the same way; <em>Genero</em> is the record's free style. Announcements (the station's own messages), Dry voices and Effects are not recorded.</p>
+<ul>
+  <li><strong>Rotation:</strong> the current month and the two previous ones are kept, so last month is always complete for billing. When a new month starts, the file of the month left out is deleted; keep a copy first if you need it for longer.</li>
+  <li><strong>Querying:</strong> through MCP, <code>registro_de_comerciales</code> sums up the airings between two dates (complete, cut and airtime) and details them with their break; it can be filtered by advertiser, title or break.</li>
+  <li><strong>Earlier versions:</strong> the single log <code>comerciales.csv</code> is split once into the files of each month (with the dates converted to ISO 8601) and the original stays as <code>comerciales.csv.migrado</code>.</li>
+</ul>
+<h3>Date and time format</h3>
+<p>Start and end are recorded in the computer's local time with the standard <strong>ISO 8601</strong> format: <code>YYYY-MM-DD hh:mm:ss</code>, that is, year, month and day, and the hour from 0 to 23. For example, <code>2026-11-02 14:05:33</code> is <strong>November 2, 2026</strong> at 14:05:33.</p>
+<p>With this order the date is not ambiguous: a date like 02/11/2026 can be read as November 2 or as February 11 depending on the country. Also, spreadsheets recognize it as a date and sorting by that column leaves the airings in chronological order.</p>
+
+<h2>18. Keyboard shortcuts</h2>
+<div class="dos">
+<div>
+<h4>Main window</h4>
+<table>
+  <tr><td><kbd>0</kbd>–<kbd>9</kbd></td><td>Fire the button's effect</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd></td><td>Search the playlist</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></td><td>Search the catalog</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>T</kbd></td><td>Break schedule</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd></td><td>Advertising orders</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Open playlist</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Save playlist</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td>Save playlist as</td></tr>
+  <tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd></td><td>Jump between results (in the search box)</td></tr>
+  <tr><td><kbd>Esc</kbd></td><td>Clear the search</td></tr>
+</table>
+</div>
+<div>
+<h4>Track editor</h4>
+<table>
+  <tr><td><kbd>Space</kbd></td><td>Preview from the cursor / stop</td></tr>
+  <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>Start / End at the cursor</td></tr>
+  <tr><td><kbd>I</kbd> <kbd>O</kbd></td><td>Intro / Outro at the cursor</td></tr>
+  <tr><td><kbd>V</kbd> <kbd>B</kbd></td><td>Window From / To at the cursor</td></tr>
+  <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Move the cursor 0.1 s (with <kbd>Shift</kbd>, 1 s)</td></tr>
+  <tr><td><kbd>+</kbd> <kbd>−</kbd></td><td>Zoom in / zoom out</td></tr>
+</table>
+</div>
+</div>
+
+<h2>19. Catalog maintenance</h2>
+<p>The catalog recognizes each file by its path. If a music folder is moved to another drive or another folder, the records keep pointing to the old path and the program sees those files as new, without their data. <span class="ui">File › Catalog maintenance...</span> solves this without losing anything.</p>
+<figure>
+  <img src="imagenes/en/mantenimiento.png" alt="Catalog maintenance window">
+  <figcaption>Records whose file no longer exists, with the new location found.</figcaption>
+</figure>
+<ol>
+  <li>The window lists the records whose file no longer exists, with their song and old location.</li>
+  <li><span class="ui">Search in folder...</span> asks for the folder where the files ended up and scans it with its subfolders. Each file is searched by its name, ignoring case; if there are several with the same name, the one with the same length as the record is chosen. The <em>New location</em> column shows what was found in green.</li>
+  <li><span class="ui">Relocate found</span> moves each chosen record to its new path <strong>without losing its data</strong> (mix points, overlay, type, genre, rating, BPM, last play) and also updates the current playlist, the effects board buttons and the pinned effects that pointed to those files.</li>
+  <li>The program remembers each relocation: a playlist saved before the change opens with the new paths (it is marked with <code>*</code> so you can save it up to date).</li>
+</ol>
+<ul>
+  <li><span class="ui">Remove chosen from the catalog</span> deletes the records of files that will no longer be used. It asks for confirmation and does not touch any audio file.</li>
+  <li><span class="ui">Clear waveform cache</span> deletes the saved waveforms of files that no longer exist, were moved or changed, and shows the space freed.</li>
+  <li>The checkboxes on the left choose which records the actions apply to; the one in the header checks or unchecks them all.</li>
+</ul>
+<div class="nota">The search recognizes <strong>moved</strong> files, not <strong>renamed</strong> ones: a file with a different name is not found. If two or more files have the same name and the same length, none is relocated, so as not to link the record to the wrong song.</div>
+
+<h3>Updating the data: tags and MusicBrainz</h3>
+<p>The catalog copies the tags of each file (title, artist, album, year and genre) the first time it sees it; after that, what it saved rules, corrected or not. To improve that data there are two sources, and with both you review what would change before applying it. Only the station catalog changes: <strong>the files are not touched</strong>.</p>
+<ul>
+  <li><strong>Reread the tags</strong>: after correcting them with another program, such as <em>MusicBrainz Picard</em> or <em>Mp3tag</em>.</li>
+  <li><strong>Fill in from MusicBrainz</strong> (musicbrainz.org, the free music database Picard uses): it looks up each song by title and artist and proposes the album it was released on, the year of the first release, the most voted genre and the title and artist as they appear there. It needs an internet connection, no key, and queries one song per second (on a large catalog it takes a while; it can be stopped and what was found so far applied).</li>
+</ul>
+<p>They are used from three places:</p>
+<ul>
+  <li>In the playlist, right-click on a row › <span class="ui">Update data</span>: it applies to that row or, if it is selected along with others, to the whole selection.</li>
+  <li>In <span class="ui">Search the catalog</span>, with the <span class="ui">Reread tags</span> and <span class="ui">MusicBrainz</span> buttons: to the chosen songs or, if none are chosen, to all the search results. A previous search, such as <code>genre:pop</code> or <code>year:1990..1999</code>, narrows which songs it applies to.</li>
+  <li>In the editor, <span class="ui">Data</span> tab, <span class="ui">MusicBrainz</span> button: for the song being edited; what is applied shows up in the editor's fields.</li>
+</ul>
+<figure>
+  <img src="imagenes/en/actualizacion-musicbrainz.png" alt="Update catalog data window with results from MusicBrainz">
+  <figcaption>Data proposed by MusicBrainz: the missing data comes checked; the genre the user corrected by hand does not.</figcaption>
+</figure>
+<p>The <span class="ui">Update catalog data</span> window shows one line for each different piece of data: the song, the field, what the catalog says <em>now</em> and what is <em>proposed</em>. Only the checked ones are applied (click on the line or on its checkbox; the one in the header checks or unchecks them all). Deleting data is never proposed. These come checked:</p>
+<ul>
+  <li>always, those that fill in an <strong>empty</strong> field;</li>
+  <li>from the tags, also those that replace data you <strong>did not correct</strong>;</li>
+  <li>from MusicBrainz, no replacement: data that already has a value is offered unchecked, for you to decide.</li>
+</ul>
+<p>The catalog remembers which data <strong>you corrected by hand</strong> (in the editor or through MCP) or chose from MusicBrainz: those show the note <em>corrected by hand</em> and are not checked on their own. Records created before this version did not keep track of this; their data carries the note <em>older record: corrections not tracked</em> and is not checked on its own either. What is applied from the tags no longer counts as corrected.</p>
+<figure>
+  <img src="imagenes/en/actualizacion-etiquetas.png" alt="Update catalog data window with the reread tags">
+  <figcaption>Reread tags: the artist corrected by hand and the data of a previous record stay unchecked.</figcaption>
+</figure>
+<div class="nota"><strong>If you use Picard:</strong> turn off <em>Rename files</em> and <em>Move files</em> in its options (or choose not to change the name or the folder). The catalog recognizes each file by its path and maintenance searches for them by name: a renamed file loses its record, with its mix points, rating and last play. The tags of <strong>WAV</strong> files cannot be read (the audio library discards them); it is better to tag MP3, FLAC or other formats.</div>
+<p>MusicBrainz chooses the original recording: the one with the same title, a length similar to the file's (it discards live or extended versions) and the earliest first release; from its releases it takes the studio album, not a compilation. If no recording matches reliably, the song is counted as <em>without a reliable match</em> and nothing is proposed. It is worth reviewing what is proposed: for songs with many versions it may choose a different recording from the one in the file.</p>
+
+<h2>20. Troubleshooting</h2>
+<table>
+  <tr><th style="width:36%">Problem</th><th>What to do</th></tr>
+  <tr><td>"There is no audio output available" on opening</td><td>Connect or enable a sound card and open the program again. On Linux, check that PulseAudio or PipeWire is running.</td></tr>
+  <tr><td>The preview says the output is not connected</td><td>Connect the card and press the magnifying glass next to the <span class="ui">Output</span> combo box. Meanwhile, the preview uses the music output.</td></tr>
+  <tr><td>A locked effect does not play</td><td>It is waiting for the song's overlay window (the button stays orange). If what is playing is not a Song (a commercial, a dry voice), it waits for the next one. Use <span class="ui">Free mode</span> for it to play right away.</td></tr>
+  <tr><td>An effect does not appear in the editor's combo boxes</td><td>Only effects board files of type Effect or Dry voice are offered: mark it from the button's <span class="ui">Edit...</span>.</td></tr>
+  <tr><td>The status bar says a song "was skipped because the file does not exist"</td><td>The file was moved, renamed or deleted. Playback went on with the next song. If you moved it, use <span class="ui">File › Catalog maintenance...</span> to relocate it without losing its data; if you deleted it, <span class="ui">Validate</span> offers to remove it from the playlist.</td></tr>
+  <tr><td>A file cannot be added to the playlist</td><td>It is probably of type Effect: it can only be on the effects board.</td></tr>
+  <tr><td>MCP control does not respond</td><td>The player must be open. Check port 8765 (or the one in <code>RAPTOR_MCP_PUERTO</code>) and that no other program is using it.</td></tr>
+  <tr><td>The icon pinned to the taskbar is not updated</td><td>Unpin the program and pin it again: Windows caches the icons.</td></tr>
+  <tr><td><span class="ui">Help › Manual</span> does not open this manual</td><td>Copy <code>Raptor_Manual_en.pdf</code> (or <code>Raptor_Manual_es.pdf</code>) next to the executable.</td></tr>
+</table>
+<p>For any error, the log in the data's <code>logs</code> folder records what happened.</p>
+
+<h2>21. Design decisions</h2>
+<h3>No database: an open format</h3>
+<p>MCP Raptor Player does not use a database. The catalog, the effects board, the playlists and the preferences are saved in <strong>JSON</strong> files, and the commercials log in <strong>CSV</strong> (see section 8). They are open formats that can be read with any text editor or spreadsheet, are copied or backed up just by copying the data folder and do not depend on the program to be consulted.</p>
+<p>The volume allows it: with a break every half hour, the log adds up to a few tens of thousands of lines per month, which are read in milliseconds. So that it does not grow without limit, one file per month is kept and three months are preserved. The breaks and the log are accessed through their own contract (<code>AlmacenDeTandas</code> and <code>AlmacenDeEmisiones</code>), so if a database is needed later (several stations, reports covering years or queries from another computer) another implementation is enough, without touching scheduling or playback.</p>
+<h3>No file fingerprints (hashes)</h3>
+<p>When cataloging, the program does not calculate a fingerprint (<em>hash</em>) of each file's content to recognize it. A fingerprint only works if the file never changes: editing the audio or just correcting its tags changes the fingerprint, and the record would be unlinked from its file just as if it had been moved. That is why each file is recognized by its path, and moves are solved with catalog maintenance (section 19).</p>
+<h3>Translations in a gettext catalog</h3>
+<p>The texts are written in Spanish and their translations are in <code>lang/en/LC_MESSAGES/mcp-raptor-player.po</code>, a standard gettext catalog that can be edited with any translation tool. Both parts of the program use it: the Slint interface (texts marked with <code>@tr</code>) and the Rust code (the <code>tr!</code> macro). At build time the catalog is turned into code, so a translation with a wrong placeholder does not compile. <code>herramientas/traducciones.py</code> collects the new texts and reports those still missing a translation, and an automated test checks that none is missing. To add another language, it is enough to add its catalog in <code>lang/</code> and offer it in the menu.</p>
+<h3>The content is immutable</h3>
+<p>MCP Raptor Player starts from one premise: <strong>the audio files and their storage are not modified</strong>. It is neither an audio editor nor a tag editor (<em>tagger</em>):</p>
+<ul>
+  <li>It never writes to the audio files. The type, title, artist, genre, rating, mix points and everything corrected in the editor are saved in its own catalog (<code>mezcla.json</code>), not in the file.</li>
+  <li>The file's tags are read when it enters the playlist and only fill in what its record does not have yet: what the user corrected is not overwritten.</li>
+</ul>
+<div class="nota">The philosophy asked of the user is the same: keep your storage organized and do not modify the audio files. If folders need to be moved, catalog maintenance links them again without losing data.</div>
+
+<!-- =============================================================== -->
+<h1>Appendix</h1>
+
+<h2>A. Plug-ins that improve the sound</h2>
+<p>A <strong>system sound enhancer</strong> processes all the audio that goes out through the sound card: equalizer, compressor, bass boost, stereo widening and limiter. MCP Raptor Player does not need one to work, but it can help give character to the output or compensate for the studio speakers.</p>
+<table>
+  <tr><th style="width:20%">System</th><th>Plug-in</th></tr>
+  <tr><td><strong>Windows</strong></td><td><strong>FxSound</strong> (free and open source). It installs as its own output device, for example <em>Speakers (FxSound Audio Enhancer)</em>, which processes the sound and forwards it to the real card. If FxSound is the Windows default output, Raptor's music goes out processed.</td></tr>
+  <tr><td><strong>Linux</strong></td><td><strong>EasyEffects</strong> (free and open source), for systems with PipeWire. It is installed from the distribution's software store or with Flatpak. Raptor goes out through PulseAudio, which in current distributions is handled by PipeWire, so EasyEffects processes its output in the <em>Output</em> section.</td></tr>
+</table>
+<h3>Recommendations</h3>
+<ul>
+  <li><strong>Leveling:</strong> <span class="ui">Level volume</span> evens out the songs before the output; the enhancer acts afterwards, on everything that goes out. For the leveling to still be noticeable, use gentle compression in the enhancer.</li>
+  <li><strong>Clipping:</strong> bass boost and the equalizer raise the level. Turn on the enhancer's limiter or lower its output gain so it does not clip.</li>
+  <li><strong>Preview:</strong> if in the editor you choose the real card (for example, the headphones) as the preview output instead of the enhancer's, you hear the songs as they are, unprocessed.</li>
+  <li><strong>Effects and TTH announcement:</strong> they go through the same path as the music, so the enhancer processes them the same way. Nothing needs to be adjusted in Raptor.</li>
+  <li><strong>Air processor:</strong> if the station already uses an external audio processor or one in the transmitter, the system enhancer is usually unnecessary: two compression chains in a row flatten the sound.</li>
+</ul>
+
+</body>
+</html>

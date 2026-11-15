@@ -1,5 +1,7 @@
 # Raptor 3
 
+**Español** · [English](README.md)
+
 **MCP Radioautomation Software.** Reproductor de escritorio para automatización de radio, escrito en Rust con interfaz [Slint](https://slint.dev), con un **servidor MCP** integrado para que un asistente de IA pueda manejarlo.
 
 Raptor nació en 1997 (Raptor 1, Delphi sobre Windows 95) y siguió con Raptor II hasta 2007. Raptor 3 es una reescritura completa.
@@ -18,12 +20,14 @@ Raptor nació en 1997 (Raptor 1, Delphi sobre Windows 95) y siguió con Raptor I
 
 ## Documentación
 
-- [Manual de usuario (HTML)](docs/manual/Raptor_Manual_es.html) · [PDF](docs/manual/Raptor_Manual_es.pdf)
+- Manual de usuario: [español (HTML)](docs/manual/Raptor_Manual_es.html) · [PDF](docs/manual/Raptor_Manual_es.pdf) — [inglés (HTML)](docs/manual/Raptor_Manual_en.html) · [PDF](docs/manual/Raptor_Manual_en.pdf)
 - [Cómo conectar asistentes de IA por MCP](docs/conexion-mcp.md) (Claude, Gemini CLI, Cursor, VS Code, Kilo Code y otros)
 
 ## Descargas
 
-Las versiones compiladas para Windows y Linux están en [Releases](https://github.com/AnibalFlores/raptor3/releases). Cada una trae el ejecutable, el manual en PDF y la licencia.
+Las versiones compiladas para Windows y Linux están en [Releases](https://github.com/AnibalFlores/raptor3/releases). Cada una trae el ejecutable, el manual en PDF en español y en inglés, y las licencias.
+
+El ejecutable de Windows no está firmado digitalmente, así que SmartScreen puede advertir la primera vez que se abre: elija *Más información › Ejecutar de todas formas*.
 
 ## Compilar
 
@@ -35,7 +39,7 @@ Requiere **Rust 1.88 o posterior** (edición 2024), instalado con [rustup](https
 cargo build --release
 ```
 
-El ejecutable queda en `target/release/mcp-raptor-player.exe`. Desde la carpeta del proyecto el menú *Ayuda › Manual* encuentra el PDF en `docs/manual`; para distribuirlo, copie `Raptor_Manual_es.pdf` junto al ejecutable.
+El ejecutable queda en `target/release/mcp-raptor-player.exe`. *Ayuda › Manual* abre el PDF del idioma de la interfaz (`Raptor_Manual_es.pdf` o `Raptor_Manual_en.pdf`); desde la carpeta del proyecto los encuentra en `docs/manual`, y para distribuir el programa, cópielos junto al ejecutable.
 
 ### Linux (Ubuntu / Debian, también WSL2 con WSLg)
 
@@ -67,6 +71,24 @@ cargo test capturas -- --ignored --test-threads=1
 
 Para probar el programa sin tocar sus datos reales, defina `RAPTOR_CARPETA_DE_DATOS` con una carpeta de prueba. El puerto del servidor MCP se cambia con `RAPTOR_MCP_PUERTO`.
 
+## Manual
+
+El manual se escribe en HTML (`docs/manual/Raptor_Manual_es.html` y `Raptor_Manual_en.html`) con capturas que generan las pruebas. Para actualizar las capturas y los PDF en los dos idiomas:
+
+```bash
+cargo test capturas -- --ignored --test-threads=1
+```
+
+```bash
+RAPTOR_CAPTURAS_IDIOMA=en cargo test capturas -- --ignored --test-threads=1
+```
+
+```bash
+python herramientas/manual.py
+```
+
+El script copia las capturas a `docs/manual/imagenes` e imprime los PDF con Chrome, Chromium o Edge.
+
 ## Traducciones
 
 Los textos de la interfaz se escriben en español y se traducen con el catálogo `lang/en/LC_MESSAGES/mcp-raptor-player.po`. La herramienta `herramientas/traducciones.py` lista los textos sin traducir (`--faltantes`) y los agrega al catálogo (`--agregar`). Una prueba verifica que el catálogo esté completo.
@@ -89,10 +111,16 @@ La clave se lee **solo del entorno**: no la escriba en el script ni la suba al r
 
 El servidor MCP escucha solo en `127.0.0.1`, rechaza pedidos de páginas web y **no tiene contraseña**: no lo exponga a internet.
 
-## Contacto
+## Contribuir y seguridad
+
+Los aportes son bienvenidos: vea [CONTRIBUTING.es.md](CONTRIBUTING.es.md). Para reportar un problema de seguridad en privado, vea [SECURITY.es.md](SECURITY.es.md).
+
+## Contacto y donaciones
 
 jxlfybcrk@mozmail.com
 
+Software gratuito, sin garantía ni soporte. Se aceptan donaciones y sugerencias: [donar con PayPal](https://www.paypal.com/donate/?hosted_button_id=SYCZZFULZ6TKE).
+
 ## Licencia
 
-[GNU GPL v3](LICENSE) o posterior.
+[GNU GPL v3](LICENSE) o posterior. Las imágenes y los iconos tienen sus propias licencias: vea [ASSETS-LICENSES.md](ASSETS-LICENSES.md).

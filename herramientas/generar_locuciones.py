@@ -41,7 +41,7 @@ from pathlib import Path
 # --- Configuración: la clave nunca va en el código, solo en el entorno -----------
 
 API_KEY = os.environ.get("ELEVENLABS_API_KEY", "")
-VOICE_ID = os.environ.get("ELEVENLABS_VOICE_ID", "Je8d8oi82sj0l8L1VM0l")
+VOICE_ID = os.environ.get("ELEVENLABS_VOICE_ID", "")
 
 MODELO = "eleven_multilingual_v2"
 # MP3 a 44,1 kHz: Raptor lo decodifica sin conversiones extra.

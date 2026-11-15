@@ -81,6 +81,22 @@ impl TipoDeElemento {
         }
     }
 
+    /// Texto con el que se busca el tipo (`tipo:` / `type:`): el nombre del
+    /// catalogo y el de la interfaz en inglés, asi la busqueda sirve en los
+    /// dos idiomas. Los nombres en inglés son los del catalogo de traducciones.
+    pub fn para_buscar(self) -> &'static str {
+        match self {
+            Self::Tema => "Tema / Song",
+            Self::TemaEditado => "Tema editado / Edited song",
+            Self::Comercial => "Comercial / Commercial",
+            Self::Anuncio => "Anuncio / Announcement",
+            Self::Publicidad => "Publicidad / Advertising",
+            Self::Podcast => "Podcast",
+            Self::Efecto => "Efecto / Effect",
+            Self::Seco => "Seco / Dry voice",
+        }
+    }
+
     /// El tipo con ese nombre, sin distinguir mayusculas ni acentos.
     pub fn desde_nombre(nombre: &str) -> Option<Self> {
         let simplificado = simplificar(nombre.trim());
@@ -216,6 +232,15 @@ impl ReglasDelTipo for Option<TipoDeElemento> {
 mod pruebas {
     use super::TipoDeElemento::*;
     use super::*;
+
+    #[test]
+    fn el_tipo_se_busca_por_su_nombre_en_los_dos_idiomas() {
+        for tipo in TipoDeElemento::TODOS {
+            assert!(tipo.para_buscar().starts_with(tipo.nombre()), "{tipo:?}");
+        }
+        assert!(TipoDeElemento::TemaEditado.para_buscar().to_lowercase().contains("edited song"));
+        assert!(TipoDeElemento::Seco.para_buscar().to_lowercase().contains("dry voice"));
+    }
 
     #[test]
     fn deriva_el_tipo_de_los_generos_anteriores() {

@@ -28,15 +28,49 @@ pub(super) fn titulo_del_marcador(marcador: MarcadorDeBloque) -> String {
     }
 }
 
+/// Carpeta de los marcadores dentro de la carpeta de datos.
+const CARPETA_DE_MARCADORES: &str = "marcadores";
+
+/// Nombre del archivo de cada marcador.
+fn nombre_del_marcador(marcador: MarcadorDeBloque) -> &'static str {
+    match marcador {
+        MarcadorDeBloque::Inicio => "Inicio de bloque fijo.marca",
+        MarcadorDeBloque::Fin => "Fin de bloque fijo.marca",
+    }
+}
+
 /// La pista de cada marcador: siempre el mismo archivo, en la carpeta de datos.
 fn pista_del_marcador(marcador: MarcadorDeBloque) -> &'static Pista {
     static INICIO: OnceLock<Pista> = OnceLock::new();
     static FIN: OnceLock<Pista> = OnceLock::new();
-    let (celda, nombre) = match marcador {
-        MarcadorDeBloque::Inicio => (&INICIO, "Inicio de bloque fijo.marca"),
-        MarcadorDeBloque::Fin => (&FIN, "Fin de bloque fijo.marca"),
+    let celda = match marcador {
+        MarcadorDeBloque::Inicio => &INICIO,
+        MarcadorDeBloque::Fin => &FIN,
     };
-    celda.get_or_init(|| Pista::new(carpeta_del_usuario().join("marcadores").join(nombre)))
+    celda.get_or_init(|| Pista::new(carpeta_del_usuario().join(CARPETA_DE_MARCADORES).join(nombre_del_marcador(marcador))))
+}
+
+/// Si la ruta es la de un marcador guardado con otra carpeta de datos (otro
+/// equipo, otro usuario u otra RAPTOR_CARPETA_DE_DATOS), la del marcador en
+/// esta. Se reconoce por la carpeta y el nombre del archivo, con separadores
+/// de Windows o de Linux.
+pub(super) fn marcador_en_esta_carpeta(ruta: &Path) -> Option<PathBuf> {
+    let (carpeta, nombre) = carpeta_y_nombre(ruta)?;
+    if !carpeta.eq_ignore_ascii_case(CARPETA_DE_MARCADORES) {
+        return None;
+    }
+    let marcador = [MarcadorDeBloque::Inicio, MarcadorDeBloque::Fin].into_iter().find(|marcador| nombre_del_marcador(*marcador) == nombre)?;
+    Some(pista_del_marcador(marcador).archivo().to_path_buf())
+}
+
+/// Ultima carpeta y nombre de archivo de una ruta, separada con / o con \
+/// (una lista guardada en Windows puede abrirse en Linux y al reves).
+pub(super) fn carpeta_y_nombre(ruta: &Path) -> Option<(String, String)> {
+    let texto = ruta.to_string_lossy();
+    let mut partes = texto.rsplit(['/', '\\']).filter(|parte| !parte.is_empty());
+    let nombre = partes.next()?.to_string();
+    let carpeta = partes.next()?.to_string();
+    Some((carpeta, nombre))
 }
 
 /// El marcador al que apunta el archivo, si es uno.
@@ -233,5 +267,20 @@ mod tests {
         assert_eq!(marcador_de(&fin), Some(MarcadorDeBloque::Fin));
         assert_eq!(marcador_de(&PathBuf::from("D:/musica/Inicio de bloque fijo.marca")), None);
         assert_eq!(marcador_de(&PathBuf::from("D:/musica/tema.mp3")), None);
+    }
+
+    #[test]
+    fn un_marcador_de_otra_carpeta_de_datos_pasa_a_la_de_este_equipo() {
+        let inicio = pista_del_marcador(MarcadorDeBloque::Inicio).archivo().to_path_buf();
+        let fin = pista_del_marcador(MarcadorDeBloque::Fin).archivo().to_path_buf();
+        let de_windows = PathBuf::from(r"C:\Users\otro\.mcp-raptor-player\marcadores\Inicio de bloque fijo.marca");
+        let de_linux = PathBuf::from("/home/radio/.mcp-raptor-player/marcadores/Fin de bloque fijo.marca");
+        assert_eq!(marcador_en_esta_carpeta(&de_windows), Some(inicio.clone()));
+        assert_eq!(marcador_en_esta_carpeta(&de_linux), Some(fin));
+        assert_eq!(marcador_en_esta_carpeta(&inicio), Some(inicio));
+        // Solo con la carpeta y el nombre exactos de un marcador.
+        assert_eq!(marcador_en_esta_carpeta(&PathBuf::from("D:/musica/Inicio de bloque fijo.marca")), None);
+        assert_eq!(marcador_en_esta_carpeta(&PathBuf::from("D:/marcadores/tema.mp3")), None);
+        assert_eq!(marcador_en_esta_carpeta(&PathBuf::from("tema.mp3")), None);
     }
 }
