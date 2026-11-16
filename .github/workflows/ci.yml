@@ -1,4 +1,6 @@
-# Compila y prueba en Windows y Linux en cada push y pull request.
+# Compila y prueba en Windows, Linux y macOS en cada push y pull request.
+# macOS es experimental: todavia no se probo en una Mac, asi que si falla
+# se ve en su trabajo pero no marca como fallida toda la ejecucion.
 name: CI
 
 on:
@@ -19,7 +21,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest]
+        experimental: [false]
+        include:
+          # Apple Silicon (M1 y posteriores).
+          - os: macos-latest
+            experimental: true
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     steps:
       - uses: actions/checkout@v4
 
