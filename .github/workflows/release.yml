@@ -1,6 +1,7 @@
-# Al subir una etiqueta vX.Y.Z, compila para Windows y Linux y publica un
-# release con el ejecutable, los manuales en PDF (español e inglés), las
-# licencias y los README.
+# Al subir una etiqueta vX.Y.Z, compila para Windows, Linux y macOS y publica
+# un release con el ejecutable, los manuales en PDF (español e inglés), las
+# licencias y los README. macOS es experimental: si falla, el release sale
+# igual con Windows y Linux.
 name: Release
 
 on:
@@ -23,7 +24,12 @@ jobs:
             paquete: MCPRaptorPlayer-windows-x64
           - os: ubuntu-latest
             paquete: MCPRaptorPlayer-linux-x64
+          # App universal (Apple Silicon e Intel), sin notarizar.
+          - os: macos-latest
+            paquete: MCPRaptorPlayer-macos-universal
+            experimental: true
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental == true }}
     steps:
       - uses: actions/checkout@v7
 
@@ -43,6 +49,7 @@ jobs:
         run: cargo test --locked
 
       - name: Compilar
+        if: runner.os != 'macOS'
         run: cargo build --release --locked
 
       - name: Empaquetar (Windows)
@@ -65,6 +72,13 @@ jobs:
           cp ui/iconos/ventana-raptor.svg "$destino/ui/iconos/"
           cp docs/manual/Raptor_Manual_es.pdf docs/manual/Raptor_Manual_en.pdf LICENSE ASSETS-LICENSES.md README.md README.es.md "$destino/"
           tar -czf "$destino.tar.gz" "$destino"
+
+      # Compila las dos arquitecturas y arma la .app (ver el script).
+      - name: Empaquetar (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          sh recursos/macos/empaquetar.sh "${{ matrix.paquete }}"
+          mv "target/${{ matrix.paquete }}.zip" .
 
       - uses: actions/upload-artifact@v7
         with:

@@ -51,7 +51,7 @@
   <svg class="logo" viewBox="0 0 24 24" fill="#fd7e14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10m0 5h-2a1 1 0 0 0 -1 1v8a1 1 0 0 0 1 1l.117 -.007a1 1 0 0 0 .883 -.993v-2.332l2.2 2.932a1 1 0 0 0 1.4 .2l.096 -.081a1 1 0 0 0 .104 -1.319l-1.903 -2.538l.115 -.037a3.001 3.001 0 0 0 -1.012 -5.825m0 2a1 1 0 0 1 0 2h-1v-2z"/></svg>
   <h1>MCP Raptor Player</h1>
   <div class="sub">Manual de usuario</div>
-  <div class="datos">Versión 1.0.0 · Noviembre de 2026<br>Windows 10/11 y Linux</div>
+  <div class="datos">Versión 1.0.0 · Noviembre de 2026<br>Windows 10/11, Linux y macOS</div>
 </section>
 
 <h1>Un poco de historia</h1>
@@ -112,7 +112,7 @@
 
 <h2>2. Requisitos y formatos</h2>
 <table>
-  <tr><th style="width:32%">Sistema operativo</th><td>Windows 10 u 11. Linux con PulseAudio o PipeWire (también funciona en WSL2 con WSLg); si no hay servidor de sonido usa ALSA.</td></tr>
+  <tr><th style="width:32%">Sistema operativo</th><td>Windows 10 u 11. Linux con PulseAudio o PipeWire (también funciona en WSL2 con WSLg); si no hay servidor de sonido usa ALSA. macOS 11 o posterior, con Apple Silicon o Intel (experimental: todavía no se probó en una Mac real).</td></tr>
   <tr><th>Pantalla</th><td>Mínimo Full HD (1920 × 1080), con la escala de Windows al 100 %, 125 % o 150 %. Al 150 % los botones de las barras quedan solo con el icono para que entre también la botonera de efectos (ver <span class="ui">Ocultar textos de los botones</span>, en el menú Ventana). En pantallas mayores (QHD, 4K) la interfaz aprovecha el espacio extra; los textos que no entran completos muestran un tooltip con el texto entero.</td></tr>
   <tr><th>Formatos de audio</th><td>MP3, WAV, AIFF (<code>.aif</code>, <code>.aiff</code>), AAC (<code>.aac</code>, <code>.m4a</code>), FLAC y Ogg Vorbis (<code>.ogg</code>, <code>.oga</code>).</td></tr>
   <tr><th>Listas</th><td>Formato propio (JSON) y M3U para cargar listas de otros programas.</td></tr>
@@ -427,6 +427,8 @@
 <p>Ejecute <code>mcp-raptor-player.exe</code> (en los paquetes publicados, <code>MCPRaptorPlayer.exe</code>). Para tener el icono en la barra de tareas, ábralo y elija <em>Anclar a la barra de tareas</em>. Este manual se abre desde <span class="ui">Ayuda › Manual</span> si el archivo <code>Raptor_Manual_es.pdf</code> está junto al ejecutable.</p>
 <h3>Linux</h3>
 <p>El script <code>recursos/linux/instalar.sh</code> copia el programa a <code>~/.local/bin</code> e instala el lanzador y el icono, para que aparezca en el menú de aplicaciones.</p>
+<h3>macOS (experimental)</h3>
+<p>Descomprima <code>MCPRaptorPlayer-macos-universal.zip</code> y arrastre <em>MCP Raptor Player.app</em> a <em>Aplicaciones</em>. La app no está notarizada por Apple: la primera vez macOS no la abre. Ábrala una vez, cierre el aviso y, en <em>Configuración del Sistema › Privacidad y seguridad</em>, elija <em>Abrir igualmente</em> (en macOS 14 o anterior alcanza con clic derecho en la app › <em>Abrir</em>). Los manuales van dentro de la app: <span class="ui">Ayuda › Manual</span> los encuentra solo. Todavía no se probó en una Mac real; si algo no funciona, avise.</p>
 <h3>Al abrir</h3>
 <p>La ventana se maximiza y recupera la última lista, con el último tema marcado. Si el servidor MCP no puede usar su puerto, el reproductor funciona igual, sin control remoto.</p>
 <h3>Idioma</h3>

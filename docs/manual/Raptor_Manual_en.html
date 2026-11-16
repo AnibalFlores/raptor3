@@ -51,7 +51,7 @@
   <svg class="logo" viewBox="0 0 24 24" fill="#fd7e14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10m0 5h-2a1 1 0 0 0 -1 1v8a1 1 0 0 0 1 1l.117 -.007a1 1 0 0 0 .883 -.993v-2.332l2.2 2.932a1 1 0 0 0 1.4 .2l.096 -.081a1 1 0 0 0 .104 -1.319l-1.903 -2.538l.115 -.037a3.001 3.001 0 0 0 -1.012 -5.825m0 2a1 1 0 0 1 0 2h-1v-2z"/></svg>
   <h1>MCP Raptor Player</h1>
   <div class="sub">User manual</div>
-  <div class="datos">Version 1.0.0 · November 2026<br>Windows 10/11 and Linux</div>
+  <div class="datos">Version 1.0.0 · November 2026<br>Windows 10/11, Linux and macOS</div>
 </section>
 
 <h1>A bit of history</h1>
@@ -112,7 +112,7 @@
 
 <h2>2. Requirements and formats</h2>
 <table>
-  <tr><th style="width:32%">Operating system</th><td>Windows 10 or 11. Linux with PulseAudio or PipeWire (it also works on WSL2 with WSLg); without a sound server it uses ALSA.</td></tr>
+  <tr><th style="width:32%">Operating system</th><td>Windows 10 or 11. Linux with PulseAudio or PipeWire (it also works on WSL2 with WSLg); without a sound server it uses ALSA. macOS 11 or later, on Apple Silicon or Intel (experimental: not yet tested on a real Mac).</td></tr>
   <tr><th>Screen</th><td>At least Full HD (1920 × 1080), with Windows scaling at 100 %, 125 % or 150 %. At 150 % the toolbar buttons show only their icon so that the effects board fits too (see <span class="ui">Hide button labels</span>, in the Window menu). On larger screens (QHD, 4K) the interface uses the extra space; texts that do not fit show a tooltip with the whole text.</td></tr>
   <tr><th>Audio formats</th><td>MP3, WAV, AIFF (<code>.aif</code>, <code>.aiff</code>), AAC (<code>.aac</code>, <code>.m4a</code>), FLAC and Ogg Vorbis (<code>.ogg</code>, <code>.oga</code>).</td></tr>
   <tr><th>Playlists</th><td>Its own format (JSON) and M3U to load playlists from other programs.</td></tr>
@@ -426,6 +426,8 @@
 <p>Run <code>mcp-raptor-player.exe</code> (in the published packages, <code>MCPRaptorPlayer.exe</code>). To have the icon on the taskbar, open it and choose <em>Pin to taskbar</em>. This manual opens from <span class="ui">Help › Manual</span> if the file <code>Raptor_Manual_en.pdf</code> is next to the executable.</p>
 <h3>Linux</h3>
 <p>The <code>recursos/linux/instalar.sh</code> script copies the program to <code>~/.local/bin</code> and installs the launcher and the icon, so it shows up in the applications menu.</p>
+<h3>macOS (experimental)</h3>
+<p>Unzip <code>MCPRaptorPlayer-macos-universal.zip</code> and drag <em>MCP Raptor Player.app</em> to <em>Applications</em>. The app is not notarized by Apple: the first time, macOS refuses to open it. Open it once, close the warning and, in <em>System Settings › Privacy &amp; Security</em>, choose <em>Open Anyway</em> (on macOS 14 or earlier, a right-click on the app › <em>Open</em> is enough). The manuals are inside the app: <span class="ui">Help › Manual</span> finds them on its own. It has not been tested on a real Mac yet; if something does not work, let us know.</p>
 <h3>On opening</h3>
 <p>The window is maximized and restores the last playlist, with the last song marked. If the MCP server cannot use its port, the player works anyway, without remote control.</p>
 <h3>Language</h3>

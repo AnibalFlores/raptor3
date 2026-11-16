@@ -123,9 +123,36 @@ fn codigo_del_sistema() -> Option<String> {
     (largo > 1).then(|| String::from_utf16_lossy(&nombre[..largo as usize - 1]))
 }
 
+/// Idioma de las variables de entorno (Linux, o macOS desde la Terminal).
 #[cfg(not(windows))]
-fn codigo_del_sistema() -> Option<String> {
+fn codigo_del_entorno() -> Option<String> {
     ["LC_ALL", "LC_MESSAGES", "LANG"].into_iter().filter_map(|variable| std::env::var(variable).ok()).find(|valor| !valor.is_empty())
+}
+
+#[cfg(all(not(windows), not(target_os = "macos")))]
+fn codigo_del_sistema() -> Option<String> {
+    codigo_del_entorno()
+}
+
+/// En macOS una app abierta desde el Finder no recibe LANG: el idioma se lee
+/// de la preferencia del sistema (AppleLanguages), el primero de la lista.
+#[cfg(target_os = "macos")]
+fn codigo_del_sistema() -> Option<String> {
+    codigo_del_entorno().or_else(|| {
+        let salida = std::process::Command::new("defaults").args(["read", "-g", "AppleLanguages"]).output().ok()?;
+        primer_idioma_de_apple(&String::from_utf8_lossy(&salida.stdout))
+    })
+}
+
+/// El primer idioma de la lista que imprime `defaults read -g AppleLanguages`:
+/// `( "en-AR", "es-AR" )`, con o sin comillas y en varias lineas.
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
+fn primer_idioma_de_apple(texto: &str) -> Option<String> {
+    texto
+        .split(['(', ')', ',', '\n'])
+        .map(|parte| parte.trim().trim_matches('"').trim())
+        .find(|parte| !parte.is_empty())
+        .map(str::to_string)
 }
 
 #[cfg(test)]
@@ -140,6 +167,15 @@ mod pruebas {
         assert_eq!(Idioma::desde_codigo("EN"), Some(Idioma::Ingles));
         assert_eq!(Idioma::desde_codigo("fr-FR"), None);
         assert_eq!(Idioma::desde_codigo(""), None);
+    }
+
+    #[test]
+    fn lee_el_primer_idioma_de_la_preferencia_de_macos() {
+        let salida = "(\n    \"en-AR\",\n    \"es-AR\"\n)\n";
+        assert_eq!(primer_idioma_de_apple(salida).as_deref(), Some("en-AR"));
+        assert_eq!(primer_idioma_de_apple("(\n    es,\n    en\n)").as_deref(), Some("es"));
+        assert_eq!(primer_idioma_de_apple("").as_deref(), None);
+        assert_eq!(Idioma::desde_codigo(&primer_idioma_de_apple(salida).unwrap()), Some(Idioma::Ingles));
     }
 
     /// La macro generada al compilar lleva cada texto a su traduccion (sin

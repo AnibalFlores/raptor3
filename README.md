@@ -25,9 +25,21 @@ Raptor was born in 1997 (Raptor 1, Delphi on Windows 95) and continued as Raptor
 
 ## Downloads
 
-Builds for Windows and Linux are available under [Releases](https://github.com/AnibalFlores/raptor3/releases). Each one includes the executable, the PDF manual in English and in Spanish, and the licenses.
+Builds for Windows, Linux and macOS are available under [Releases](https://github.com/AnibalFlores/raptor3/releases). Each one includes the program, the PDF manual in English and in Spanish, and the licenses.
 
 The Windows executable is not digitally signed, so SmartScreen may warn the first time you run it: choose *More info › Run anyway*.
+
+### macOS (experimental)
+
+`MCPRaptorPlayer-macos-universal.zip` contains *MCP Raptor Player.app*, a universal app for Apple Silicon and Intel Macs, macOS 11 or later. It has not been tested on a real Mac yet: audio, file dialogs and the interface may have problems. Reports are welcome.
+
+1. Unzip the file and drag *MCP Raptor Player.app* to *Applications*.
+2. The app is not notarized by Apple, so the first time macOS refuses to open it. Open it once, close the warning, and go to *System Settings › Privacy & Security*: at the bottom, choose *Open Anyway* and confirm. On macOS 14 or earlier, a right-click on the app › *Open* is enough.
+3. Alternatively, in the Terminal:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/MCP Raptor Player.app"
+```
 
 ## Building
 
@@ -40,6 +52,14 @@ cargo build --release
 ```
 
 The executable is written to `target/release/mcp-raptor-player.exe`. *Help › Manual* opens the PDF in the interface language (`Raptor_Manual_en.pdf` or `Raptor_Manual_es.pdf`); from the project folder it finds them in `docs/manual`, and to distribute the program, copy them next to the executable.
+
+### macOS
+
+Requires the Xcode command line tools (`xcode-select --install`). To build the universal `.app` and its `.zip` in `target/`:
+
+```bash
+sh recursos/macos/empaquetar.sh
+```
 
 ### Linux (Ubuntu / Debian, also WSL2 with WSLg)
 

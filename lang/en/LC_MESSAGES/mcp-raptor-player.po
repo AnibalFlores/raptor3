@@ -3190,8 +3190,8 @@ msgid "Seleccione una pista para quitarla"
 msgstr "Select a track to remove it"
 
 #: src/interfaz.rs
-msgid "No se encontro {MANUAL}. Copielo junto a MCPRaptorPlayer.exe. Se busco en:\n{}"
-msgstr "{MANUAL} was not found. Copy it next to MCPRaptorPlayer.exe. It was looked for in:\n{}"
+msgid "No se encontro {MANUAL}. Copielo junto al programa. Se busco en:\n{}"
+msgstr "{MANUAL} was not found. Copy it next to the program. It was looked for in:\n{}"
 
 #: src/interfaz.rs
 msgid "No se pudo abrir {}: {error}"

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Datos de la app de macOS. empaquetar.sh reemplaza @VERSION@ por la
+     version de Cargo.toml. -->
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>es</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>es</string>
+        <string>en</string>
+    </array>
+    <key>CFBundleDisplayName</key>
+    <string>MCP Raptor Player</string>
+    <key>CFBundleName</key>
+    <string>MCP Raptor Player</string>
+    <key>CFBundleExecutable</key>
+    <string>mcp-raptor-player</string>
+    <key>CFBundleIdentifier</key>
+    <string>io.github.anibalflores.raptor3</string>
+    <key>CFBundleIconFile</key>
+    <string>raptor</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>@VERSION@</string>
+    <key>CFBundleVersion</key>
+    <string>@VERSION@</string>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.music</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>11.0</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSHumanReadableCopyright</key>
+    <string>Aníbal H. Flores · GNU GPLv3</string>
+</dict>
+</plist>

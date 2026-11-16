@@ -47,4 +47,12 @@ jobs:
         run: cargo test --locked
 
       - name: Compilacion de release
+        if: runner.os != 'macOS'
         run: cargo build --release --locked
+
+      # En macOS se arma la app completa (las dos arquitecturas, el paquete
+      # .app, la firma ad hoc y el .zip), para saber en cada cambio que el
+      # release va a poder generarla.
+      - name: Empaquetado de la app (macOS)
+        if: runner.os == 'macOS'
+        run: sh recursos/macos/empaquetar.sh

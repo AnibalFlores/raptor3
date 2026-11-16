@@ -1085,12 +1085,17 @@ fn manuales_en_orden(idioma: Idioma) -> Vec<String> {
         .collect()
 }
 
-/// Lugares donde se busca un manual: junto al ejecutable, en la carpeta de
-/// trabajo y en la carpeta del proyecto o su docs/manual (versiones de desarrollo).
+/// Lugares donde se busca un manual: junto al ejecutable, en los recursos de
+/// la app de macOS (el ejecutable esta en Contents/MacOS y los PDF en
+/// Contents/Resources), en la carpeta de trabajo y en la carpeta del proyecto
+/// o su docs/manual (versiones de desarrollo).
 fn ubicaciones_del_manual(nombre: &str) -> Vec<PathBuf> {
     let mut ubicaciones = Vec::new();
     if let Some(carpeta) = std::env::current_exe().ok().and_then(|ejecutable| ejecutable.parent().map(Path::to_path_buf)) {
         ubicaciones.push(carpeta.join(nombre));
+        if carpeta.ends_with("Contents/MacOS") {
+            ubicaciones.push(carpeta.with_file_name("Resources").join(nombre));
+        }
     }
     if let Ok(carpeta) = std::env::current_dir() {
         ubicaciones.push(carpeta.join(nombre));
@@ -1114,7 +1119,7 @@ fn abrir_manual(ventana: &slint::Weak<VentanaPrincipal>) {
         let mut dialogo = rfd::MessageDialog::new()
             .set_level(rfd::MessageLevel::Info)
             .set_title("Manual")
-            .set_description(tr!("No se encontro {MANUAL}. Copielo junto a MCPRaptorPlayer.exe. Se busco en:\n{}", buscado.join("\n"), MANUAL = preferido))
+            .set_description(tr!("No se encontro {MANUAL}. Copielo junto al programa. Se busco en:\n{}", buscado.join("\n"), MANUAL = preferido))
             .set_buttons(rfd::MessageButtons::Ok);
         if let Some(ventana) = ventana.upgrade() {
             dialogo = dialogo.set_parent(&ventana.window().window_handle());

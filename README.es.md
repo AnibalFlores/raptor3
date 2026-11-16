@@ -25,9 +25,21 @@ Raptor nació en 1997 (Raptor 1, Delphi sobre Windows 95) y siguió con Raptor I
 
 ## Descargas
 
-Las versiones compiladas para Windows y Linux están en [Releases](https://github.com/AnibalFlores/raptor3/releases). Cada una trae el ejecutable, el manual en PDF en español y en inglés, y las licencias.
+Las versiones compiladas para Windows, Linux y macOS están en [Releases](https://github.com/AnibalFlores/raptor3/releases). Cada una trae el programa, el manual en PDF en español y en inglés, y las licencias.
 
 El ejecutable de Windows no está firmado digitalmente, así que SmartScreen puede advertir la primera vez que se abre: elija *Más información › Ejecutar de todas formas*.
+
+### macOS (experimental)
+
+`MCPRaptorPlayer-macos-universal.zip` trae *MCP Raptor Player.app*, una app universal para Mac con Apple Silicon e Intel, con macOS 11 o posterior. Todavía no se probó en una Mac real: el audio, los diálogos de archivos y la interfaz pueden tener problemas. Los reportes son bienvenidos.
+
+1. Descomprima el archivo y arrastre *MCP Raptor Player.app* a *Aplicaciones*.
+2. La app no está notarizada por Apple, así que la primera vez macOS no la abre. Ábrala una vez, cierre el aviso y vaya a *Configuración del Sistema › Privacidad y seguridad*: abajo, elija *Abrir igualmente* y confirme. En macOS 14 o anterior alcanza con clic derecho en la app › *Abrir*.
+3. Otra forma, en la Terminal:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/MCP Raptor Player.app"
+```
 
 ## Compilar
 
@@ -40,6 +52,14 @@ cargo build --release
 ```
 
 El ejecutable queda en `target/release/mcp-raptor-player.exe`. *Ayuda › Manual* abre el PDF del idioma de la interfaz (`Raptor_Manual_es.pdf` o `Raptor_Manual_en.pdf`); desde la carpeta del proyecto los encuentra en `docs/manual`, y para distribuir el programa, cópielos junto al ejecutable.
+
+### macOS
+
+Requiere las herramientas de línea de comandos de Xcode (`xcode-select --install`). Para armar la `.app` universal y su `.zip` en `target/`:
+
+```bash
+sh recursos/macos/empaquetar.sh
+```
 
 ### Linux (Ubuntu / Debian, también WSL2 con WSLg)
 

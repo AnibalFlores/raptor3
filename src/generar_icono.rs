@@ -1,7 +1,8 @@
-//! Genera el icono de la aplicacion para Windows (recursos/raptor.ico) a
-//! partir del SVG de la ventana principal. El .ico queda en el repositorio y
-//! build.rs lo embebe en el ejecutable; solo hace falta regenerarlo si cambia
-//! el dibujo.
+//! Genera los iconos de la aplicacion a partir del SVG de la ventana
+//! principal: el de Windows (recursos/raptor.ico, que build.rs embebe en el
+//! ejecutable) y el de macOS (recursos/macos/raptor.icns, que va en el
+//! paquete .app). Los dos quedan en el repositorio; solo hace falta
+//! regenerarlos si cambia el dibujo.
 //!
 //! ```text
 //! cargo test generar_icono -- --ignored
@@ -74,6 +75,72 @@ fn ico_de(imagenes: &[(u32, Vec<u8>)]) -> Vec<u8> {
         ico.extend_from_slice(imagen);
     }
     ico
+}
+
+/// Entradas del .icns de macOS: tipo y lado en pixeles, todas en PNG. Las
+/// "@2x" son las de pantallas Retina (ic11 = 16 a doble densidad, etc.).
+const ENTRADAS_DEL_ICNS: [(&[u8; 4], u32); 10] = [
+    (b"icp4", 16),
+    (b"icp5", 32),
+    (b"ic07", 128),
+    (b"ic08", 256),
+    (b"ic09", 512),
+    (b"ic10", 1024),
+    (b"ic11", 32),
+    (b"ic12", 64),
+    (b"ic13", 256),
+    (b"ic14", 512),
+];
+
+/// Dibuja el SVG dejando un margen alrededor, como piden las guias de Apple
+/// para los iconos de aplicacion (el dibujo ocupa el 80 % del lienzo).
+fn dibujar_con_margen(arbol: &usvg::Tree, lado: u32) -> tiny_skia::Pixmap {
+    let mut lienzo = tiny_skia::Pixmap::new(lado, lado).expect("tamano valido");
+    let contenido = lado as f32 * 0.8;
+    let escala = contenido / arbol.size().width().max(arbol.size().height());
+    let margen = (lado as f32 - contenido) / 2.0;
+    let transformacion = tiny_skia::Transform::from_scale(escala, escala).post_translate(margen, margen);
+    resvg::render(arbol, transformacion, &mut lienzo.as_mut());
+    lienzo
+}
+
+/// Arma un .icns: "icns", el largo total y cada entrada con su tipo, su
+/// largo (incluidos los 8 bytes de cabecera) y su PNG. Todo en big endian.
+fn icns_de(entradas: &[(&[u8; 4], Vec<u8>)]) -> Vec<u8> {
+    let largo_total: usize = 8 + entradas.iter().map(|(_, png)| 8 + png.len()).sum::<usize>();
+    let mut icns = Vec::with_capacity(largo_total);
+    icns.extend_from_slice(b"icns");
+    icns.extend_from_slice(&(largo_total as u32).to_be_bytes());
+    for (tipo, png) in entradas {
+        icns.extend_from_slice(*tipo);
+        icns.extend_from_slice(&((8 + png.len()) as u32).to_be_bytes());
+        icns.extend_from_slice(png);
+    }
+    icns
+}
+
+#[test]
+fn el_icns_tiene_su_cabecera_y_cada_entrada() {
+    let icns = icns_de(&[(b"ic07", vec![1, 2, 3]), (b"ic08", vec![4])]);
+    assert_eq!(&icns[..4], b"icns");
+    assert_eq!(u32::from_be_bytes(icns[4..8].try_into().unwrap()) as usize, icns.len());
+    assert_eq!(&icns[8..12], b"ic07");
+    assert_eq!(u32::from_be_bytes(icns[12..16].try_into().unwrap()), 11);
+    assert_eq!(&icns[19..23], b"ic08");
+}
+
+#[test]
+#[ignore = "regenera recursos/macos/raptor.icns; se pide a mano"]
+fn generar_icono_de_macos() {
+    let raiz = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let svg = std::fs::read(raiz.join("ui/iconos/ventana-raptor.svg")).expect("SVG del icono");
+    let arbol = usvg::Tree::from_data(&svg, &usvg::Options::default()).expect("SVG valido");
+    let entradas: Vec<(&[u8; 4], Vec<u8>)> = ENTRADAS_DEL_ICNS
+        .iter()
+        .map(|&(tipo, lado)| (tipo, dibujar_con_margen(&arbol, lado).encode_png().expect("PNG del icono")))
+        .collect();
+    std::fs::create_dir_all(raiz.join("recursos/macos")).expect("carpeta de recursos de macOS");
+    std::fs::write(raiz.join("recursos/macos/raptor.icns"), icns_de(&entradas)).expect("escribir raptor.icns");
 }
 
 #[test]
