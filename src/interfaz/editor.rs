@@ -85,11 +85,17 @@ pub(super) fn cablear(editor: &EditorDePista) {
     editor.on_pedir_onda(|_, _| con_controlador(|c| c.redibujar_onda()));
     editor.on_campo_editado(|marca, texto| con_controlador(|c| c.editar_campo(marca, &texto)));
     editor.on_guardar(|| con_controlador(|c| c.guardar_edicion()));
-    editor.on_buscar_en_musicbrainz(|| con_controlador(|c| {
-        if let Some(archivo) = c.edicion.as_ref().map(|edicion| edicion.pista.archivo().to_path_buf()) {
-            c.completar_desde_musicbrainz(vec![archivo]);
-        }
-    }));
+    // Con el titulo y el artista que muestra el formulario, aunque no se
+    // hayan guardado todavia.
+    let debil = editor.as_weak();
+    editor.on_buscar_en_internet(move || {
+        let (titulo, artista) = debil.upgrade().map(|editor| (editor.get_titulo(), editor.get_artista())).unwrap_or_default();
+        con_controlador(|c| {
+            if let Some(archivo) = c.edicion.as_ref().map(|edicion| edicion.pista.archivo().to_path_buf()) {
+                c.completar_desde_internet_con(archivo, &titulo, &artista);
+            }
+        })
+    });
     editor.on_cancelar(|| con_controlador(|c| c.cerrar_editor()));
     editor.on_zoom(|factor, centro| con_controlador(|c| c.zoom_de_onda(f64::from(factor), f64::from(centro))));
     editor.on_preescuchar(|desde, hasta, efecto_en| {
@@ -327,7 +333,7 @@ impl Controlador {
 
     /// Abre el editor con una pista, este o no en la lista. Fuera de la
     /// lista se muestran los puntos guardados en su ficha.
-    fn abrir_editor_con(&mut self, pista: Pista) -> Result<String, String> {
+    pub(super) fn abrir_editor_con(&mut self, pista: Pista) -> Result<String, String> {
         self.detener_preescucha();
         let puntos = if self.lista.indice_de(&pista).is_some() {
             self.lista.puntos_de(&pista)
@@ -382,6 +388,7 @@ impl Controlador {
         editor.set_album(ficha.album.clone().unwrap_or_default().into());
         editor.set_nota(ficha.nota.clone().unwrap_or_default().into());
         editor.set_anio(ficha.anio.map(|anio| anio.to_string()).unwrap_or_default().into());
+        editor.set_sono(self.sono_para_el_editor(ficha.ultima_reproduccion.as_deref()).into());
         let mut fijables = efectos.clone();
         if let Some(fijado) = ficha.efecto_fijado.as_ref().filter(|fijado| !fijables.contains(fijado)) {
             fijables.push(fijado.clone());
@@ -480,8 +487,7 @@ impl Controlador {
                 self.editor.set_hay_sugerencia_de_overlay(datos.overlay_sugerido.is_some());
                 self.editor.set_sugerencia_de_overlay(texto_de_sugerencia(datos.overlay_sugerido).into());
                 self.editor.set_aviso(
-                    "Arrastre las marcas sobre la onda o escriba los tiempos (segundos o m:ss). \
-                     Clic: mover el cursor. Rueda: zoom."
+                    tr!("Arrastre las marcas sobre la onda o escriba los tiempos (segundos o m:ss). Clic: mover el cursor. Rueda: zoom.")
                         .into(),
                 );
                 self.redibujar_onda();
@@ -687,6 +693,21 @@ impl Controlador {
                 }
             },
         };
+        // Sono solo se guarda si se cambio a mano: si el tema empezo a sonar
+        // con el editor abierto, no se pisa esa reproduccion.
+        let sono_guardado =
+            self.sono_para_el_editor(self.repositorio_de_canciones.buscar(pista.archivo()).and_then(|ficha| ficha.ultima_reproduccion.as_deref()));
+        let ultima_reproduccion = if editor.get_sono().trim() == sono_guardado {
+            None
+        } else {
+            match super::leer_reproduccion(&editor.get_sono(), &self.zona_de_la_localidad(), jiff::Timestamp::now()) {
+                Ok(momento) => Some(momento),
+                Err(error) => {
+                    editor.set_aviso(error.into());
+                    return;
+                }
+            }
+        };
         let tipo = tipo_del_combo(editor.get_tipo());
         if let Err(error) = self.validar_tipo(&pista, tipo) {
             editor.set_aviso(error.into());
@@ -706,6 +727,7 @@ impl Controlador {
             efecto_fijado: Some(efecto_fijado),
             ranking: Some(editor.get_ranking().clamp(0, i32::from(RANKING_MAXIMO)) as u8),
             bpm: Some(bpm),
+            ultima_reproduccion,
         };
         let guardado = if self.lista.indice_de(&pista).is_some() {
             self.definir_puntos_de_mezcla(&pista, puntos)
@@ -723,11 +745,27 @@ impl Controlador {
         self.duraciones_de_efectos.borrow_mut().remove(pista.archivo());
         self.refrescar_botones();
         self.cerrar_editor();
-        let mut estado = format!("Guardado: {}", etiqueta(&self.lista, &pista));
+        let mut estado = tr!("Guardado: {}", etiqueta(&self.lista, &pista));
         if let Some(aviso) = self.aviso_de_ventana_de_la_base(&pista) {
             estado.push_str(&tr!(". Base del anuncio HTH: {aviso}", aviso = aviso));
         }
         self.mostrar_estado(&estado);
+    }
+
+    /// Con otro formato de fecha, el campo Sono del editor abierto pasa al
+    /// nuevo (si no se habia tocado; lo escrito a mano queda como esta).
+    pub(super) fn refrescar_sono_del_editor(&mut self) {
+        let Some(pista) = self.edicion.as_ref().map(|edicion| edicion.pista.clone()) else { return };
+        let momento = self.repositorio_de_canciones.buscar(pista.archivo()).and_then(|ficha| ficha.ultima_reproduccion.clone());
+        self.editor.set_sono(self.sono_para_el_editor(momento.as_deref()).into());
+    }
+
+    /// La ultima reproduccion como se muestra y se escribe en el editor, en
+    /// la hora de la localidad del HTH; vacio si nunca sono.
+    fn sono_para_el_editor(&self, momento: Option<&str>) -> String {
+        momento
+            .map(|momento| super::texto_de_reproduccion(momento, &self.zona_de_la_localidad(), &super::formato_de_la_reproduccion()))
+            .unwrap_or_default()
     }
 
     /// Al elegir un tipo que no es Tema (comercial, anuncio, publicidad,
@@ -791,7 +829,7 @@ impl Controlador {
         let _ = self.editor.hide();
     }
 
-    fn al_cerrarse_el_editor(&mut self) {
+    pub(super) fn al_cerrarse_el_editor(&mut self) {
         self.detener_preescucha();
         // No se deja ocupada la otra salida (ni despierto un auricular
         // inalambrico) con el editor cerrado.
@@ -1010,12 +1048,12 @@ impl Controlador {
         let de_prueba = || edicion.efectos.get(self.editor.get_efecto_de_prueba().max(0) as usize);
         let efecto = (efecto_en >= 0.0).then(|| fijado.or_else(de_prueba).cloned()).flatten().map(|archivo| (efecto_en, archivo));
         let pista = edicion.pista.clone();
-        // Suena con la nivelacion de la lista y el volumen propio de la
-        // preescucha.
+        // Suena con la ganancia de la lista (nivelacion, o el maximo volumen
+        // de un aviso) y el volumen propio de la preescucha.
+        let a_volumen_maximo = self.repositorio_de_canciones.tipo_de(pista.archivo()).a_volumen_maximo();
         let nivelacion = self
             .datos_de_mezcla(&pista)
-            .filter(|_| self.nivelar_volumen())
-            .map_or(1.0, |datos| datos.ganancia_de_nivelacion(self.objetivo_de_sonoridad()));
+            .map_or(1.0, |datos| datos.ganancia(self.objetivo_de_sonoridad(), self.nivelar_volumen(), a_volumen_maximo));
         let volumen = self.volumen_de_preescucha() * nivelacion;
         let duracion = self.duracion_de(&pista);
         let motor = self.preescucha.motor();

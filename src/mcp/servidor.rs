@@ -18,8 +18,13 @@ pub const VARIABLE_DE_PUERTO: &str = "RAPTOR_MCP_PUERTO";
 pub const PUERTO_POR_DEFECTO: u16 = 8765;
 
 const RUTA: &str = "/mcp";
-const VERSION_PROTOCOLO: &str = "2025-06-18";
-const VERSIONES_SOPORTADAS: &[&str] = &["2025-06-18", "2025-03-26", "2024-11-05"];
+const VERSION_PROTOCOLO: &str = "2025-11-25";
+const VERSIONES_SOPORTADAS: &[&str] = &["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
+/// Icono del conector (la R de Raptor), que los clientes muestran junto a su
+/// nombre: PNG de 64 px (`cargo test generar_icono_del_mcp -- --ignored`) y
+/// el SVG de la ventana.
+const ICONO_PNG: &[u8] = include_bytes!("../../recursos/raptor-mcp.png");
+const ICONO_SVG: &[u8] = include_bytes!("../../ui/iconos/ventana-raptor.svg");
 const HOSTS_LOCALES: &[&str] = &["localhost", "127.0.0.1", "[::1]"];
 
 const METODO_NO_ENCONTRADO: i64 = -32601;
@@ -149,10 +154,42 @@ fn inicializar(parametros: &Map<String, Value>) -> Value {
     json!({
         "protocolVersion": version,
         "capabilities": { "tools": {} },
-        "serverInfo": { "name": "mcp-raptor-player", "version": env!("CARGO_PKG_VERSION") },
+        "serverInfo": {
+            "name": "mcp-raptor-player",
+            "title": "MCP Raptor Player",
+            "version": env!("CARGO_PKG_VERSION"),
+            "websiteUrl": env!("CARGO_PKG_REPOSITORY"),
+            "icons": iconos(),
+        },
         "instructions": "Controla la lista de reproduccion del MCP Raptor Player abierto en este equipo. \
                          Usa listar_pistas para ver la lista antes de quitar pistas.",
     })
+}
+
+/// Los iconos del servidor, como data URI (no dependen de internet).
+fn iconos() -> Value {
+    json!([
+        { "src": format!("data:image/png;base64,{}", base64(ICONO_PNG)), "mimeType": "image/png", "sizes": ["64x64"] },
+        { "src": format!("data:image/svg+xml;base64,{}", base64(ICONO_SVG)), "mimeType": "image/svg+xml", "sizes": ["any"] },
+    ])
+}
+
+/// Base64 estandar (RFC 4648, con relleno).
+fn base64(datos: &[u8]) -> String {
+    const ALFABETO: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut texto = String::with_capacity(datos.len().div_ceil(3) * 4);
+    for grupo in datos.chunks(3) {
+        let bytes = [grupo[0], grupo.get(1).copied().unwrap_or(0), grupo.get(2).copied().unwrap_or(0)];
+        let valor = u32::from(bytes[0]) << 16 | u32::from(bytes[1]) << 8 | u32::from(bytes[2]);
+        for posicion in 0..4 {
+            if posicion <= grupo.len() {
+                texto.push(ALFABETO[(valor >> (18 - 6 * posicion) & 0x3f) as usize] as char);
+            } else {
+                texto.push('=');
+            }
+        }
+    }
+    texto
 }
 
 fn llamar_herramienta(id: Value, parametros: &Map<String, Value>) -> Value {
@@ -203,6 +240,22 @@ mod pruebas {
         .unwrap();
         assert_eq!(respuesta["result"]["protocolVersion"], "2025-03-26");
         assert_eq!(respuesta["result"]["serverInfo"]["name"], "mcp-raptor-player");
+        let icono = respuesta["result"]["serverInfo"]["icons"][0]["src"].as_str().unwrap();
+        assert!(icono.starts_with("data:image/png;base64,iVBORw0KGgo"), "un PNG en base64");
+        let nueva = procesar(r#"{"jsonrpc":"2.0","id":2,"method":"initialize","params":{"protocolVersion":"2025-11-25"}}"#).unwrap();
+        assert_eq!(nueva["result"]["protocolVersion"], "2025-11-25");
+        let otra = procesar(r#"{"jsonrpc":"2.0","id":3,"method":"initialize","params":{"protocolVersion":"1999-01-01"}}"#).unwrap();
+        assert_eq!(otra["result"]["protocolVersion"], VERSION_PROTOCOLO, "una desconocida recibe la mas nueva");
+    }
+
+    #[test]
+    fn codifica_en_base64() {
+        assert_eq!(base64(b""), "");
+        assert_eq!(base64(b"f"), "Zg==");
+        assert_eq!(base64(b"fo"), "Zm8=");
+        assert_eq!(base64(b"foo"), "Zm9v");
+        assert_eq!(base64(b"foobar"), "Zm9vYmFy");
+        assert_eq!(base64(&[0xff, 0xfe, 0x00]), "//4A");
     }
 
     #[test]

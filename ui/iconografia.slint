@@ -22,6 +22,19 @@ export global Iconografia {
     out property <color> color-solapamiento: #7950f2;
     out property <color> color-mezcla: #ff6b6b;
 
+    // Lo reproducido en la barra de progreso y en la onda: cian propio, no
+    // el acento del sistema (que ya se usa en la barra de la ventana).
+    out property <color> color-de-avance: #22d3ee;
+    // Naranja de la R de Raptor: la carátula por defecto de un tema.
+    out property <color> color-de-la-marca: #fd7e14;
+
+    // Color de la carátula por defecto segun el tipo (la clave fija: Tema,
+    // Comercial... HTH, Bloque fijo); un tema o lo que no tiene tipo lleva
+    // el naranja de la marca.
+    public pure function color-de-caratula(tipo: string) -> color {
+        return self.color-de-tipo(tipo, self.color-de-la-marca);
+    }
+
     // Color segun el numero de tipo de la lista: 1 comercial, 2 anuncio,
     // 3 publicidad, 4 efecto, 5 seco, 6 anuncio HTH y 7 podcast.
     public pure function color-de-reservado(reservado: int) -> color {

@@ -2,6 +2,8 @@
 
 [Español](README.es.md) · **English**
 
+**Version 1.1.0** · [Release notes](docs/release-notes-v1.1.0.md)
+
 **MCP Radio Automation Software.** A desktop player for radio automation, written in Rust with a [Slint](https://slint.dev) user interface and a built-in **MCP server** so an AI assistant can operate it.
 
 Raptor was born in 1997 (Raptor 1, Delphi on Windows 95) and continued as Raptor II until 2007. Raptor 3 is a complete rewrite.
@@ -13,7 +15,7 @@ Raptor was born in 1997 (Raptor 1, Delphi on Windows 95) and continued as Raptor
 - **Effects board** organized in pages, with smart music ducking (*Separation* setting).
 - **Time, temperature and humidity announcement (HTH)**: built from pre-recorded voice clips with weather data from Open-Meteo, played over a music bed.
 - **Scheduled commercial breaks**, advertisers, orders, daily log and a monthly airplay record (CSV) with proof-of-broadcast certificates.
-- **Catalog** with search, item types (Song, Edited song, Podcast, Commercial, Effect, Dry, HTH…) and metadata updates from file tags or from MusicBrainz.
+- **Catalog** with search, item types (Song, Edited song, Podcast, Commercial, Effect, Dry, HTH…), metadata updates from file tags or from the internet (MusicBrainz, Deezer and iTunes) and cover art in the details panel.
 - **Track editor** with waveform, zoom and keyboard shortcuts.
 - User interface in **Spanish and English**.
 - **MCP server** (Streamable HTTP at `http://127.0.0.1:8765/mcp`): an AI can build the playlist, play, mix, adjust the controls, fire effects and schedule breaks.

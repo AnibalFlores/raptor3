@@ -61,7 +61,7 @@ msgstr "Title"
 msgid "Artista"
 msgstr "Artist"
 
-#: ui/actualizacion.slint ui/editor.slint
+#: ui/actualizacion.slint ui/buscador.slint ui/editor.slint ui/ventana.slint
 msgid "Álbum"
 msgstr "Album"
 
@@ -96,6 +96,14 @@ msgstr "Proposed"
 #: ui/actualizacion.slint
 msgid "Lo que trae la fuente; se aplica si está marcado"
 msgstr "What the source brings; it is applied if checked"
+
+#: ui/actualizacion.slint
+msgid "Fuente"
+msgstr "Source"
+
+#: ui/actualizacion.slint
+msgid "De dónde salió el dato: MusicBrainz, Deezer o iTunes"
+msgstr "Where the data came from: MusicBrainz, Deezer or iTunes"
 
 #: ui/actualizacion.slint ui/editor.slint
 msgid "Nota"
@@ -369,13 +377,25 @@ msgstr "Search the catalog - MCP Raptor Player"
 msgid "Palabras, o prefijos como artista:sanz ranking:>=4 sonado:>30d (pase el puntero para ver todos)"
 msgstr "Words, or prefixes like artist:sanz rating:>=4 played:>30d (hover to see them all)"
 
+#: ui/buscador.slint ui/ventana.slint
+msgid "Sin carátula"
+msgstr "No cover art"
+
+#: ui/buscador.slint ui/editor.slint ui/ventana.slint
+msgid "BPM"
+msgstr "BPM"
+
 #: ui/buscador.slint
+msgid "Tempo: el fijado en el editor o el que estimó el análisis (vacío si el tema todavía no se analizó). Se busca con bpm:, por ejemplo bpm:120..128"
+msgstr "Tempo: the one set in the editor or the one estimated by the analysis (empty if the song has not been analyzed yet). Search it with bpm:, for example bpm:120..128"
+
+#: ui/buscador.slint ui/editor.slint ui/ventana.slint
 msgid "Sonó"
 msgstr "Played"
 
 #: ui/buscador.slint
-msgid "Día de la última reproducción (vacío: nunca sonó). Se busca con sonado:, por ejemplo sonado:>30d"
-msgstr "Day of the last playback (empty: never played). Search it with played:, for example played:>30d"
+msgid "Fecha y hora en que empezó a sonar por última vez, en la hora de la localidad del HTH (vacío: nunca sonó). Se busca con sonado:, por ejemplo sonado:>30d"
+msgstr "Date and time it last started playing, in the TTH locality's time (empty: never played). Search with sonado:, for example sonado:>30d"
 
 #: ui/buscador.slint
 msgid "En lista"
@@ -384,6 +404,26 @@ msgstr "In playlist"
 #: ui/buscador.slint
 msgid "Si el tema ya está en la lista de reproducción, o si falta su archivo"
 msgstr "Whether the song is already in the playlist, or its file is missing"
+
+#: ui/buscador.slint ui/ventana.slint
+msgid "Editar..."
+msgstr "Edit..."
+
+#: ui/buscador.slint ui/ventana.slint
+msgid "Actualizar datos"
+msgstr "Update data"
+
+#: ui/buscador.slint ui/ventana.slint
+msgid "Completar desde internet..."
+msgstr "Complete from the internet..."
+
+#: ui/buscador.slint ui/ventana.slint
+msgid "Releer las etiquetas..."
+msgstr "Reread the tags..."
+
+#: ui/buscador.slint ui/ventana.slint
+msgid "Descatalogar..."
+msgstr "Remove from the catalog..."
 
 #: src/interfaz/avisos.rs ui/buscador.slint
 msgid "sin archivo"
@@ -398,8 +438,8 @@ msgid "El catalogo esta vacio: los temas entran al agregarlos a la lista."
 msgstr "The catalog is empty: songs enter it when you add them to the playlist."
 
 #: ui/buscador.slint
-msgid "Clic, Ctrl+clic o Mayus+clic para elegir; doble clic o Enter inserta. Los que ya estan en la lista no se repiten."
-msgstr "Click, Ctrl+click or Shift+click to choose; double-click or Enter inserts. Songs already in the playlist are not repeated."
+msgid "Clic, Ctrl+clic o Mayus+clic para elegir; doble clic o Enter inserta; clic derecho: editar, actualizar o descatalogar. Los que ya estan en la lista no se repiten."
+msgstr "Click, Ctrl+click or Shift+click to choose; double-click or Enter inserts; right-click: edit, update or remove from the catalog. Songs already in the playlist are not repeated."
 
 #: ui/buscador.slint
 msgid "Insertar despues de la seleccionada ({})"
@@ -413,7 +453,7 @@ msgstr "Inserts the chosen songs in the playlist, after the track selected in th
 msgid "Agregar al final"
 msgstr "Add at the end"
 
-#: ui/buscador.slint
+#: src/interfaz/buscador.rs ui/buscador.slint
 msgid "Releer etiquetas"
 msgstr "Reread tags"
 
@@ -422,12 +462,20 @@ msgid "Vuelve a leer las etiquetas de los archivos elegidos (o de todos los resu
 msgstr "Reads the tags of the chosen files again (or of all the results, if none are chosen), for example after correcting them with Picard, and shows what would change so you can choose"
 
 #: ui/buscador.slint ui/editor.slint
-msgid "MusicBrainz"
-msgstr "MusicBrainz"
+msgid "Internet"
+msgstr "Internet"
 
 #: ui/buscador.slint
-msgid "Busca los temas elegidos (o todos los resultados, si no hay elegidos) en MusicBrainz y propone completar album, año, genero, titulo y artista"
-msgstr "Looks up the chosen songs (or all the results, if none are chosen) in MusicBrainz and proposes completing album, year, genre, title and artist"
+msgid "Busca los temas elegidos (o todos los resultados, si no hay elegidos) en internet (MusicBrainz, y lo que falte en Deezer e iTunes) y propone completar album, año, genero, titulo y artista"
+msgstr "Searches the internet for the selected songs (or all the results, if none is selected) — MusicBrainz, and whatever is missing on Deezer and iTunes — and proposes completing album, year, genre, title and artist"
+
+#: src/interfaz/buscador.rs ui/buscador.slint
+msgid "Carátulas"
+msgstr "Cover art"
+
+#: ui/buscador.slint
+msgid "Busca la carátula de los temas elegidos (o de todos los resultados, si no hay elegidos): los que tienen la suya, en el archivo o en su carpeta, no se consultan; las que faltan se descargan de internet (Deezer, iTunes y MusicBrainz) y quedan guardadas"
+msgstr "Looks for the cover art of the selected songs (or of all the results, if none is selected): those that have their own, in the file or in their folder, are not looked up; the missing ones are downloaded from the internet (Deezer, iTunes and MusicBrainz) and kept"
 
 #: ui/editor.slint ui/ventana.slint
 msgid "Manual"
@@ -549,7 +597,7 @@ msgstr "{} s window"
 msgid "Sin ventana: los efectos suenan enseguida"
 msgstr "No window: effects play right away"
 
-#: ui/editor.slint
+#: ui/editor.slint ui/ventana.slint
 msgid "Efecto fijado"
 msgstr "Pinned effect"
 
@@ -638,12 +686,8 @@ msgid "Estilo musical, libre: no cambia como suena el tema (eso lo decide el Tip
 msgstr "Musical style, free text: it does not change how the song plays (the Type decides that). The list offers every genre already in the catalog."
 
 #: ui/editor.slint ui/ventana.slint
-msgid "Ranking"
-msgstr "Rating"
-
-#: ui/editor.slint ui/ventana.slint
-msgid "BPM"
-msgstr "BPM"
+msgid "Rate"
+msgstr "Rate"
 
 #: ui/editor.slint
 msgid "Automático"
@@ -666,8 +710,16 @@ msgid "Divide el BPM a la mitad, si se detecto al doble del tempo real."
 msgstr "Halves the BPM, if it was detected at twice the real tempo."
 
 #: ui/editor.slint
-msgid "Busca el tema en MusicBrainz por titulo y artista y muestra los datos que propone (album, año, genero) para elegirlos. Se aplican al catalogo y se ven aqui."
-msgstr "Looks up the song in MusicBrainz by title and artist and shows the data it proposes (album, year, genre) so you can choose. They are applied to the catalog and shown here."
+msgid "Nunca"
+msgstr "Never"
+
+#: ui/editor.slint
+msgid "Fecha y hora en que empezó a sonar por última vez ({} hh:mm:ss, en la hora de la localidad del HTH). Vacío: nunca sonó. Se actualiza sola cada vez que el tema empieza a sonar."
+msgstr "Date and time it last started playing ({} hh:mm:ss, in the TTH locality's time). Empty: never played. It updates by itself every time the song starts playing."
+
+#: ui/editor.slint
+msgid "Busca el tema en internet por titulo y artista (MusicBrainz, y lo que falte en Deezer e iTunes) y muestra los datos que propone (album, año, genero) para elegirlos. Se aplican al catalogo y se ven aqui."
+msgstr "Searches the internet for the song by title and artist (MusicBrainz, and whatever is missing on Deezer and iTunes) and shows the proposed data (album, year, genre) to choose from. They are applied to the catalog and shown here."
 
 #: ui/editor.slint
 msgid "Observación libre: se ve al pasar el puntero por el título en la lista o por el botón de efecto"
@@ -1162,12 +1214,48 @@ msgid "Vaciar"
 msgstr "Clear"
 
 #: ui/ventana.slint
-msgid "Editar..."
-msgstr "Edit..."
-
-#: ui/ventana.slint
 msgid "Insertar en la playlist"
 msgstr "Insert in the playlist"
+
+#: ui/ventana.slint
+msgid "Nombre de la hoja de efectos"
+msgstr "Effects page name"
+
+#: ui/ventana.slint
+msgid "Cambiar el nombre..."
+msgstr "Rename..."
+
+#: ui/ventana.slint
+msgid "Volver a «{}»"
+msgstr "Back to “{}”"
+
+#: ui/ventana.slint
+msgid "Clic derecho o doble clic para cambiar el nombre de la hoja"
+msgstr "Right-click or double-click to rename the page"
+
+#: src/interfaz.rs ui/ventana.slint
+msgid "Modo AL AIRE"
+msgstr "ON AIR mode"
+
+#: ui/ventana.slint
+msgid "Modo EDITOR"
+msgstr "EDITOR mode"
+
+#: src/interfaz.rs ui/ventana.slint
+msgid "AL AIRE"
+msgstr "ON AIR"
+
+#: src/interfaz.rs ui/ventana.slint
+msgid "EDITOR"
+msgstr "EDITOR"
+
+#: ui/ventana.slint
+msgid "Modo AL AIRE: no se adelanta dentro del tema, no se vuelve a la anterior ni se salta a otra pista, no se mezcla, ordena, limpia ni reemplaza la lista. Detener y Siguiente usan los segundos del fader, y los temas se agregan o quitan de a uno. Clic: preguntar si pasar a modo EDITOR."
+msgstr "ON AIR mode: no seeking within the song, no going back to the previous one or jumping to another track, and the playlist is not shuffled, sorted, cleared or replaced. Stop and Next use the fader seconds, and songs are added or removed one at a time. Click: ask whether to switch to EDITOR mode."
+
+#: ui/ventana.slint
+msgid "Modo EDITOR: todos los comandos habilitados. Clic: pasar a modo AL AIRE, que protege la secuencia que sale al aire."
+msgstr "EDITOR mode: all commands enabled. Click: switch to ON AIR mode, which protects the sequence going on air."
 
 #: src/interfaz.rs ui/ventana.slint
 msgid "Lista sin nombre"
@@ -1258,8 +1346,24 @@ msgid "Ocultar textos de los botones: No"
 msgstr "Hide button labels: No"
 
 #: ui/ventana.slint
+msgid "Buscar carátulas en internet: Sí"
+msgstr "Search the internet for cover art: Yes"
+
+#: ui/ventana.slint
+msgid "Buscar carátulas en internet: No"
+msgstr "Search the internet for cover art: No"
+
+#: ui/ventana.slint
+msgid "Formato de fecha"
+msgstr "Date format"
+
+#: ui/ventana.slint
 msgid "Ayuda"
 msgstr "Help"
+
+#: ui/ventana.slint
+msgid "Carpeta"
+msgstr "Folder"
 
 #: ui/ventana.slint
 msgid "Carpeta: {}"
@@ -1274,8 +1378,12 @@ msgid "Tipo: {} · Género: {}"
 msgstr "Type: {} · Genre: {}"
 
 #: ui/ventana.slint
-msgid "Ranking: {}"
-msgstr "Rating: {}"
+msgid "Rate: {}"
+msgstr "Rate: {}"
+
+#: ui/ventana.slint
+msgid "Última reproducción"
+msgstr "Last played"
 
 #: ui/ventana.slint
 msgid "Última reproducción: {}"
@@ -1306,6 +1414,10 @@ msgid "Ver la forma de onda del tema: barras de nivel; con el tema que suena, un
 msgstr "Show the song waveform as level bars; with the playing song, a click jumps to that point"
 
 #: ui/ventana.slint
+msgid "Al aire no se cambia la localidad (pase a modo Editor)"
+msgstr "On air the locality can't be changed (switch to Editor mode)"
+
+#: ui/ventana.slint
 msgid "Clic: cambiar la localidad del clima"
 msgstr "Click: change the weather location"
 
@@ -1314,36 +1426,8 @@ msgid "Abrir la pauta de tandas (Ctrl+T)"
 msgstr "Open the break schedule (Ctrl+T)"
 
 #: ui/ventana.slint
-msgid "Desplazar"
-msgstr "Scroll"
-
-#: ui/ventana.slint
-msgid "Mantiene la pista que suena en el centro de la lista: la desplaza en cada cambio de tema."
-msgstr "Keeps the playing track in the middle of the playlist: it scrolls on every song change."
-
-#: ui/ventana.slint
-msgid "Repetir lista"
-msgstr "Repeat playlist"
-
-#: ui/ventana.slint
-msgid "Crossfade inteligente"
-msgstr "Smart crossfade"
-
-#: ui/ventana.slint
-msgid "Nivelar volumen"
-msgstr "Level volume"
-
-#: ui/ventana.slint
-msgid "-14 LUFS"
-msgstr "-14 LUFS"
-
-#: ui/ventana.slint
-msgid "-11 LUFS"
-msgstr "-11 LUFS"
-
-#: ui/ventana.slint
-msgid "-8 LUFS"
-msgstr "-8 LUFS"
+msgid "{}\nSiguiente: {}"
+msgstr "{}\nNext: {}"
 
 #: ui/ventana.slint
 msgid "Ventana de overlay: naranja si es sugerida, rosa si la fijo usted. Outro (desde donde el tema empieza a bajar): celeste si es sugerida, verde si la fijo usted. Violeta: donde el overlay se solapa con la outro. Recuadro rojo: la mezcla efectiva con la siguiente (con el crossfade inteligente dura de 2 a 12 s). Arrastre hasta una marca para probarla."
@@ -1366,8 +1450,8 @@ msgid "Ocultar el volumen, el fader y las opciones de reproducción"
 msgstr "Hide the volume, the fader and the playback options"
 
 #: ui/ventana.slint
-msgid "Mostrar el volumen, el fader y las opciones de reproducción (desplazar, repetir, crossfade inteligente y nivelar volumen)"
-msgstr "Show the volume, the fader and the playback options (scroll, repeat, smart crossfade and level volume)"
+msgid "Mostrar el volumen, el fader y las opciones de reproducción (desplazar, repetir, SmartMix y autonivel)"
+msgstr "Show the volume, the fader and the playback options (scroll, repeat, SmartMix and auto-level)"
 
 #: ui/ventana.slint
 msgid "Volumen"
@@ -1384,6 +1468,50 @@ msgstr "Fader"
 #: ui/ventana.slint
 msgid "Segundos de mezcla al pasar con Siguiente y de fundido al Detener; 0 los desactiva. Doble clic: 5 s"
 msgstr "Seconds of mix when skipping with Next and of fade-out when Stopping; 0 turns them off. Double-click: 5 s"
+
+#: ui/ventana.slint
+msgid "Desplazar"
+msgstr "Scroll"
+
+#: ui/ventana.slint
+msgid "Mantiene la pista que suena en el centro de la lista: la desplaza en cada cambio de tema."
+msgstr "Keeps the playing track in the middle of the playlist: it scrolls on every song change."
+
+#: ui/ventana.slint
+msgid "Repetir"
+msgstr "Repeat"
+
+#: ui/ventana.slint
+msgid "Al terminar la lista, vuelve a empezar desde el principio."
+msgstr "When the playlist ends, it starts again from the beginning."
+
+#: ui/ventana.slint
+msgid "SmartMix"
+msgstr "SmartMix"
+
+#: ui/ventana.slint
+msgid "La mezcla entre temas se decide con el análisis de los dos: sin silencios muertos, con curvas de potencia y la duración según cómo termina uno y empieza el otro."
+msgstr "The mix between songs is decided with the analysis of both: no dead silences, with power curves and a length that depends on how one ends and the other starts."
+
+#: ui/ventana.slint
+msgid "Autonivel"
+msgstr "Auto-level"
+
+#: ui/ventana.slint
+msgid "Lleva cada tema a la misma sonoridad, la del objetivo LUFS elegido al lado."
+msgstr "Brings every song to the same loudness, the LUFS target chosen next to it."
+
+#: ui/ventana.slint
+msgid "-14 LUFS"
+msgstr "-14 LUFS"
+
+#: ui/ventana.slint
+msgid "-11 LUFS"
+msgstr "-11 LUFS"
+
+#: ui/ventana.slint
+msgid "-8 LUFS"
+msgstr "-8 LUFS"
 
 #: ui/ventana.slint
 msgid "Agregar"
@@ -1490,6 +1618,10 @@ msgid "Duración del tema en minutos, segundos y decimas. Doble clic: abrir el e
 msgstr "Song length in minutes, seconds and tenths. Double-click: open the editor."
 
 #: ui/ventana.slint
+msgid "Fecha y hora en que el tema empezó a sonar por última vez (vacío: nunca sonó). En los que siguen al que suena, en cursiva, la hora estimada en que va a empezar. Al pasar el puntero se ve cuánto hace o cuánto falta. Doble clic: abrir el editor."
+msgstr "Date and time the song last started playing (empty: never played). For the songs after the one playing, in italics, the estimated time it will start. Hover to see how long ago or how long to go. Double-click: open the editor."
+
+#: ui/ventana.slint
 msgid "Que es cada elemento: Tema, Tema editado, Comercial, Anuncio, Publicidad, Podcast, Efecto o Seco (vacio: sin clasificar, suena como un Tema). Se fija en el editor. Todo lo que no es un Tema (o Tema editado) suena sin mezcla, puede repetirse y lleva una franja de color; comercial, anuncio y publicidad ademas se pintan en verde azulado. Para que Mezclar no desarme una tanda, enciérrela en un bloque fijo. Doble clic: abrir el editor."
 msgstr "What each item is: Song, Edited song, Commercial, Announcement, Advertising, Podcast, Effect or Dry voice (empty: unclassified, plays like a Song). It is set in the editor. Everything that is not a Song (or Edited song) plays without mixing, can repeat and has a color stripe; commercials, announcements and advertising are also painted teal. So that Shuffle does not break up a break, enclose it in a locked block. Double-click: open the editor."
 
@@ -1502,8 +1634,8 @@ msgid "Estilo musical del tema, leido de sus etiquetas o corregido en el editor;
 msgstr "Musical style of the song, read from its tags or corrected in the editor; it does not change how it plays (the Type decides that). Hover to see it in full. Double-click: open the editor."
 
 #: ui/ventana.slint
-msgid "Año de edición del tema, leído de sus etiquetas, corregido en el editor o completado desde MusicBrainz. Se busca con anio:, por ejemplo anio:1990..1999. Doble clic: abrir el editor."
-msgstr "Release year of the song, read from its tags, corrected in the editor or completed from MusicBrainz. Search it with year:, for example year:1990..1999. Double-click: open the editor."
+msgid "Año de edición del tema, leído de sus etiquetas, corregido en el editor o completado desde internet. Se busca con anio:, por ejemplo anio:1990..1999. Doble clic: abrir el editor."
+msgstr "Release year of the song, read from its tags, corrected in the editor or completed from the internet. Search it with year:, for example year:1990..1999. Double-click: open the editor."
 
 #: ui/ventana.slint
 msgid "Tempo del tema en golpes por minuto, estimado en el analisis. Con el boton BPM se ordena la lista por este valor. Doble clic: abrir el editor."
@@ -1532,22 +1664,6 @@ msgstr "Edit track..."
 #: src/interfaz.rs ui/ventana.slint
 msgid "Quitar de la lista"
 msgstr "Remove from the playlist"
-
-#: ui/ventana.slint
-msgid "Actualizar datos"
-msgstr "Update data"
-
-#: ui/ventana.slint
-msgid "Releer las etiquetas del archivo..."
-msgstr "Reread the file tags..."
-
-#: ui/ventana.slint
-msgid "Completar desde MusicBrainz..."
-msgstr "Complete from MusicBrainz..."
-
-#: ui/ventana.slint
-msgid "Descatalogar..."
-msgstr "Remove from the catalog..."
 
 #: ui/ventana.slint
 msgid "Base del anuncio HTH"
@@ -1594,6 +1710,14 @@ msgid "Modo libre"
 msgstr "Free mode"
 
 #: ui/ventana.slint
+msgid "Modo libre activo: el efecto suena apenas se pulsa. Clic: pasar a modo trabado (el efecto espera la ventana de overlay del tema)."
+msgstr "Free mode on: the effect plays as soon as it is pressed. Click: switch to locked mode (the effect waits for the song's overlay window)."
+
+#: ui/ventana.slint
+msgid "Modo trabado: el efecto espera la ventana de overlay del tema. Clic: pasar a modo libre (suena apenas se pulsa)."
+msgstr "Locked mode: the effect waits for the song's overlay window. Click: switch to free mode (it plays as soon as it is pressed)."
+
+#: ui/ventana.slint
 msgid "Ocultar los ajustes de los efectos"
 msgstr "Hide the effect settings"
 
@@ -1604,6 +1728,10 @@ msgstr "Show the effect settings: duck the music, smart adjustment, effect volum
 #: ui/ventana.slint
 msgid "Bajar la música durante el efecto"
 msgstr "Duck the music during the effect"
+
+#: ui/ventana.slint
+msgid "Mientras suena un efecto, la música baja al nivel elegido abajo y después vuelve."
+msgstr "While an effect plays, the music goes down to the level chosen below and then comes back."
 
 #: ui/ventana.slint
 msgid "Ajuste inteligente"
@@ -1826,8 +1954,8 @@ msgid "No se entiende «{valor}» para {}; por ejemplo: {ejemplo}"
 msgstr "«{valor}» is not understood for {}; for example: {ejemplo}"
 
 #: src/dominio/consulta.rs
-msgid "No se entiende «{valor}» para sonado; por ejemplo: sonado:hoy, sonado:7d, sonado:>30d, sonado:2026-11-03, sonado:<01/10/2026 o sonado:nunca"
-msgstr "«{valor}» is not understood for played; for example: played:today, played:7d, played:>30d, played:2026-11-03, played:<01/10/2026 or played:never"
+msgid "No se entiende «{valor}» para sonado; por ejemplo: sonado:hoy, sonado:7d, sonado:>30d, sonado:2026-11-03, sonado:<{ejemplo} o sonado:nunca"
+msgstr "«{valor}» is not understood for played; for example: played:today, played:7d, played:>30d, played:2026-11-03, played:<{ejemplo} or played:never"
 
 #: src/dominio/ordenes.rs
 msgid "cada {} h"
@@ -2005,11 +2133,11 @@ msgstr "Could not read {ruta}: {error}"
 msgid "No se pudo crear la ventana de actualizacion de datos: {error}"
 msgstr "Could not create the data update window: {error}"
 
-#: src/interfaz/actualizacion.rs
+#: src/interfaz/actualizacion.rs src/interfaz/capturas.rs
 msgid "corregido a mano"
 msgstr "corrected by hand"
 
-#: src/interfaz/actualizacion.rs
+#: src/interfaz/actualizacion.rs src/interfaz/capturas.rs
 msgid "ficha anterior: no registra correcciones"
 msgstr "older record: corrections not tracked"
 
@@ -2017,7 +2145,7 @@ msgstr "older record: corrections not tracked"
 msgid "No hay archivos para releer (los marcadores, los anuncios HTH y los archivos que faltan no tienen etiquetas)."
 msgstr "There are no files to reread (markers, TTH announcements and missing files have no tags)."
 
-#: src/interfaz/actualizacion.rs
+#: src/interfaz/actualizacion.rs src/interfaz/capturas.rs
 msgid "Etiquetas de los archivos: lo que escribio en ellos otro programa (Picard, Mp3tag...). Los datos que usted corrigio a mano no se marcan solos."
 msgstr "File tags: what another program (Picard, Mp3tag...) wrote in them. Data you corrected by hand is not checked automatically."
 
@@ -2026,12 +2154,12 @@ msgid "No se pudo iniciar la lectura: {error}"
 msgstr "Could not start reading: {error}"
 
 #: src/interfaz/actualizacion.rs
-msgid "No hay temas para buscar en MusicBrainz (los avisos, efectos, marcadores y anuncios HTH no se buscan)."
-msgstr "There are no songs to look up in MusicBrainz (spots, effects, markers and TTH announcements are not looked up)."
+msgid "No hay temas para buscar en internet (los avisos, efectos, marcadores y anuncios HTH no se buscan)."
+msgstr "There are no songs to search on the internet (spots, effects, markers and TTH announcements are not searched)."
 
-#: src/interfaz/actualizacion.rs
-msgid "MusicBrainz (musicbrainz.org), la base libre de datos musicales que usa Picard: se busca cada tema por titulo y artista, de a uno por segundo. Solo se marcan los datos que faltan; los demas, revíselos."
-msgstr "MusicBrainz (musicbrainz.org), the free music database Picard uses: each song is looked up by title and artist, one per second. Only missing data is checked; review the rest."
+#: src/interfaz/actualizacion.rs src/interfaz/capturas.rs
+msgid "Internet: cada tema se busca por título y artista primero en MusicBrainz (la base libre que usa Picard), y lo que falte, en Deezer y en iTunes; de a uno por segundo. Solo se marcan los datos que faltan; los demás, revíselos."
+msgstr "Internet: each song is searched by title and artist first on MusicBrainz (the free database Picard uses), and whatever is missing, on Deezer and iTunes; one per second. Only missing data is checked; review the rest."
 
 #: src/interfaz/actualizacion.rs src/interfaz/mantenimiento.rs
 msgid "No se pudo iniciar la busqueda: {error}"
@@ -2041,13 +2169,13 @@ msgstr "Could not start the search: {error}"
 msgid "{} error(es); el ultimo: {error}"
 msgstr "{} error(s); the last one: {error}"
 
-#: src/interfaz/actualizacion.rs
+#: src/interfaz/actualizacion.rs src/interfaz/capturas.rs
 msgid "{} de {} tema(s) revisados: {} dato(s) distintos en {} tema(s)"
 msgstr "{} of {} song(s) checked: {} different field(s) in {} song(s)"
 
-#: src/interfaz/actualizacion.rs
-msgid "; {} sin una coincidencia segura en MusicBrainz"
-msgstr "; {} without a reliable match in MusicBrainz"
+#: src/interfaz/actualizacion.rs src/interfaz/capturas.rs
+msgid "; {} sin una coincidencia segura en internet"
+msgstr "; {} without a reliable match on the internet"
 
 #: src/interfaz/actualizacion.rs
 msgid "Se actualizaron {cambiados} dato(s) en {} tema(s) del catalogo."
@@ -2254,12 +2382,52 @@ msgid " {} sin un tipo valido ({}): eligalos aqui con el filtro «Sin tipo» y u
 msgstr " {} without a valid type ({}): choose them here with the «No type» filter and use Assign type; that way they are also classified in the catalog."
 
 #: src/interfaz/buscador.rs
+msgid "Completar desde internet"
+msgstr "Complete from the internet"
+
+#: src/interfaz/buscador.rs
+msgid "Se van a releer las etiquetas de {} archivo(s): en un catálogo grande puede tardar unos {minutos} minuto(s), según el disco. Mientras tanto se puede seguir usando el reproductor.\n\nPara hacerlo con menos temas, búsquelos o elíjalos antes.\n\n¿Empezar?"
+msgstr "The tags of {} file(s) will be reread: on a large catalog it can take about {minutos} minute(s), depending on the disk. Meanwhile the player can still be used.\n\nTo do it with fewer songs, search for them or choose them first.\n\nStart?"
+
+#: src/interfaz/buscador.rs
+msgid "Se van a buscar {} tema(s) en internet, uno por segundo: puede tardar unos {minutos} minuto(s). Se puede detener y aplicar lo encontrado hasta ese momento.\n\nPara hacerlo con menos temas, búsquelos o elíjalos antes.\n\n¿Empezar?"
+msgstr "{} song(s) will be looked up on the internet, one per second: it can take about {minutos} minute(s). It can be stopped and what was found so far applied.\n\nTo do it with fewer songs, search for them or choose them first.\n\nStart?"
+
+#: src/interfaz/buscador.rs
+msgid "Se van a buscar las carátulas de {} tema(s): las que faltan se descargan de a una por segundo y puede tardar hasta unos {minutos} minuto(s). Se detiene al cerrar el catálogo.\n\nPara hacerlo con menos temas, búsquelos o elíjalos antes.\n\n¿Empezar?"
+msgstr "The cover art of {} song(s) will be looked up: the missing ones are downloaded one per second and it can take up to about {minutos} minute(s). It stops when the catalog is closed.\n\nTo do it with fewer songs, search for them or choose them first.\n\nStart?"
+
+#: src/interfaz/buscador.rs
 msgid "«#» busca por posición en la lista; en el catálogo no hay posiciones"
 msgstr "«#» searches by position in the playlist; the catalog has no positions"
 
 #: src/interfaz/buscador.rs
 msgid "No se pudo crear el buscador del catalogo: {error}"
 msgstr "Could not create the catalog search: {error}"
+
+#: src/interfaz/buscador.rs
+msgid "Buscando las carátulas de {} tema(s)..."
+msgstr "Looking for the cover art of {} song(s)..."
+
+#: src/interfaz.rs src/interfaz/buscador.rs
+msgid "... y {} mas"
+msgstr "... and {} more"
+
+#: src/interfaz/buscador.rs
+msgid "Descatalogar"
+msgstr "Remove from the catalog"
+
+#: src/interfaz/buscador.rs
+msgid "{}\n\nSe quitaran de la lista y se borraran sus datos guardados: puntos de mezcla, overlay, titulo, artista, genero, ranking, BPM y ultima reproduccion. Los archivos de audio no se borran.\n\n¿Descatalogar {} tema(s)?"
+msgstr "{}\n\nThey will be removed from the playlist and their saved data will be deleted: mix points, overlay, title, artist, genre, rating, BPM and last play. The audio files are not deleted.\n\nRemove {} song(s) from the catalog?"
+
+#: src/interfaz/buscador.rs
+msgid "No existe el archivo: {}"
+msgstr "The file does not exist: {}"
+
+#: src/interfaz/buscador.rs
+msgid "Se descatalogaron {borradas} tema(s): se borraron sus datos y se quitaron {de_la_lista} pista(s) de la lista"
+msgstr "{borradas} song(s) removed from the catalog: their data was deleted and {de_la_lista} track(s) were removed from the playlist"
 
 #: src/interfaz/buscador.rs
 msgid "{en_catalogo} tema(s) en el catalogo"
@@ -2288,6 +2456,54 @@ msgstr "{ya_estaban} were already there"
 #: src/interfaz/buscador.rs
 msgid "{} sin archivo (ver el mantenimiento del catalogo)"
 msgstr "{} without a file (see catalog maintenance)"
+
+#: src/interfaz/caratula.rs
+msgid "Se buscan en internet las carátulas que faltan (Deezer, iTunes y MusicBrainz)"
+msgstr "Missing cover art is searched for on the internet (Deezer, iTunes and MusicBrainz)"
+
+#: src/interfaz/caratula.rs
+msgid "Ya no se buscan carátulas en internet"
+msgstr "Cover art is no longer searched for on the internet"
+
+#: src/interfaz/caratula.rs
+msgid "No hay temas para buscar carátulas."
+msgstr "There are no songs to look up cover art for."
+
+#: src/interfaz/caratula.rs
+msgid "Carátulas: {hechos} de {total} tema(s) revisados..."
+msgstr "Cover art: {hechos} of {total} song(s) checked..."
+
+#: src/interfaz/caratula.rs
+msgid "No se pudo iniciar la descarga de carátulas: {error}"
+msgstr "Could not start the cover art download: {error}"
+
+#: src/interfaz/caratula.rs
+msgid "{} propias (en el archivo o la carpeta)"
+msgstr "{} their own (in the file or the folder)"
+
+#: src/interfaz/caratula.rs
+msgid "{} descargadas de internet"
+msgstr "{} downloaded from the internet"
+
+#: src/interfaz/caratula.rs
+msgid "{} ya descargadas"
+msgstr "{} already downloaded"
+
+#: src/interfaz/caratula.rs
+msgid "{} sin una carátula confiable en internet"
+msgstr "{} without a reliable cover on the internet"
+
+#: src/interfaz/caratula.rs
+msgid "{} sin artista, sin archivo o que no son musica"
+msgstr "{} without an artist, without a file or not music"
+
+#: src/interfaz/caratula.rs
+msgid "{} sin respuesta (sin conexion)"
+msgstr "{} with no answer (no connection)"
+
+#: src/interfaz/caratula.rs
+msgid "Carátulas de {total} tema(s): {}"
+msgstr "Cover art of {total} song(s): {}"
 
 #: src/interfaz/editor.rs
 msgid "- Se quitara el efecto fijado: {efecto}."
@@ -2362,6 +2578,10 @@ msgid "No se pudo calcular la forma de onda: {error}"
 msgstr "Could not calculate the waveform: {error}"
 
 #: src/interfaz/editor.rs
+msgid "Arrastre las marcas sobre la onda o escriba los tiempos (segundos o m:ss). Clic: mover el cursor. Rueda: zoom."
+msgstr "Drag the marks on the waveform or type the times (seconds or m:ss). Click: move the cursor. Wheel: zoom."
+
+#: src/interfaz/editor.rs
 msgid "No se pudo leer la forma de onda: {error}"
 msgstr "Could not read the waveform: {error}"
 
@@ -2392,6 +2612,10 @@ msgstr "The overlay must end after it starts."
 #: src/interfaz/editor.rs
 msgid "El anio debe ser un numero entre 1000 y 2999 (o quedar vacio)."
 msgstr "The year must be a number between 1000 and 2999 (or be left empty)."
+
+#: src/interfaz/editor.rs
+msgid "Guardado: {}"
+msgstr "Saved: {}"
 
 #: src/interfaz/editor.rs
 msgid ". Base del anuncio HTH: {aviso}"
@@ -2725,6 +2949,58 @@ msgstr "Locked block of {} track(s), from position {} to {}: Shuffle and BPM do 
 msgid "Seleccione las pistas que forman el bloque fijo."
 msgstr "Select the tracks that make up the locked block."
 
+#: src/interfaz/modo.rs
+msgid "Al aire no se adelanta ni se retrocede dentro del tema"
+msgstr "On air there is no seeking forward or back within the song"
+
+#: src/interfaz/modo.rs
+msgid "Al aire no se vuelve a la pista anterior"
+msgstr "On air there is no going back to the previous track"
+
+#: src/interfaz/modo.rs
+msgid "Al aire no se salta a otra pista mientras suena una: use Siguiente o Encolar como siguiente"
+msgstr "On air there is no jumping to another track while one is playing: use Next or Queue as next"
+
+#: src/interfaz/modo.rs
+msgid "Al aire Siguiente sigue el orden de la lista"
+msgstr "On air Next follows the playlist order"
+
+#: src/interfaz/modo.rs
+msgid "Al aire no se reordena la lista (mezclar u ordenar por BPM)"
+msgstr "On air the playlist is not reordered (shuffle or sort by BPM)"
+
+#: src/interfaz/modo.rs
+msgid "Al aire no se vacía la lista"
+msgstr "On air the playlist is not cleared"
+
+#: src/interfaz/modo.rs
+msgid "Al aire no se reemplaza la lista"
+msgstr "On air the playlist is not replaced"
+
+#: src/interfaz/modo.rs
+msgid "Al aire los temas se quitan de a uno"
+msgstr "On air songs are removed one at a time"
+
+#: src/interfaz/modo.rs
+msgid "Al aire los temas se mueven de a uno"
+msgstr "On air songs are moved one at a time"
+
+#: src/interfaz/modo.rs
+msgid "Al aire no se cambia la localidad del HTH (de ella salen la hora y los horarios de la lista)"
+msgstr "On air the TTH locality can't be changed (it sets the clock and the playlist times)"
+
+#: src/interfaz/modo.rs
+msgid "{que} (pase a modo Editor para hacerlo)."
+msgstr "{que} (switch to Editor mode to do it)."
+
+#: src/interfaz/modo.rs
+msgid "Modo AL AIRE: no se adelanta, no se vuelve ni se saltea; Detener y Siguiente mezclan con el fader, y los temas se agregan o quitan de a uno"
+msgstr "ON AIR mode: no seeking, going back or skipping; Stop and Next mix with the fader, and songs are added or removed one at a time"
+
+#: src/interfaz/modo.rs
+msgid "Modo EDITOR: todos los comandos habilitados"
+msgstr "EDITOR mode: all commands enabled"
+
 #: src/interfaz/ordenes.rs
 msgid "No se pudo crear la ventana de ordenes: {error}"
 msgstr "Could not create the orders window: {error}"
@@ -2736,6 +3012,14 @@ msgstr "New order: fill in the data and the spots, and press Save order."
 #: src/interfaz/ordenes.rs
 msgid "¿Quitar la orden «{nombre}»?\n\nSus avisos dejan de repartirse; lo emitido queda en el registro."
 msgstr "Remove the order «{nombre}»?\n\nIts spots stop being placed; what aired stays in the log."
+
+#: src/interfaz/ordenes.rs
+msgid "{en_su_bloque} aviso(s) se sumaron a su tanda ya encolada"
+msgstr "{en_su_bloque} spot(s) were added to their already queued break"
+
+#: src/interfaz/ordenes.rs
+msgid "{repuestos} aviso(s) de tandas que ya salieron se reponen en la proxima tanda posible"
+msgstr "{repuestos} spot(s) from breaks that already aired will be made up in the next possible break"
 
 #: src/interfaz/ordenes.rs
 msgid "El {fecha} no hay avisos de ordenes para repartir."
@@ -2878,8 +3162,16 @@ msgid "¿Quitar la tanda «{nombre}» de la programacion?\n\nLo que ya se encolo
 msgstr "Remove the break «{nombre}» from the schedule?\n\nWhat was already queued in the playlist stays."
 
 #: src/interfaz/pauta.rs
+msgid "{} (en {})"
+msgstr "{} (in {})"
+
+#: src/interfaz/pauta.rs
 msgid "sin proximas"
 msgstr "none upcoming"
+
+#: src/interfaz/pauta.rs
+msgid "inactiva"
+msgstr "inactive"
 
 #: src/interfaz/pauta.rs
 msgid "Exacta ({tolerancia})"
@@ -3138,6 +3430,10 @@ msgid "No se pudo crear la ventana de mantenimiento del catalogo: {error}"
 msgstr "Could not create the catalog maintenance window: {error}"
 
 #: src/interfaz.rs
+msgid "Formato de fecha: {}"
+msgstr "Date format: {}"
+
+#: src/interfaz.rs
 msgid "Idioma de la interfaz: {}"
 msgstr "Interface language: {}"
 
@@ -3246,6 +3542,30 @@ msgid "La lista actual tiene cambios sin guardar. ¿Guardarla antes de cargar ot
 msgstr "The current playlist has unsaved changes. Save it before opening another one?"
 
 #: src/interfaz.rs
+msgid "Reproduccion detenida"
+msgstr "Playback stopped"
+
+#: src/interfaz.rs
+msgid "La reproducción se detuvo en modo AL AIRE. ¿Salir del modo AL AIRE y pasar a modo EDITOR?\n\nSí: todos los comandos quedan habilitados.\nNo: sigue AL AIRE para cuando se vuelva a reproducir."
+msgstr "Playback stopped in ON AIR mode. Leave ON AIR mode and switch to EDITOR mode?\n\nYes: all commands are enabled.\nNo: it stays ON AIR for when playback starts again."
+
+#: src/interfaz.rs
+msgid "¿Salir del modo AL AIRE y pasar a modo EDITOR?\n\nSí: todos los comandos quedan habilitados.\nNo: sigue AL AIRE."
+msgstr "Leave ON AIR mode and switch to EDITOR mode?\n\nYes: all commands are enabled.\nNo: it stays ON AIR."
+
+#: src/interfaz.rs
+msgid "Sigue en modo AL AIRE"
+msgstr "Still in ON AIR mode"
+
+#: src/interfaz.rs
+msgid "Limpiar la lista"
+msgstr "Clear the playlist"
+
+#: src/interfaz.rs
+msgid "¿Quitar las {} pistas de la lista y detener la reproducción? No se puede deshacer (los archivos y sus datos guardados no se borran)."
+msgstr "Remove the {} tracks from the playlist and stop playback? It cannot be undone (the files and their saved data are not deleted)."
+
+#: src/interfaz.rs
 msgid "¿Quitar {} pistas de la lista? Los archivos y sus datos guardados no se borran."
 msgstr "Remove {} tracks from the playlist? The files and their saved data are not deleted."
 
@@ -3326,10 +3646,6 @@ msgid "Tema repetido"
 msgstr "Repeated song"
 
 #: src/interfaz.rs
-msgid "... y {} mas"
-msgstr "... and {} more"
-
-#: src/interfaz.rs
 msgid "Archivos inexistentes"
 msgstr "Missing files"
 
@@ -3338,8 +3654,20 @@ msgid "{} archivo(s) de la lista ya no existe(n):\n\n{}\n\n¿Quitarlos de la lis
 msgstr "{} playlist file(s) no longer exist:\n\n{}\n\nRemove them from the playlist?"
 
 #: src/interfaz.rs
+msgid "Hoja {}"
+msgstr "Page {}"
+
+#: src/interfaz.rs
 msgid "Hace {} y {ultima}"
 msgstr "{} ago and {ultima}"
+
+#: src/interfaz.rs
+msgid "Sonó debe tener la forma {} hh:mm:ss (o quedar vacío)."
+msgstr "Played must look like {} hh:mm:ss (or be empty)."
+
+#: src/interfaz.rs
+msgid "Sonó no puede ser una fecha futura."
+msgstr "Played can't be a future date."
 
 #: src/interfaz.rs
 msgid "Lunes"
@@ -3412,6 +3740,14 @@ msgstr "Effects page {} was added."
 #: src/interfaz.rs
 msgid "Se quito la hoja {}; quedan {}."
 msgstr "Page {} was removed; {} left."
+
+#: src/interfaz.rs
+msgid "La hoja {} se llama «{nombre}»."
+msgstr "Page {} is now called “{nombre}”."
+
+#: src/interfaz.rs
+msgid "La hoja {} volvio a llamarse «{}»."
+msgstr "Page {} is called “{}” again."
 
 #: src/interfaz.rs
 msgid "  ·  Restante {}"
@@ -3638,6 +3974,14 @@ msgid "{} es la pista actual; Siguiente sigue el orden de la lista."
 msgstr "{} is the current track; Next follows the playlist order."
 
 #: src/interfaz.rs
+msgid "{} queda elegida; al aire Siguiente sigue el orden de la lista."
+msgstr "{} is chosen; on air Next follows the playlist order."
+
+#: src/interfaz.rs
+msgid "{} Sigue en modo AL AIRE."
+msgstr "{} Still in ON AIR mode."
+
+#: src/interfaz.rs
 msgid "deteniendo con fundido"
 msgstr "stopping with fade"
 
@@ -3688,6 +4032,10 @@ msgstr "Next with Next: {natural}\n"
 #: src/interfaz.rs
 msgid "Duracion total de la lista: {} | Restante: {}{}\n"
 msgstr "Total playlist length: {} | Remaining: {}{}\n"
+
+#: src/interfaz.rs
+msgid "Modo: {}\n"
+msgstr "Mode: {}\n"
 
 #: src/interfaz.rs
 msgid "Volumen: {} % | Fader: {} s | Repetir lista: {} | Pistas en la lista: {}\n"
@@ -3798,10 +4146,6 @@ msgid "Deteniendo con fundido de {} s (Detener otra vez corta ya)"
 msgstr "Stopping with a {} s fade (Stop again cuts right away)"
 
 #: src/interfaz.rs
-msgid "Reproduccion detenida"
-msgstr "Playback stopped"
-
-#: src/interfaz.rs
 msgid "Secuencia finalizada"
 msgstr "Sequence finished"
 
@@ -3830,6 +4174,10 @@ msgid "Reanudar"
 msgstr "Resume"
 
 #: src/interfaz.rs
+msgid "Hora estimada: empieza dentro de {}"
+msgstr "Estimated time: starts in {}"
+
+#: src/interfaz.rs
 msgid "HTH · {titulo}"
 msgstr "TTH · {titulo}"
 
@@ -3844,6 +4192,10 @@ msgstr "The waiting effect of button {indice} was canceled."
 #: src/interfaz.rs
 msgid "No se encuentra {}"
 msgstr "{} cannot be found"
+
+#: src/interfaz.rs
+msgid "{} es la base de un anuncio HTH y no admite efectos (solo en modo libre)."
+msgstr "{} is the bed of a TTH announcement and takes no effects (only in free mode)."
 
 #: src/interfaz.rs
 msgid "{} no es un Tema y no admite efectos (solo en modo libre)."
@@ -3882,8 +4234,8 @@ msgid "Hoja {} de {hojas}"
 msgstr "Page {} of {hojas}"
 
 #: src/interfaz.rs
-msgid " (faltan {:.0} s)"
-msgstr " ({:.0} s to go)"
+msgid " (faltan {:.1} s)"
+msgstr " ({:.1} s to go)"
 
 #: src/interfaz.rs
 msgid " (espera la ventana de la proxima pista)"
@@ -3892,6 +4244,10 @@ msgstr " (waits for the next track's window)"
 #: src/interfaz.rs
 msgid "En espera: {}{detalle}"
 msgstr "Waiting: {}{detalle}"
+
+#: src/interfaz.rs
+msgid "Sonando: {}"
+msgstr "Playing: {}"
 
 #: src/interfaz.rs
 msgid "Clic derecho en un boton para cambiar su archivo"
@@ -3986,6 +4342,10 @@ msgid "Tiene que quedar al menos una hoja de efectos."
 msgstr "At least one effects page must remain."
 
 #: src/persistencia.rs
+msgid "El nombre de la hoja puede tener hasta {} caracteres."
+msgstr "The page name can have up to {} characters."
+
+#: src/persistencia.rs
 msgid "No existe la hoja {}."
 msgstr "Page {} does not exist."
 
@@ -4068,6 +4428,46 @@ msgstr "Could not write {}: {error}"
 #: src/servicio/anuncio_hth.rs
 msgid "No se pudo guardar {}: {error}"
 msgstr "Could not save {}: {error}"
+
+#: src/servicio/caratulas.rs
+msgid "Carátula: embebida en el archivo"
+msgstr "Cover art: embedded in the file"
+
+#: src/servicio/caratulas.rs
+msgid "Carátula: la imagen de la carpeta"
+msgstr "Cover art: the image in the folder"
+
+#: src/servicio/caratulas.rs
+msgid "Carátula: Deezer"
+msgstr "Cover art: Deezer"
+
+#: src/servicio/caratulas.rs
+msgid "Carátula: iTunes"
+msgstr "Cover art: iTunes"
+
+#: src/servicio/caratulas.rs
+msgid "Carátula: MusicBrainz (Cover Art Archive)"
+msgstr "Cover art: MusicBrainz (Cover Art Archive)"
+
+#: src/servicio/caratulas.rs
+msgid "No se pudo consultar {direccion}: {error}"
+msgstr "Could not query {direccion}: {error}"
+
+#: src/servicio/caratulas.rs
+msgid "No se pudo leer la respuesta de {direccion}: {error}"
+msgstr "Could not read the response from {direccion}: {error}"
+
+#: src/servicio/caratulas.rs
+msgid "Respuesta ilegible de {direccion}: {error}"
+msgstr "Unreadable response from {direccion}: {error}"
+
+#: src/servicio/caratulas.rs
+msgid "No se pudo descargar la carátula: {error}"
+msgstr "Could not download the cover art: {error}"
+
+#: src/servicio/caratulas.rs src/servicio/datos_de_internet.rs
+msgid "Deezer rechazo la busqueda: {error}"
+msgstr "Deezer refused the search: {error}"
 
 #: src/servicio/clima.rs
 msgid "Respuesta de la busqueda de localidades ilegible: {error}"

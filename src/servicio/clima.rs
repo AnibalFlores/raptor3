@@ -23,19 +23,38 @@ const ESPERA_DEL_PEDIDO: Duration = Duration::from_secs(1);
 /// Localidades que devuelve como maximo una busqueda por nombre.
 const LOCALIDADES_POR_BUSQUEDA: usize = 20;
 
-/// Localidad de la que se anuncia el clima.
+/// Localidad de la que se anuncia el clima (y cuya hora muestra el reloj).
 #[derive(Clone, Debug, PartialEq)]
 pub struct Localidad {
     pub nombre: String,
     pub latitud: f64,
     pub longitud: f64,
+    /// Zona horaria IANA ("America/Bogota"), si se conoce.
+    pub zona_horaria: Option<String>,
 }
 
 impl Default for Localidad {
     /// Ciudad Autonoma de Buenos Aires.
     fn default() -> Self {
-        Self { nombre: "Buenos Aires".into(), latitud: -34.6037, longitud: -58.3816 }
+        Self {
+            nombre: "Buenos Aires".into(),
+            latitud: -34.6037,
+            longitud: -58.3816,
+            zona_horaria: Some("America/Argentina/Buenos_Aires".into()),
+        }
     }
+}
+
+/// La zona horaria con ese nombre IANA, si existe.
+pub fn zona_horaria(nombre: &str) -> Option<jiff::tz::TimeZone> {
+    jiff::tz::TimeZone::get(nombre.trim()).ok()
+}
+
+/// La zona horaria que trae una respuesta de Open-Meteo (el geocodificador
+/// o la consulta del clima con `timezone=auto`), si es valida.
+fn zona_de(valor: &Value) -> Option<String> {
+    let nombre = valor.get("timezone")?.as_str()?.trim();
+    zona_horaria(nombre).map(|_| nombre.to_string())
 }
 
 /// Localidad encontrada por nombre, con su region (partido o departamento,
@@ -78,7 +97,7 @@ pub fn interpretar_localidades(texto: &str) -> Result<Vec<LocalidadEncontrada>, 
                 }
             }
             Some(LocalidadEncontrada {
-                localidad: Localidad { nombre: nombre.to_string(), latitud, longitud },
+                localidad: Localidad { nombre: nombre.to_string(), latitud, longitud, zona_horaria: zona_de(resultado) },
                 region: partes.join(", "),
             })
         })
@@ -111,6 +130,13 @@ pub struct Clima {
     pub humedad: f64,
 }
 
+/// Lo que devuelve una consulta: el clima y la zona horaria de la localidad.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Consulta {
+    pub clima: Clima,
+    pub zona_horaria: Option<String>,
+}
+
 /// Estado del clima para mostrar: si ya se consulta, si fallo la ultima
 /// consulta y la ultima lectura buena con su antiguedad.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -136,19 +162,21 @@ fn direccion_de_la_consulta(localidad: &Localidad) -> String {
 }
 
 /// Lee temperatura y humedad de la respuesta de Open-Meteo:
-/// `{"current": {"temperature_2m": 17.4, "relative_humidity_2m": 76, ...}}`.
-pub fn interpretar_respuesta(texto: &str) -> Result<Clima, String> {
+/// `{"timezone": "America/Argentina/Buenos_Aires",
+/// "current": {"temperature_2m": 17.4, "relative_humidity_2m": 76, ...}}`.
+pub fn interpretar_respuesta(texto: &str) -> Result<Consulta, String> {
     let raiz: Value = serde_json::from_str(texto).map_err(|error| tr!("Respuesta del clima ilegible: {error}", error = error))?;
     let actual = raiz.get("current").ok_or_else(|| tr!("La respuesta del clima no trae el dato actual"))?;
     let numero = |clave: &str| actual.get(clave).and_then(Value::as_f64).filter(|valor| valor.is_finite());
-    Ok(Clima {
+    let clima = Clima {
         temperatura: numero("temperature_2m").ok_or_else(|| tr!("La respuesta del clima no trae la temperatura"))?,
         humedad: numero("relative_humidity_2m").ok_or_else(|| tr!("La respuesta del clima no trae la humedad"))?,
-    })
+    };
+    Ok(Consulta { clima, zona_horaria: zona_de(&raiz) })
 }
 
 /// Consulta el clima actual (bloquea hasta que responde o vence el tiempo).
-pub fn consultar(localidad: &Localidad) -> Result<Clima, String> {
+pub fn consultar(localidad: &Localidad) -> Result<Consulta, String> {
     let agente: ureq::Agent =
         ureq::Agent::config_builder().timeout_global(Some(TIEMPO_MAXIMO_DE_LA_CONSULTA)).build().into();
     let texto = agente
@@ -165,6 +193,8 @@ pub fn consultar(localidad: &Localidad) -> Result<Clima, String> {
 #[derive(Default)]
 pub struct ServicioDeClima {
     ultimo: Arc<Mutex<Option<(Clima, Instant)>>>,
+    // Zona horaria que informo la ultima consulta buena de la localidad.
+    zona_horaria: Arc<Mutex<Option<String>>>,
     iniciado: AtomicBool,
     // La ultima consulta fallo (sin conexion o respuesta invalida).
     sin_conexion: Arc<AtomicBool>,
@@ -184,6 +214,7 @@ impl ServicioDeClima {
             return;
         }
         let ultimo = Arc::clone(&self.ultimo);
+        let zona_horaria = Arc::clone(&self.zona_horaria);
         let sin_conexion = Arc::clone(&self.sin_conexion);
         let generacion = Arc::clone(&self.generacion);
         let (emisor, receptor) = mpsc::channel::<Localidad>();
@@ -201,7 +232,7 @@ impl ServicioDeClima {
                     ESPERA_DEL_PEDIDO
                 } else {
                     match resultado {
-                    Ok(clima) => {
+                    Ok(Consulta { clima, zona_horaria: zona }) => {
                         log::info!(
                             "Clima de {}: {:.1} grados, {:.0} % de humedad",
                             localidad.nombre,
@@ -210,6 +241,9 @@ impl ServicioDeClima {
                         );
                         if let Ok(mut ultimo) = ultimo.lock() {
                             *ultimo = Some((clima, Instant::now()));
+                        }
+                        if let (Some(zona), Ok(mut guardada)) = (zona, zona_horaria.lock()) {
+                            *guardada = Some(zona);
                         }
                         sin_conexion.store(false, Ordering::SeqCst);
                         INTERVALO_DE_CONSULTA
@@ -244,6 +278,9 @@ impl ServicioDeClima {
         if let Ok(mut ultimo) = self.ultimo.lock() {
             *ultimo = None;
         }
+        if let Ok(mut zona) = self.zona_horaria.lock() {
+            *zona = None;
+        }
         self.sin_conexion.store(false, Ordering::SeqCst);
         self.pedir(localidad)
     }
@@ -269,6 +306,11 @@ impl ServicioDeClima {
         }
     }
 
+    /// Zona horaria que informo la consulta de la localidad actual.
+    pub fn zona_informada(&self) -> Option<String> {
+        self.zona_horaria.lock().ok()?.clone()
+    }
+
     /// El ultimo clima conocido, si no es demasiado viejo para anunciarlo.
     pub fn vigente(&self) -> Option<Clima> {
         let ultimo = self.ultimo.lock().ok()?;
@@ -284,20 +326,30 @@ mod tests {
     fn lee_temperatura_y_humedad_de_open_meteo() {
         let respuesta = r#"{"latitude":-34.62,"current_units":{"temperature_2m":"°C"},
             "current":{"time":"2026-11-06T21:15","interval":900,"temperature_2m":17.4,"relative_humidity_2m":76}}"#;
-        assert_eq!(interpretar_respuesta(respuesta), Ok(Clima { temperatura: 17.4, humedad: 76.0 }));
+        let leida = interpretar_respuesta(respuesta).expect("respuesta valida");
+        assert_eq!(leida.clima, Clima { temperatura: 17.4, humedad: 76.0 });
+        assert_eq!(leida.zona_horaria, None);
+        let con_zona = r#"{"timezone":"America/Bogota","current":{"temperature_2m":20,"relative_humidity_2m":70}}"#;
+        assert_eq!(interpretar_respuesta(con_zona).unwrap().zona_horaria.as_deref(), Some("America/Bogota"));
+        let zona_rara = r#"{"timezone":"Marte/Olympus","current":{"temperature_2m":20,"relative_humidity_2m":70}}"#;
+        assert_eq!(interpretar_respuesta(zona_rara).unwrap().zona_horaria, None, "una zona desconocida se ignora");
     }
 
     #[test]
     fn lee_las_localidades_del_geocodificador_con_su_region() {
         let respuesta = r#"{"results":[
-            {"id":1,"name":"Córdoba","latitude":-31.4135,"longitude":-64.18105,"admin1":"Córdoba","admin2":"Capital","country":"Argentina"},
-            {"id":2,"name":"Córdoba","latitude":37.89155,"longitude":-4.77275,"admin1":"Andalucía","admin2":"Córdoba","country":"España"},
+            {"id":1,"name":"Córdoba","latitude":-31.4135,"longitude":-64.18105,"admin1":"Córdoba","admin2":"Capital","country":"Argentina","timezone":"America/Argentina/Cordoba"},
+            {"id":2,"name":"Córdoba","latitude":37.89155,"longitude":-4.77275,"admin1":"Andalucía","admin2":"Córdoba","country":"España","timezone":"Europe/Madrid"},
             {"id":3,"name":"Sin coordenadas","country":"Argentina"},
             {"id":4,"name":"Fuera de rango","latitude":120.0,"longitude":10.0}
         ],"generationtime_ms":0.5}"#;
         let encontradas = interpretar_localidades(respuesta).expect("respuesta valida");
         assert_eq!(encontradas.len(), 2);
-        assert_eq!(encontradas[0].localidad, Localidad { nombre: "Córdoba".into(), latitud: -31.4135, longitud: -64.18105 });
+        assert_eq!(
+            encontradas[0].localidad,
+            Localidad { nombre: "Córdoba".into(), latitud: -31.4135, longitud: -64.18105, zona_horaria: Some("America/Argentina/Cordoba".into()) }
+        );
+        assert_eq!(encontradas[1].localidad.zona_horaria.as_deref(), Some("Europe/Madrid"));
         assert_eq!(encontradas[0].region, "Capital, Córdoba, Argentina");
         // El partido con el mismo nombre que la localidad no se repite.
         assert_eq!(encontradas[1].region, "Andalucía, España");
@@ -326,6 +378,18 @@ mod tests {
     }
 
     #[test]
+    fn la_zona_horaria_da_la_hora_de_la_localidad() {
+        assert!(zona_horaria("America/Argentina/Buenos_Aires").is_some());
+        assert!(zona_horaria("Asia/Tokyo").is_some());
+        assert!(zona_horaria("Marte/Olympus").is_none());
+        let instante = jiff::Timestamp::from_second(1_700_000_000).unwrap();
+        // 22:13:20 UTC: 19:13 en Buenos Aires y 07:13 del dia siguiente en Tokio.
+        assert_eq!(instante.to_zoned(zona_horaria("America/Argentina/Buenos_Aires").unwrap()).hour(), 19);
+        assert_eq!(instante.to_zoned(zona_horaria("Asia/Tokyo").unwrap()).hour(), 7);
+        assert!(zona_horaria(Localidad::default().zona_horaria.as_deref().unwrap()).is_some());
+    }
+
+    #[test]
     fn una_respuesta_incompleta_es_un_error() {
         assert!(interpretar_respuesta(r#"{"current":{"temperature_2m":17.4}}"#).is_err());
         assert!(interpretar_respuesta(r#"{"error":true,"reason":"Latitude must be in range"}"#).is_err());
@@ -348,7 +412,9 @@ mod tests {
     #[test]
     #[ignore]
     fn clima_real() {
-        let clima = consultar(&Localidad::default()).expect("consulta");
+        let consulta = consultar(&Localidad::default()).expect("consulta");
+        let clima = consulta.clima;
+        assert_eq!(consulta.zona_horaria.as_deref(), Some("America/Argentina/Buenos_Aires"));
         println!("{clima:?}");
         assert!((-30.0..=55.0).contains(&clima.temperatura));
         assert!((0.0..=100.0).contains(&clima.humedad));

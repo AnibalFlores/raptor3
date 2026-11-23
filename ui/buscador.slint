@@ -8,9 +8,12 @@ export struct FichaDelCatalogo {
     artista: string,
     tipo: string,
     genero: string,
+    album: string,
     anio: string,
     duracion: string,
-    // Fecha local de la ultima reproduccion (dd/mm/aaaa) o vacio.
+    // BPM fijado o analizado (vacio si no se conoce).
+    bpm: string,
+    // Fecha y hora de la ultima reproduccion, en el formato elegido, o vacio.
     sonado: string,
     // Ruta del archivo, para el tooltip.
     ruta: string,
@@ -30,10 +33,10 @@ export component CeldaDelCatalogo inherits CeldaConIcono { }
 export component BuscadorDelCatalogo inherits Window {
     title: @tr("Buscar en el catalogo - MCP Raptor Player");
     icon: @image-url("iconos/ventana-raptor.svg");
-    preferred-width: 1000px;
-    preferred-height: 620px;
-    // Entran los cinco botones de abajo.
-    min-width: 900px;
+    preferred-width: 1240px;
+    preferred-height: 680px;
+    // Entran los seis botones de abajo.
+    min-width: 1000px;
     min-height: 380px;
     background: Palette.background;
 
@@ -50,16 +53,40 @@ export component BuscadorDelCatalogo inherits Window {
     callback agregar-al-final();
     // Actualizar los datos de los elegidos (o de todos los resultados).
     callback releer-etiquetas();
-    callback completar-desde-musicbrainz();
+    callback completar-desde-internet();
+    // Descarga las carátulas que faltan de los elegidos (o de todos).
+    callback descargar-caratulas();
     callback cerrar();
+    // Menu de un tema (indice): sobre uno elegido vale para todos los elegidos.
+    callback editar(indice: int);
+    // Origen: 0 releer las etiquetas, 1 completar desde internet.
+    callback actualizar(indice: int, origen: int);
+    callback descatalogar(indice: int);
 
-    property <length> ancho-del-anio: 64px;
-    property <length> ancho-de-la-duracion: 90px;
+    // El tema elegido (el del ultimo clic): su carátula y sus datos.
+    in property <bool> hay-elegida;
+    in property <string> elegida-titulo;
+    in property <string> elegida-datos;
+    // Clave del tipo, para el color de la carátula por defecto.
+    in property <string> elegida-tipo;
+    in property <image> caratula;
+    in property <bool> hay-caratula;
+    in property <string> origen-de-la-caratula;
+    // La ampliada del globo, mientras el puntero esta sobre la carátula.
+    in property <image> caratula-ampliada;
+    property <bool> caratula-bajo-el-puntero;
+
+    // Altura (en la ventana) donde empieza el globo de la carátula.
+    property <length> lugar-del-globo;
+    property <length> ancho-del-anio: 58px;
+    property <length> ancho-de-la-duracion: 84px;
     // Entra "Publicidad" con su icono.
-    property <length> ancho-del-tipo: 112px;
-    property <length> ancho-del-genero: 130px;
-    property <length> ancho-en-lista: 110px;
-    property <length> ancho-de-sonado: 100px;
+    property <length> ancho-del-tipo: 110px;
+    property <length> ancho-del-genero: 116px;
+    property <length> ancho-del-bpm: 58px;
+    property <length> ancho-en-lista: 88px;
+    // Entra "2026-11-23 14:05:33" (año-mes-dia lleva el año completo).
+    property <length> ancho-de-sonado: 152px;
 
     pure function tono-de(ficha: FichaDelCatalogo) -> color {
         if ficha.seleccionada {
@@ -87,7 +114,7 @@ export component BuscadorDelCatalogo inherits Window {
                 text <=> root.texto;
                 edited(texto) => { root.buscar(texto); }
                 accepted => { root.insertar(-1); }
-                Tooltip { text: IdiomaDeLaInterfaz.ingles ? @markdown("Without a prefix it searches all the words in title, artist, type, genre, album or file name, ignoring accents. With prefixes:\n\n- **artist:sanz**, **title:**, **genre:**, **album:**, **type:**, **note:**, **file:** (phrases in quotes: genre:\"rock nacional\")\n- **rating:>=4**, **year:1990..1999**, **bpm:120-128**, **duration:<3:30** (=, >, >=, <, <= or ranges)\n- **played:today**, **yesterday**, **never**, **7d** (last 7 days), **>30d** (more than 30 ago), **2026-11-03**, **<01/10/2026**\n- A leading **-** negates: **-genre:cumbia**\n\nThe Spanish prefixes (artista:, titulo:, sonado:...) also work.") : @markdown("Sin prefijo busca todas las palabras en titulo, artista, tipo, genero, album o nombre de archivo, sin importar acentos. Con prefijos:\n\n- **artista:sanz**, **titulo:**, **genero:**, **album:**, **tipo:**, **nota:**, **archivo:** (frases entre comillas: genero:\"rock nacional\")\n- **ranking:>=4**, **anio:1990..1999**, **bpm:120-128**, **duracion:<3:30** (=, >, >=, <, <= o tramos)\n- **sonado:hoy**, **ayer**, **nunca**, **7d** (ultimos 7 dias), **>30d** (hace mas de 30), **2026-11-03**, **<01/10/2026**\n- Un **-** adelante niega: **-genero:cumbia**"); }
+                Tooltip { text: IdiomaDeLaInterfaz.ingles ? @markdown("Without a prefix it searches all the words in title, artist, type, genre, album or file name, ignoring accents. With prefixes:\n\n- **artist:sanz**, **title:**, **genre:**, **album:**, **type:**, **note:**, **file:** (phrases in quotes: genre:\"rock nacional\")\n- **rating:>=4**, **year:1990..1999**, **bpm:120-128**, **duration:<3:30** (=, >, >=, <, <= or ranges)\n- **played:today**, **yesterday**, **never**, **7d** (last 7 days), **>30d** (more than 30 ago), **2026-11-03**, **<\{IdiomaDeLaInterfaz.ejemplo-de-fecha}**\n- A leading **-** negates: **-genre:cumbia**\n\nThe Spanish prefixes (artista:, titulo:, sonado:...) also work.") : @markdown("Sin prefijo busca todas las palabras en titulo, artista, tipo, genero, album o nombre de archivo, sin importar acentos. Con prefijos:\n\n- **artista:sanz**, **titulo:**, **genero:**, **album:**, **tipo:**, **nota:**, **archivo:** (frases entre comillas: genero:\"rock nacional\")\n- **ranking:>=4**, **anio:1990..1999**, **bpm:120-128**, **duracion:<3:30** (=, >, >=, <, <= o tramos)\n- **sonado:hoy**, **ayer**, **nunca**, **7d** (ultimos 7 dias), **>30d** (hace mas de 30), **2026-11-03**, **<\{IdiomaDeLaInterfaz.ejemplo-de-fecha}**\n- Un **-** adelante niega: **-genero:cumbia**"); }
                 key-pressed(evento) => {
                     if evento.text == Key.Escape {
                         if self.text != "" {
@@ -108,6 +135,63 @@ export component BuscadorDelCatalogo inherits Window {
             color: Palette.foreground.transparentize(25%);
         }
 
+        // El tema elegido: su carátula (o la R en el color del tipo) y datos.
+        if root.hay-elegida: HorizontalLayout {
+            height: 60px;
+            spacing: 10px;
+            VerticalLayout {
+                alignment: center;
+                if root.hay-caratula: Image {
+                    width: 56px;
+                    height: 56px;
+                    source: root.caratula;
+                    image-fit: contain;
+                    accessible-label: root.origen-de-la-caratula;
+                    // Con el puntero encima se ve ampliada (el globo va al
+                    // final de la ventana, por encima de la tabla).
+                    TouchArea {
+                        changed has-hover => {
+                            root.caratula-bajo-el-puntero = self.has-hover;
+                            root.lugar-del-globo = parent.absolute-position.y + parent.height + 4px;
+                        }
+                    }
+                }
+                if !root.hay-caratula: Rectangle {
+                    property <color> tono: Iconografia.color-de-caratula(root.elegida-tipo);
+                    width: 56px;
+                    height: 56px;
+                    border-radius: 6px;
+                    border-width: 1px;
+                    border-color: self.tono.with-alpha(0.55);
+                    background: self.tono.with-alpha(0.14);
+                    accessible-role: image;
+                    accessible-label: @tr("Sin carátula");
+                    Image {
+                        width: 32px;
+                        height: 32px;
+                        source: @image-url("iconos/ventana-raptor.svg");
+                        colorize: parent.tono;
+                    }
+                    TouchArea { Tooltip { text: @markdown("\{@tr("Sin carátula")}"); } }
+                }
+            }
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+                Text {
+                    text: root.elegida-titulo;
+                    font-weight: 700;
+                    overflow: elide;
+                }
+                Text {
+                    text: root.elegida-datos;
+                    font-size: 12px;
+                    color: Palette.foreground.transparentize(25%);
+                    overflow: elide;
+                }
+            }
+        }
+
         // Encabezado de la tabla.
         HorizontalLayout {
             height: 24px;
@@ -117,14 +201,22 @@ export component BuscadorDelCatalogo inherits Window {
             EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Artista"); icono: @image-url("iconos/dato-artista.svg"); }
             EncabezadoConIcono { width: root.ancho-del-tipo; texto: @tr("Tipo"); icono: @image-url("iconos/dato-tipo.svg"); }
             EncabezadoConIcono { width: root.ancho-del-genero; texto: @tr("Género"); icono: @image-url("iconos/dato-genero.svg"); }
+            EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Álbum"); icono: @image-url("iconos/dato-album.svg"); }
             EncabezadoConIcono { width: root.ancho-del-anio; texto: @tr("Año"); icono: @image-url("iconos/dato-anio.svg"); alineacion: right; }
             EncabezadoConIcono { width: root.ancho-de-la-duracion; texto: @tr("Duración"); icono: @image-url("iconos/dato-duracion.svg"); alineacion: right; }
+            EncabezadoConIcono {
+                width: root.ancho-del-bpm;
+                texto: @tr("BPM");
+                icono: @image-url("iconos/dato-bpm.svg");
+                alineacion: right;
+                ayuda: @tr("Tempo: el fijado en el editor o el que estimó el análisis (vacío si el tema todavía no se analizó). Se busca con bpm:, por ejemplo bpm:120..128");
+            }
             EncabezadoConIcono {
                 width: root.ancho-de-sonado;
                 texto: @tr("Sonó");
                 icono: @image-url("iconos/dato-sonado.svg");
                 alineacion: right;
-                ayuda: @tr("Día de la última reproducción (vacío: nunca sonó). Se busca con sonado:, por ejemplo sonado:>30d");
+                ayuda: @tr("Fecha y hora en que empezó a sonar por última vez, en la hora de la localidad del HTH (vacío: nunca sonó). Se busca con sonado:, por ejemplo sonado:>30d");
             }
             EncabezadoConIcono {
                 width: root.ancho-en-lista;
@@ -145,10 +237,42 @@ export component BuscadorDelCatalogo inherits Window {
                     height: 28px;
                     background: ficha.seleccionada ? Palette.selection-background
                         : Math.mod(indice, 2) == 1 ? Palette.alternate-background : transparent;
+                    // Sobre un tema elegido, vale para todos los elegidos.
+                    menu-de-ficha := ContextMenuArea {
+                        Menu {
+                            MenuItem {
+                                title: @tr("Editar...");
+                                enabled: !ficha.sin-archivo;
+                                activated => { root.editar(indice); }
+                            }
+                            Menu {
+                                title: @tr("Actualizar datos");
+                                MenuItem {
+                                    title: @tr("Completar desde internet...");
+                                    activated => { root.actualizar(indice, 1); }
+                                }
+                                MenuItem {
+                                    title: @tr("Releer las etiquetas...");
+                                    activated => { root.actualizar(indice, 0); }
+                                }
+                            }
+                            MenuItem {
+                                title: @tr("Descatalogar...");
+                                activated => { root.descatalogar(indice); }
+                            }
+                        }
+                    }
                     TouchArea {
                         pointer-event(evento) => {
                             if evento.kind == PointerEventKind.down && evento.button == PointerEventButton.left {
                                 root.clic(indice, evento.modifiers.control, evento.modifiers.shift);
+                            }
+                            // Clic derecho fuera de lo elegido: elige ese tema.
+                            if evento.kind == PointerEventKind.down && evento.button == PointerEventButton.right {
+                                if !ficha.seleccionada {
+                                    root.clic(indice, false, false);
+                                }
+                                menu-de-ficha.show({ x: self.mouse-x, y: self.mouse-y });
                             }
                         }
                         double-clicked => { root.insertar(indice); }
@@ -163,8 +287,10 @@ export component BuscadorDelCatalogo inherits Window {
                                 tono-del-icono: Iconografia.color-de-tipo(ficha.tipo, root.tono-de(ficha));
                             }
                             CeldaDelCatalogo { width: root.ancho-del-genero; texto: ficha.genero; tono: root.tono-de(ficha); }
+                            CeldaDelCatalogo { horizontal-stretch: 1; texto: ficha.album; tono: root.tono-de(ficha); }
                             CeldaDelCatalogo { width: root.ancho-del-anio; texto: ficha.anio; tono: root.tono-de(ficha); alineacion: right; }
                             CeldaDelCatalogo { width: root.ancho-de-la-duracion; texto: ficha.duracion; tono: root.tono-de(ficha); alineacion: right; }
+                            CeldaDelCatalogo { width: root.ancho-del-bpm; texto: ficha.bpm; tono: root.tono-de(ficha); alineacion: right; }
                             CeldaDelCatalogo { width: root.ancho-de-sonado; texto: ficha.sonado; tono: root.tono-de(ficha); alineacion: right; }
                             CeldaDelCatalogo {
                                 width: root.ancho-en-lista;
@@ -188,7 +314,7 @@ export component BuscadorDelCatalogo inherits Window {
 
         Text {
             text: root.aviso != "" ? root.aviso
-                : @tr("Clic, Ctrl+clic o Mayus+clic para elegir; doble clic o Enter inserta. Los que ya estan en la lista no se repiten.");
+                : @tr("Clic, Ctrl+clic o Mayus+clic para elegir; doble clic o Enter inserta; clic derecho: editar, actualizar o descatalogar. Los que ya estan en la lista no se repiten.");
             wrap: word-wrap;
             font-size: 12px;
             color: Palette.foreground.transparentize(20%);
@@ -224,16 +350,59 @@ export component BuscadorDelCatalogo inherits Window {
             Button {
                 icon: @image-url("iconos/buscar-en-catalogo.svg");
                 colorize-icon: true;
-                text: @tr("MusicBrainz");
+                text: @tr("Internet");
                 enabled: root.fichas.length > 0;
-                clicked => { root.completar-desde-musicbrainz(); }
-                Tooltip { text: @markdown("\{@tr("Busca los temas elegidos (o todos los resultados, si no hay elegidos) en MusicBrainz y propone completar album, año, genero, titulo y artista")}"); }
+                clicked => { root.completar-desde-internet(); }
+                Tooltip { text: @markdown("\{@tr("Busca los temas elegidos (o todos los resultados, si no hay elegidos) en internet (MusicBrainz, y lo que falte en Deezer e iTunes) y propone completar album, año, genero, titulo y artista")}"); }
+            }
+            Button {
+                icon: @image-url("iconos/dato-album.svg");
+                colorize-icon: true;
+                text: @tr("Carátulas");
+                enabled: root.fichas.length > 0;
+                clicked => { root.descargar-caratulas(); }
+                Tooltip { text: @markdown("\{@tr("Busca la carátula de los temas elegidos (o de todos los resultados, si no hay elegidos): los que tienen la suya, en el archivo o en su carpeta, no se consultan; las que faltan se descargan de internet (Deezer, iTunes y MusicBrainz) y quedan guardadas")}"); }
             }
             Button {
                 icon: @image-url("iconos/cancelar.svg");
                 colorize-icon: true;
                 text: @tr("Cerrar");
                 clicked => { root.cerrar(); }
+            }
+        }
+    }
+
+    // Globo de la carátula: ampliada y con su origen, mientras el puntero
+    // esta sobre la del tema elegido. Va al final para quedar por encima de
+    // la tabla y no toma el mouse.
+    if root.caratula-bajo-el-puntero && root.hay-caratula && root.hay-elegida: Rectangle {
+        x: 12px;
+        y: min(root.lugar-del-globo, max(0px, root.height - self.height - 8px));
+        width: globo-de-caratula.preferred-width;
+        height: globo-de-caratula.preferred-height;
+        border-radius: 6px;
+        border-width: 1px;
+        border-color: Palette.border;
+        background: Palette.background;
+        drop-shadow-blur: 12px;
+        drop-shadow-color: #00000080;
+        drop-shadow-offset-y: 3px;
+        globo-de-caratula := VerticalLayout {
+            padding: 8px;
+            spacing: 6px;
+            Image {
+                width: 320px;
+                height: 320px;
+                source: root.caratula-ampliada;
+                image-fit: contain;
+            }
+            Text {
+                width: 320px;
+                text: root.origen-de-la-caratula;
+                font-size: 12px;
+                color: Palette.foreground.transparentize(20%);
+                horizontal-alignment: center;
+                overflow: elide;
             }
         }
     }

@@ -118,7 +118,7 @@ impl Controlador {
         self.mostrar_sobre_la_principal(ventana.window(), || ventana.show())
     }
 
-    fn cerrar_mantenimiento(&mut self) {
+    pub(super) fn cerrar_mantenimiento(&mut self) {
         // Una busqueda en curso ya no tiene donde mostrarse.
         self.generacion_de_busqueda += 1;
         self.mantenimiento.set_buscando(false);

@@ -9,7 +9,7 @@ use symphonia::core::errors::Error;
 use symphonia::core::formats::probe::Hint;
 use symphonia::core::formats::{FormatOptions, FormatReader, SeekMode, SeekTo, TrackType};
 use symphonia::core::io::MediaSourceStream;
-use symphonia::core::meta::{MetadataOptions, StandardTag};
+use symphonia::core::meta::{MetadataOptions, StandardTag, StandardVisualKey, Visual};
 use symphonia::core::units::{Duration, Time, TimeBase, Timestamp};
 
 use crate::dominio::nombre_de_archivo;
@@ -176,6 +176,30 @@ impl Decodificador {
     /// del archivo: para releerlas despues de corregirlas con otro programa.
     pub fn solo_etiquetas(archivo: &Path) -> Result<Analisis, String> {
         Ok(Self::abrir(archivo)?.leer_etiquetas())
+    }
+
+    /// La imagen que trae el archivo en sus etiquetas: la tapa si esta
+    /// marcada como tal y, si no, la primera, con true si es la tapa. Los
+    /// bytes tal como vienen (JPEG o PNG, por lo general); None si no trae
+    /// ninguna.
+    pub fn imagen_embebida(archivo: &Path) -> Result<Option<(Vec<u8>, bool)>, String> {
+        let mut decodificador = Self::abrir(archivo)?;
+        let mut metadatos = decodificador.formato.metadata();
+        let Some(revision) = metadatos.skip_to_latest() else {
+            return Ok(None);
+        };
+        let imagenes: Vec<&Visual> = revision
+            .media
+            .visuals
+            .iter()
+            .chain(revision.per_track.iter().flat_map(|pista| &pista.metadata.visuals))
+            .filter(|imagen| !imagen.data.is_empty())
+            .collect();
+        let tapa = imagenes.iter().find(|imagen| imagen.usage == Some(StandardVisualKey::FrontCover));
+        Ok(match tapa {
+            Some(tapa) => Some((tapa.data.to_vec(), true)),
+            None => imagenes.first().map(|imagen| (imagen.data.to_vec(), false)),
+        })
     }
 
     /// Etiquetas del archivo; sin titulo ni artista, el titulo es el nombre

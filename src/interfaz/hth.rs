@@ -57,6 +57,12 @@ pub(super) fn es_base_hth(archivo: &Path, carpeta_de_bases: Option<&Path>) -> bo
     archivo.parent().is_some_and(|carpeta| Pista::new(carpeta) == Pista::new(carpeta_de_bases))
 }
 
+/// Si el archivo es una base del anuncio, con la carpeta de bases ya buscada
+/// (None si no hay bases en la lista o no se busco).
+pub(super) fn es_base_hth_en(archivo: &Path, carpeta_de_bases: Option<&Path>) -> bool {
+    podria_ser_base(archivo) && es_base_hth(archivo, carpeta_de_bases)
+}
+
 /// Si alguna pista podria ser una base (esta en una carpeta "bases"): evita
 /// buscar la carpeta de locuciones en cada refresco de una lista sin bases.
 fn podria_ser_base(archivo: &Path) -> bool {
@@ -269,7 +275,8 @@ impl Controlador {
         let locuciones = self.locuciones().ok_or_else(|| {
             tr!("No se encontraron las locuciones del anuncio HTH: elija la carpeta con el boton de la carpeta, junto al boton HTH.")
         })?;
-        let ahora = jiff::Zoned::now();
+        // La hora que se anuncia es la del reloj: la de la localidad elegida.
+        let ahora = self.ahora_en_la_localidad();
         let momento = jiff::SignedDuration::try_from_secs_f64(adelanto.max(0.0))
             .ok()
             .and_then(|lapso| ahora.checked_add(lapso).ok())

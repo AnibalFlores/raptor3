@@ -9,6 +9,7 @@
 // Primero: define la macro tr! para el resto de los modulos.
 #[macro_use]
 mod idioma;
+mod formato_de_fecha;
 mod audio;
 mod bitacora;
 #[cfg(test)]
@@ -55,6 +56,7 @@ fn ejecutar() -> Result<(), String> {
     // muestran en el elegido (o, la primera vez, en el del sistema).
     let preferencias = RepositorioDePreferencias::en_carpeta_del_usuario();
     idioma::establecer(preferencias.idioma().unwrap_or_else(idioma::Idioma::del_sistema));
+    formato_de_fecha::establecer(preferencias.formato_de_fecha());
     log::info!("Idioma de la interfaz: {}", idioma::actual().codigo());
     // Dos motores se alternan para mezclar los temas; el tercero emite los
     // efectos de la botonera por encima y el cuarto es la preescucha del

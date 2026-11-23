@@ -15,10 +15,13 @@ export struct CambioPropuesto {
     nuevo: string,
     // "corregido a mano", "ficha anterior: no registra correcciones" o vacio.
     nota: string,
+    // Servicio de internet del que salio el dato (MusicBrainz, Deezer,
+    // iTunes); vacio con las etiquetas.
+    fuente: string,
 }
 
 // Revision de los datos que propone una fuente externa (las etiquetas de
-// los archivos o MusicBrainz): se eligen los cambios y se aplican al
+// los archivos o internet): se eligen los cambios y se aplican al
 // catalogo, sin tocar los archivos.
 export component ActualizacionDeDatos inherits Window {
     title: @tr("Actualizar datos del catálogo - MCP Raptor Player");
@@ -38,6 +41,8 @@ export component ActualizacionDeDatos inherits Window {
     in property <[CambioPropuesto]> cambios;
     in property <int> elegidos;
     in property <string> aviso;
+    // Los datos vienen de internet: se ve la columna de la fuente.
+    in property <bool> con-fuente;
 
     // Marca o desmarca un cambio (indice) o todos (-1).
     callback elegir(indice: int, elegido: bool);
@@ -47,6 +52,7 @@ export component ActualizacionDeDatos inherits Window {
 
     property <length> ancho-del-dato: 120px;
     property <length> ancho-de-la-nota: 220px;
+    property <length> ancho-de-la-fuente: 120px;
 
     pure function icono-de(campo: string) -> image {
         if (campo == "titulo") { return @image-url("iconos/dato-titulo.svg"); }
@@ -114,6 +120,7 @@ export component ActualizacionDeDatos inherits Window {
             EncabezadoConIcono { width: root.ancho-del-dato; texto: @tr("Dato"); icono: @image-url("iconos/datos.svg"); }
             EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Ahora"); icono: @image-url("iconos/deshacer.svg"); ayuda: @tr("Lo que dice el catálogo ahora"); }
             EncabezadoConIcono { horizontal-stretch: 1; texto: @tr("Propuesto"); icono: @image-url("iconos/validar.svg"); ayuda: @tr("Lo que trae la fuente; se aplica si está marcado"); }
+            if root.con-fuente: EncabezadoConIcono { width: root.ancho-de-la-fuente; texto: @tr("Fuente"); icono: @image-url("iconos/buscar-en-catalogo.svg"); ayuda: @tr("De dónde salió el dato: MusicBrainz, Deezer o iTunes"); }
             EncabezadoConIcono { width: root.ancho-de-la-nota; texto: @tr("Nota"); icono: @image-url("iconos/nota.svg"); ayuda: @tr("Los datos que usted corrigió a mano no se marcan solos: revíselos antes de aplicar"); }
         }
 
@@ -157,6 +164,7 @@ export component ActualizacionDeDatos inherits Window {
                             tono: cambio.elegido ? #69db7c : Palette.foreground.transparentize(35%);
                             peso: 600;
                         }
+                        if root.con-fuente: CeldaConIcono { width: root.ancho-de-la-fuente; texto: cambio.fuente; tono: fila.tono; }
                         CeldaConIcono { width: root.ancho-de-la-nota; texto: cambio.nota; tono: #ffc078; }
                     }
                 }

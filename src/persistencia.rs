@@ -2,6 +2,7 @@
 //! formatos JSON que la version Java del reproductor, mas los datos nuevos
 //! de cada cancion y las preferencias.
 
+use crate::formato_de_fecha::FormatoDeFecha;
 use crate::idioma::Idioma;
 use std::cell::RefCell;
 use std::collections::{BTreeMap, HashMap};
@@ -11,7 +12,7 @@ use std::path::{Path, PathBuf};
 use serde_json::{Map, Value, json};
 
 use crate::audio::{Analisis, SalidaDeAudio, anio_valido};
-use crate::dominio::{CampoDescriptivo, CamposCorregidos, DatosDescriptivos, OrigenDeLosDatos, Propuesta};
+use crate::dominio::{CampoDescriptivo, CamposCorregidos, DatosDescriptivos, ModoDeOperacion, OrigenDeLosDatos, Propuesta};
 use crate::dominio::{
     Anunciante, DIAS_DE_LA_SEMANA, Frecuencia, ModoDeEntrada, OrdenDePublicidad, PautaDelDia, Reposicion, PRIORIDAD_MAXIMA, PRIORIDAD_MINIMA, PRIORIDAD_POR_DEFECTO, PuntosDeMezcla, Recurrencia, TOLERANCIA_MAXIMA, TOLERANCIA_POSTERIOR_POR_DEFECTO, TOLERANCIA_PREVIA_POR_DEFECTO,
     TandaProgramada, TipoDeElemento, VentanaDeOverlay, formatear_hora, nombre_de_archivo, normalizar, parsear_dias, parsear_hora,
@@ -130,7 +131,7 @@ pub struct FichaDeCancion {
     /// de los sugeridos; se decide al conocer el analisis del tema.
     pub origen_por_resolver: bool,
     /// Datos descriptivos que el usuario corrigio a mano o eligio de
-    /// MusicBrainz: al releer las etiquetas no se proponen pisar.
+    /// internet: al releer las etiquetas no se proponen pisar.
     pub corregidos: CamposCorregidos,
 }
 
@@ -149,9 +150,11 @@ impl FichaDeCancion {
             valores.insert("puntosManuales".into(), json!(self.puntos.manuales()));
         }
         valores.insert("overlayManual".into(), json!(self.puntos.overlay_manual()));
-        // Siempre se escribe (null: sin clasificar): una ficha sin "tipo" es
-        // de una version anterior y se clasifica por su genero al leerla.
-        valores.insert("tipo".into(), json!(self.tipo.map(TipoDeElemento::nombre)));
+        // Siempre se escribe ("": sin clasificar, a proposito): una ficha sin
+        // "tipo" es de una version anterior y se clasifica por su genero al
+        // leerla; con null (sin clasificar por defecto, de versiones
+        // anteriores) pasa a ser un Tema.
+        valores.insert("tipo".into(), json!(self.tipo.map_or("", TipoDeElemento::nombre)));
         if let Some(ventana) = self.puntos.overlay() {
             valores.insert("overlayInicio".into(), json!(ventana.inicio()));
             valores.insert("overlayFin".into(), json!(ventana.fin()));
@@ -194,9 +197,9 @@ impl FichaDeCancion {
         Value::Object(valores)
     }
 
-    /// Lee una ficha; el booleano indica si era de una version anterior,
-    /// sin tipo, y se clasifico por su genero.
-    fn desde_json(audio: &str, valores: &Value) -> Result<(Self, bool), String> {
+    /// Lee una ficha y dice si su tipo vino de una version anterior y se
+    /// migro (hay que reescribir el archivo).
+    fn desde_json(audio: &str, valores: &Value) -> Result<(Self, Migracion), String> {
         let numero = |campo: &str| valores.get(campo).and_then(Value::as_f64);
         let texto = |campo: &str| valores.get(campo).and_then(Value::as_str).map(str::to_string);
         let intro = numero("intro").ok_or_else(|| tr!("falta la intro de {audio}", audio = audio))?;
@@ -213,9 +216,14 @@ impl FichaDeCancion {
             .como_manuales(manuales.unwrap_or(false))
             .con_overlay_manual(overlay_manual);
         let genero = texto("genero");
+        let es_marcador = Path::new(audio).extension().is_some_and(|extension| extension.eq_ignore_ascii_case("marca"));
         let (tipo, migrada) = match valores.get("tipo") {
-            Some(tipo) => (tipo.as_str().and_then(TipoDeElemento::desde_nombre), false),
-            None => (TipoDeElemento::deducido_del_genero(genero.as_deref()), true),
+            // Sin clasificar por defecto (versiones anteriores, que dejaban
+            // asi lo que no traia genero): suena como un Tema y lo es. Un
+            // marcador no es un tema.
+            Some(Value::Null) if !es_marcador => (Some(TipoDeElemento::Tema), Migracion::SinClasificarATema),
+            Some(tipo) => (tipo.as_str().and_then(TipoDeElemento::desde_nombre), Migracion::Ninguna),
+            None => (TipoDeElemento::deducido_del_genero(genero.as_deref()), Migracion::TipoDelGenero),
         };
         let mut ficha = Self {
             puntos,
@@ -296,6 +304,9 @@ pub struct CambiosDeDatos {
     pub ranking: Option<u8>,
     /// Some(None) borra el BPM manual (vuelve al del analisis).
     pub bpm: Option<Option<f64>>,
+    /// Momento en que empezo a sonar por ultima vez, en ISO 8601 UTC
+    /// ("2026-10-22T19:40:12Z"); Some(None) lo deja como si nunca hubiera sonado.
+    pub ultima_reproduccion: Option<Option<String>>,
 }
 
 /// Guarda una ficha por archivo de audio, para que al volver a agregar un
@@ -311,7 +322,9 @@ pub struct CambiosDeDatos {
 /// decide al conocer el analisis del tema. Sin "tipo" (versiones
 /// anteriores, que usaban el genero para eso) el tipo se deduce del genero
 /// una sola vez; antes de reescribir el archivo se deja una copia con el
-/// sufijo `.antes-del-tipo`. El genero no se toca.
+/// sufijo `.antes-del-tipo`. El genero no se toca. "tipo": "" es sin
+/// clasificar (elegido asi); null, de versiones que dejaban sin clasificar
+/// lo que no traia genero, pasa a Tema una sola vez (copia `.antes-del-tema`).
 ///
 /// Junto a ese archivo, `reubicaciones.json` recuerda los archivos que se
 /// reubicaron en el mantenimiento del catalogo ({ "ruta anterior": "ruta
@@ -489,8 +502,8 @@ impl RepositorioDeCanciones {
                     ficha.duracion = analisis.duracion;
                     ficha.convertir_overlay_anterior();
                 }
-                // Un archivo nuevo cuyas etiquetas nombran un tipo (genero
-                // "Comercial") entra clasificado.
+                // Un archivo nuevo entra clasificado: con el tipo que nombra
+                // el genero de sus etiquetas ("Comercial") o, si no, Tema.
                 if ficha.tipo.is_none() && ficha.genero.is_none() {
                     ficha.tipo = TipoDeElemento::deducido_del_genero(analisis.genero.as_deref());
                 }
@@ -561,6 +574,9 @@ impl RepositorioDeCanciones {
             if let Some(bpm) = cambios.bpm {
                 ficha.bpm = bpm.map(|bpm| (bpm.clamp(BPM_MINIMO, BPM_MAXIMO) * 10.0).round() / 10.0);
             }
+            if let Some(momento) = cambios.ultima_reproduccion {
+                ficha.ultima_reproduccion = momento;
+            }
             // Lo que el usuario cambio queda como corregido a mano.
             let despues = ficha.datos_descriptivos();
             for campo in CampoDescriptivo::TODOS {
@@ -574,7 +590,7 @@ impl RepositorioDeCanciones {
 
     /// Aplica los cambios elegidos de una fuente, con una sola escritura.
     /// Lo que viene de las etiquetas deja de contar como corregido; lo que
-    /// viene de MusicBrainz pasa a contar como corregido. Devuelve cuantos
+    /// viene de internet pasa a contar como corregido. Devuelve cuantos
     /// datos cambiaron.
     pub fn aplicar_propuestas(&mut self, propuestas: &[Propuesta], origen: OrigenDeLosDatos) -> usize {
         let mut cambiados = 0;
@@ -594,7 +610,7 @@ impl RepositorioDeCanciones {
                 }
                 match origen {
                     OrigenDeLosDatos::Etiquetas => ficha.corregidos.desmarcar(propuesta.campo),
-                    OrigenDeLosDatos::MusicBrainz => ficha.corregidos.marcar(propuesta.campo),
+                    OrigenDeLosDatos::Internet => ficha.corregidos.marcar(propuesta.campo),
                 }
             });
             cambiados += usize::from(cambio);
@@ -636,10 +652,12 @@ impl RepositorioDeCanciones {
             return;
         }
         match leer_fichas(&self.archivo) {
-            Ok((fichas, migradas)) => {
-                self.fichas = fichas;
-                if migradas > 0 {
-                    self.guardar_migracion_del_tipo(migradas);
+            Ok(leidas) => {
+                self.fichas = leidas.fichas;
+                if leidas.del_genero > 0 {
+                    self.guardar_migracion_del_tipo(leidas.del_genero);
+                } else if leidas.a_tema > 0 {
+                    self.guardar_migracion_a_tema(leidas.a_tema);
                 }
             }
             Err(error) => {
@@ -668,6 +686,21 @@ impl RepositorioDeCanciones {
             "Catalogo: {migradas} ficha(s) de una version anterior; {clasificadas} quedaron con tipo segun su genero (copia en {})",
             respaldo.display()
         );
+        self.escribir();
+    }
+
+    /// Respalda el catalogo y lo reescribe con los elementos que estaban sin
+    /// clasificar por defecto convertidos en Tema (una sola vez: desde ahora
+    /// "sin clasificar" se guarda distinto y solo si se elige).
+    fn guardar_migracion_a_tema(&self, migradas: usize) {
+        let respaldo = agregar_sufijo(&self.archivo, ".antes-del-tema");
+        if !respaldo.exists()
+            && let Err(error) = fs::copy(&self.archivo, &respaldo)
+        {
+            log::warn!("No se pudo respaldar {}: {error}; no se pasan a Tema los elementos sin clasificar", self.archivo.display());
+            return;
+        }
+        log::info!("Catalogo: {migradas} elemento(s) sin clasificar pasaron a Tema (copia en {})", respaldo.display());
         self.escribir();
     }
 
@@ -724,19 +757,38 @@ fn leer_reubicaciones(archivo: &Path) -> BTreeMap<PathBuf, PathBuf> {
         .collect()
 }
 
-/// Las fichas del archivo y cuantas eran de una version anterior, sin tipo.
-fn leer_fichas(archivo: &Path) -> Result<(HashMap<PathBuf, FichaDeCancion>, usize), String> {
+/// Migracion del tipo de una ficha al leerla.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Migracion {
+    Ninguna,
+    /// Sin "tipo" (versiones que usaban el genero): se dedujo del genero.
+    TipoDelGenero,
+    /// Sin clasificar por defecto (null): paso a ser un Tema.
+    SinClasificarATema,
+}
+
+/// Las fichas del archivo y cuantas se migraron de cada forma.
+struct FichasLeidas {
+    fichas: HashMap<PathBuf, FichaDeCancion>,
+    del_genero: usize,
+    a_tema: usize,
+}
+
+fn leer_fichas(archivo: &Path) -> Result<FichasLeidas, String> {
     let texto = fs::read_to_string(archivo).map_err(|error| error.to_string())?;
     let raiz: Value = serde_json::from_str(&texto).map_err(|error| error.to_string())?;
     let entradas = raiz.as_object().ok_or_else(|| tr!("se esperaba un objeto JSON"))?;
-    let mut fichas = HashMap::new();
-    let mut migradas = 0;
+    let mut leidas = FichasLeidas { fichas: HashMap::new(), del_genero: 0, a_tema: 0 };
     for (audio, valores) in entradas {
-        let (ficha, migrada) = FichaDeCancion::desde_json(audio, valores)?;
-        migradas += usize::from(migrada);
-        fichas.insert(normalizar(Path::new(audio)), ficha);
+        let (ficha, migracion) = FichaDeCancion::desde_json(audio, valores)?;
+        match migracion {
+            Migracion::Ninguna => {}
+            Migracion::TipoDelGenero => leidas.del_genero += 1,
+            Migracion::SinClasificarATema => leidas.a_tema += 1,
+        }
+        leidas.fichas.insert(normalizar(Path::new(audio)), ficha);
     }
-    Ok((fichas, migradas))
+    Ok(leidas)
 }
 
 /// Fecha y hora actual en UTC, en formato ISO 8601.
@@ -769,11 +821,11 @@ fn formatear_iso8601(segundos: i64) -> String {
 /// "objetivoLufs": -11, "desplazar": false, "ultimaLista": "C:\\listas\\tarde.json",
 /// "ultimoTema": { "posicion": 3, "archivo": "C:\\musica\\a.mp3" },
 /// "ventanaDelEditor": { "x": 300, "y": 120, "ancho": 1180, "alto": 640 },
-/// "editorCentrado": false,
+/// "editorCentrado": false, "caratulasDeInternet": false,
 /// "salidaDePreescucha": { "id": "wasapi:{...}", "nombre": "Auriculares" },
 /// "volumenDePreescucha": 0.8, "carpetaDeLocuciones": "D:\locuciones",
 /// "localidadDelClima": { "nombre": "Buenos Aires", "latitud": -34.6037, "longitud": -58.3816 },
-/// "idioma": "es" }
+/// "idioma": "es", "formatoDeFecha": "dma" }
 pub struct RepositorioDePreferencias {
     archivo: PathBuf,
     fader: u8,
@@ -781,6 +833,8 @@ pub struct RepositorioDePreferencias {
     nivelar_volumen: bool,
     objetivo_de_sonoridad: ObjetivoDeSonoridad,
     desplazar: bool,
+    // Modo AL AIRE: protege la secuencia que sale al aire.
+    al_aire: bool,
     ultima_lista: Option<PathBuf>,
     ultimo_tema: Option<UltimoTema>,
     ventana_del_editor: Option<GeometriaDeVentana>,
@@ -789,12 +843,14 @@ pub struct RepositorioDePreferencias {
     ajustes_de_efectos_visibles: bool,
     controles_visibles: bool,
     ver_onda: bool,
+    caratulas_de_internet: bool,
     salida_de_preescucha: Option<SalidaDeAudio>,
     volumen_de_preescucha: f64,
     carpeta_de_locuciones: Option<PathBuf>,
     localidad_del_clima: Localidad,
     // None: todavia no se eligio; se usa el del sistema.
     idioma: Option<Idioma>,
+    formato_de_fecha: FormatoDeFecha,
 }
 
 /// Volumen de la preescucha si no se eligio otro: el pleno.
@@ -830,6 +886,7 @@ impl RepositorioDePreferencias {
         let objetivo_de_sonoridad =
             valor("objetivoLufs").and_then(Value::as_f64).and_then(ObjetivoDeSonoridad::de_lufs).unwrap_or_default();
         let desplazar = valor("desplazar").and_then(Value::as_bool).unwrap_or(false);
+        let al_aire = valor("alAire").and_then(Value::as_bool).unwrap_or(false);
         let ultima_lista = valor("ultimaLista").and_then(Value::as_str).map(PathBuf::from);
         let ultimo_tema = valor("ultimoTema").and_then(|tema| {
             Some(UltimoTema {
@@ -850,6 +907,7 @@ impl RepositorioDePreferencias {
         let editor_centrado = valor("editorCentrado").and_then(Value::as_bool).unwrap_or(false);
         let ocultar_textos = valor("ocultarTextos").and_then(Value::as_bool).unwrap_or(false);
         let ver_onda = valor("verOnda").and_then(Value::as_bool).unwrap_or(false);
+        let caratulas_de_internet = valor("caratulasDeInternet").and_then(Value::as_bool).unwrap_or(false);
         let controles_visibles = valor("controlesVisibles").and_then(Value::as_bool).unwrap_or(true);
         let ajustes_de_efectos_visibles = valor("ajustesDeEfectosVisibles").and_then(Value::as_bool).unwrap_or(false);
         let salida_de_preescucha = valor("salidaDePreescucha").and_then(|salida| {
@@ -870,10 +928,13 @@ impl RepositorioDePreferencias {
                     nombre: localidad.get("nombre").and_then(Value::as_str).unwrap_or_default().to_string(),
                     latitud,
                     longitud,
+                    zona_horaria: localidad.get("zonaHoraria").and_then(Value::as_str).map(str::to_string),
                 })
             })
             .unwrap_or_default();
         let idioma = valor("idioma").and_then(Value::as_str).and_then(Idioma::desde_codigo);
+        let formato_de_fecha =
+            valor("formatoDeFecha").and_then(Value::as_str).and_then(FormatoDeFecha::desde_codigo).unwrap_or_default();
         Self {
             archivo,
             fader,
@@ -881,6 +942,7 @@ impl RepositorioDePreferencias {
             nivelar_volumen,
             objetivo_de_sonoridad,
             desplazar,
+            al_aire,
             ultima_lista,
             ultimo_tema,
             ventana_del_editor,
@@ -889,11 +951,13 @@ impl RepositorioDePreferencias {
             ajustes_de_efectos_visibles,
             controles_visibles,
             ver_onda,
+            caratulas_de_internet,
             salida_de_preescucha,
             volumen_de_preescucha,
             carpeta_de_locuciones,
             localidad_del_clima,
             idioma,
+            formato_de_fecha,
         }
     }
 
@@ -1031,6 +1095,18 @@ impl RepositorioDePreferencias {
         self.idioma
     }
 
+    /// Orden de dia, mes y año con que se muestran las fechas.
+    pub fn formato_de_fecha(&self) -> FormatoDeFecha {
+        self.formato_de_fecha
+    }
+
+    pub fn guardar_formato_de_fecha(&mut self, formato: FormatoDeFecha) {
+        if self.formato_de_fecha != formato {
+            self.formato_de_fecha = formato;
+            self.escribir();
+        }
+    }
+
     pub fn guardar_idioma(&mut self, idioma: Idioma) {
         if self.idioma != Some(idioma) {
             self.idioma = Some(idioma);
@@ -1060,6 +1136,20 @@ impl RepositorioDePreferencias {
     pub fn guardar_ver_onda(&mut self, activo: bool) {
         if activo != self.ver_onda {
             self.ver_onda = activo;
+            self.escribir();
+        }
+    }
+
+    /// Buscar en internet (Deezer, iTunes, MusicBrainz) la carátula de los
+    /// temas que no la traen ni la tienen en su carpeta. Apagado de entrada:
+    /// manda el artista y el album a esos servicios.
+    pub fn caratulas_de_internet(&self) -> bool {
+        self.caratulas_de_internet
+    }
+
+    pub fn guardar_caratulas_de_internet(&mut self, activo: bool) {
+        if activo != self.caratulas_de_internet {
+            self.caratulas_de_internet = activo;
             self.escribir();
         }
     }
@@ -1128,6 +1218,18 @@ impl RepositorioDePreferencias {
         }
     }
 
+    /// Modo de operacion elegido (AL AIRE o EDITOR).
+    pub fn modo_de_operacion(&self) -> ModoDeOperacion {
+        if self.al_aire { ModoDeOperacion::AlAire } else { ModoDeOperacion::Editor }
+    }
+
+    pub fn guardar_modo_de_operacion(&mut self, modo: ModoDeOperacion) {
+        if modo.al_aire() != self.al_aire {
+            self.al_aire = modo.al_aire();
+            self.escribir();
+        }
+    }
+
     fn escribir(&self) {
         let datos = json!({
             "fader": self.fader,
@@ -1135,6 +1237,7 @@ impl RepositorioDePreferencias {
             "nivelarVolumen": self.nivelar_volumen,
             "objetivoLufs": self.objetivo_de_sonoridad.lufs(),
             "desplazar": self.desplazar,
+            "alAire": self.al_aire,
             "ultimaLista": self.ultima_lista.as_ref().map(|lista| lista.to_string_lossy().into_owned()),
             "ultimoTema": self.ultimo_tema.as_ref().map(|tema| json!({
                 "posicion": tema.posicion,
@@ -1149,6 +1252,7 @@ impl RepositorioDePreferencias {
             "editorCentrado": self.editor_centrado,
             "ocultarTextos": self.ocultar_textos,
             "verOnda": self.ver_onda,
+            "caratulasDeInternet": self.caratulas_de_internet,
             "controlesVisibles": self.controles_visibles,
             "ajustesDeEfectosVisibles": self.ajustes_de_efectos_visibles,
             "salidaDePreescucha": self.salida_de_preescucha.as_ref().map(|salida| json!({
@@ -1161,8 +1265,10 @@ impl RepositorioDePreferencias {
                 "nombre": self.localidad_del_clima.nombre,
                 "latitud": self.localidad_del_clima.latitud,
                 "longitud": self.localidad_del_clima.longitud,
+                "zonaHoraria": self.localidad_del_clima.zona_horaria,
             },
             "idioma": self.idioma.map(Idioma::codigo),
+            "formatoDeFecha": self.formato_de_fecha.codigo(),
         });
         if let Err(error) = escribir_json(&self.archivo, &datos) {
             log::warn!("No se pudieron guardar las preferencias en {}: {error}", self.archivo.display());
@@ -2049,17 +2155,23 @@ fn misma_ruta(una: &Path, otra: &Path) -> bool {
 /// Botones de una hoja de la botonera.
 type Hoja = [Option<PathBuf>; CANTIDAD_DE_BOTONES];
 
+/// Largo maximo del nombre de una hoja de la botonera, en caracteres.
+pub const LARGO_MAXIMO_DEL_NOMBRE_DE_HOJA: usize = 40;
+
 /// Guarda la botonera de efectos: hojas de 10 botones con el archivo de cada
 /// uno, la hoja a la vista, el modo de disparo, el volumen de los efectos y
 /// la atenuacion de la musica. Siempre hay al menos una hoja.
 ///
 /// Formato: { "modo": "TRABADA", "atenuarMusica": true, "nivelDeMusica": 0.3, "atenuacionInteligente": true,
 ///   "volumenDeEfecto": -2.0, "anticipacion": 0.04, "recuperacion": 0.8, "separacionDb": 12, "hojaActual": 0,
-///   "hojas": [["C:\\efectos\\aplauso.wav", null, ...], [...]] }
+///   "hojas": [["C:\\efectos\\aplauso.wav", null, ...], [...]], "nombresDeHojas": ["Offs", null] }
 /// La lista "botones" de versiones anteriores se lee como la primera hoja.
+/// Una hoja sin nombre (null) se muestra como "Hoja N".
 pub struct RepositorioDeBotonera {
     archivo: PathBuf,
     hojas: Vec<Hoja>,
+    /// Nombre de cada hoja, a la par de `hojas`; None es el de siempre.
+    nombres: Vec<Option<String>>,
     hoja_actual: usize,
     modo: ModoDeOverlay,
     efecto: AjustesDeEfecto,
@@ -2070,6 +2182,7 @@ impl RepositorioDeBotonera {
         let mut repositorio = Self {
             archivo,
             hojas: vec![Hoja::default()],
+            nombres: vec![None],
             hoja_actual: 0,
             modo: ModoDeOverlay::Libre,
             efecto: ajustes_de_efecto_por_defecto(),
@@ -2102,6 +2215,7 @@ impl RepositorioDeBotonera {
     /// Agrega una hoja vacia al final, la pone a la vista y devuelve su numero.
     pub fn agregar_hoja(&mut self) -> usize {
         self.hojas.push(Hoja::default());
+        self.nombres.push(None);
         self.hoja_actual = self.hojas.len() - 1;
         self.escribir();
         self.hoja_actual
@@ -2116,10 +2230,34 @@ impl RepositorioDeBotonera {
             return Err(tr!("No existe la hoja {} (hay {}).", hoja + 1, self.hojas.len()));
         }
         self.hojas.remove(hoja);
+        self.nombres.remove(hoja);
         if self.hoja_actual >= hoja && self.hoja_actual > 0 {
             self.hoja_actual -= 1;
         }
         self.escribir();
+        Ok(())
+    }
+
+    /// Nombre que se le puso a la hoja (desde 0); None si tiene el de siempre.
+    pub fn nombre_de_hoja(&self, hoja: usize) -> Option<&str> {
+        self.nombres.get(hoja).and_then(|nombre| nombre.as_deref())
+    }
+
+    /// Le pone nombre a una hoja (desde 0). Se recortan los espacios de los
+    /// extremos; vacio, vuelve al de siempre ("Hoja N").
+    pub fn renombrar_hoja(&mut self, hoja: usize, nombre: &str) -> Result<(), String> {
+        let Some(lugar) = self.nombres.get_mut(hoja) else {
+            return Err(tr!("No existe la hoja {} (hay {}).", hoja + 1, self.hojas.len()));
+        };
+        let nombre = nombre.trim();
+        if nombre.chars().count() > LARGO_MAXIMO_DEL_NOMBRE_DE_HOJA {
+            return Err(tr!("El nombre de la hoja puede tener hasta {} caracteres.", LARGO_MAXIMO_DEL_NOMBRE_DE_HOJA));
+        }
+        let nuevo = (!nombre.is_empty()).then(|| nombre.to_string());
+        if *lugar != nuevo {
+            *lugar = nuevo;
+            self.escribir();
+        }
         Ok(())
     }
 
@@ -2218,6 +2356,7 @@ impl RepositorioDeBotonera {
         if let Err(error) = self.leer() {
             log::warn!("No se pudo leer {}: {error}; se empieza con la botonera vacia", self.archivo.display());
             self.hojas = vec![Hoja::default()];
+            self.nombres = vec![None];
             self.hoja_actual = 0;
             self.modo = ModoDeOverlay::Libre;
             self.efecto = ajustes_de_efecto_por_defecto();
@@ -2273,9 +2412,23 @@ impl RepositorioDeBotonera {
         if leidas.is_empty() {
             leidas.push(Hoja::default());
         }
+        // Los nombres faltan en las botoneras de versiones anteriores; uno que
+        // no es texto (o vacio) deja el nombre de siempre.
+        let nombres_leidos = raiz.get("nombresDeHojas").and_then(Value::as_array);
+        let nombres = (0..leidas.len())
+            .map(|hoja| {
+                nombres_leidos
+                    .and_then(|nombres| nombres.get(hoja))
+                    .and_then(Value::as_str)
+                    .map(str::trim)
+                    .filter(|nombre| !nombre.is_empty())
+                    .map(|nombre| nombre.chars().take(LARGO_MAXIMO_DEL_NOMBRE_DE_HOJA).collect())
+            })
+            .collect();
         self.hoja_actual =
             raiz.get("hojaActual").and_then(Value::as_u64).map_or(0, |hoja| hoja as usize).min(leidas.len() - 1);
         self.hojas = leidas;
+        self.nombres = nombres;
         Ok(())
     }
 
@@ -2309,6 +2462,7 @@ impl RepositorioDeBotonera {
             "separacionDb": self.efecto.separacion_db,
             "hojaActual": self.hoja_actual,
             "hojas": hojas,
+            "nombresDeHojas": self.nombres,
         });
         if let Err(error) = escribir_json(&self.archivo, &contenido) {
             log::warn!("No se pudo guardar la botonera en {}: {error}", self.archivo.display());
@@ -2560,6 +2714,37 @@ mod pruebas {
     }
 
     #[test]
+    fn lo_sin_clasificar_por_defecto_pasa_a_tema_una_sola_vez() {
+        let carpeta = carpeta_temporal("sin-clasificar-a-tema");
+        fs::create_dir_all(&carpeta).unwrap();
+        let archivo = carpeta.join("mezcla.json");
+        let [viejo, elegido, marcador] = ["viejo.mp3", "elegido.mp3", "Inicio de bloque fijo.marca"].map(|nombre| std::env::temp_dir().join(nombre));
+        let mut contenido = Map::new();
+        for (audio, tipo) in [(&viejo, Value::Null), (&elegido, json!("")), (&marcador, Value::Null)] {
+            contenido.insert(normalizar(audio).to_string_lossy().into_owned(), json!({ "intro": 0.0, "outro": 0.0, "tipo": tipo }));
+        }
+        fs::write(&archivo, Value::Object(contenido).to_string()).unwrap();
+        let repositorio = RepositorioDeCanciones::new(archivo.clone());
+        let tipo = |repositorio: &RepositorioDeCanciones, audio: &Path| repositorio.buscar(audio).unwrap().tipo;
+        assert_eq!(tipo(&repositorio, &viejo), Some(TipoDeElemento::Tema), "null de una version anterior");
+        assert_eq!(tipo(&repositorio, &elegido), None, "sin clasificar elegido a proposito");
+        assert_eq!(tipo(&repositorio, &marcador), None, "un marcador no es un tema");
+        assert!(carpeta.join("mezcla.json.antes-del-tema").is_file());
+        // Lo sin clasificar se guarda como "" y no vuelve a convertirse.
+        let mut repositorio = RepositorioDeCanciones::new(archivo.clone());
+        repositorio.cambiar_datos(&viejo, CambiosDeDatos { tipo: Some(None), ..Default::default() });
+        let releido = RepositorioDeCanciones::new(archivo.clone());
+        assert_eq!(tipo(&releido, &viejo), None);
+        let guardado: Value = serde_json::from_str(&fs::read_to_string(&archivo).unwrap()).unwrap();
+        assert_eq!(guardado[normalizar(&viejo).to_string_lossy().as_ref()]["tipo"], json!(""));
+        // Un archivo nuevo sin genero entra como Tema.
+        let nuevo = std::env::temp_dir().join("sin-genero.mp3");
+        let mut repositorio = releido;
+        repositorio.completar_con_analisis(&[(nuevo.clone(), Analisis::default())]);
+        assert_eq!(tipo(&repositorio, &nuevo), Some(TipoDeElemento::Tema));
+    }
+
+    #[test]
     fn un_archivo_nuevo_se_clasifica_por_sus_etiquetas() {
         let archivo = carpeta_temporal("tipo-de-etiquetas").join("mezcla.json");
         let [aviso, tema] = ["aviso-nuevo.mp3", "tema-nuevo.mp3"].map(|nombre| std::env::temp_dir().join(nombre));
@@ -2568,10 +2753,10 @@ mod pruebas {
         repositorio.completar_con_analisis(&[(aviso.clone(), con_genero("Comerciales")), (tema.clone(), con_genero("Rock"))]);
         assert_eq!(repositorio.buscar(&aviso).unwrap().tipo, Some(TipoDeElemento::Comercial));
         assert_eq!(repositorio.buscar(&tema).unwrap().tipo, Some(TipoDeElemento::Tema));
-        // Sin genero en las etiquetas queda sin clasificar.
+        // Sin genero en las etiquetas, por defecto un Tema.
         let sin_genero = std::env::temp_dir().join("sin-genero-nuevo.mp3");
         repositorio.completar_con_analisis(&[(sin_genero.clone(), Analisis { titulo: Some("Algo".into()), ..Default::default() })]);
-        assert_eq!(repositorio.buscar(&sin_genero).unwrap().tipo, None);
+        assert_eq!(repositorio.buscar(&sin_genero).unwrap().tipo, Some(TipoDeElemento::Tema));
     }
 
     #[test]
@@ -2926,10 +3111,12 @@ mod pruebas {
         preferencias.guardar_crossfade_inteligente(true);
         preferencias.guardar_nivelar_volumen(true);
         preferencias.guardar_desplazar(true);
+        preferencias.guardar_modo_de_operacion(ModoDeOperacion::AlAire);
         assert_eq!(preferencias.objetivo_de_sonoridad(), ObjetivoDeSonoridad::Menos11, "por defecto");
         preferencias.guardar_objetivo_de_sonoridad(ObjetivoDeSonoridad::Menos8);
         let leidas = RepositorioDePreferencias::new(archivo);
         assert!(leidas.crossfade_inteligente() && leidas.nivelar_volumen() && leidas.desplazar());
+        assert_eq!(leidas.modo_de_operacion(), ModoDeOperacion::AlAire);
         assert_eq!(leidas.objetivo_de_sonoridad(), ObjetivoDeSonoridad::Menos8);
         assert_eq!(leidas.fader(), 3);
     }
@@ -2995,6 +3182,28 @@ mod pruebas {
         repositorio.quitar_hoja(0).unwrap();
         assert_eq!((repositorio.cantidad_de_hojas(), repositorio.hoja_actual()), (1, 0));
         assert!(repositorio.quitar_hoja(0).is_err());
+    }
+
+    #[test]
+    fn las_hojas_recuerdan_su_nombre_y_lo_acompanan_al_quitar_otras() {
+        let archivo = carpeta_temporal("nombres-de-hojas").join("botonera.json");
+        let mut repositorio = RepositorioDeBotonera::new(archivo.clone());
+        assert_eq!(repositorio.nombre_de_hoja(0), None);
+        repositorio.agregar_hoja();
+        repositorio.agregar_hoja();
+        repositorio.renombrar_hoja(1, "  Offs en español ").unwrap();
+        repositorio.renombrar_hoja(2, "Offs in English").unwrap();
+        assert!(repositorio.renombrar_hoja(3, "No existe").is_err());
+        assert!(repositorio.renombrar_hoja(0, &"x".repeat(LARGO_MAXIMO_DEL_NOMBRE_DE_HOJA + 1)).is_err());
+        // Se guardan y se leen al volver a abrir.
+        let leido = RepositorioDeBotonera::new(archivo.clone());
+        assert_eq!((leido.nombre_de_hoja(0), leido.nombre_de_hoja(1)), (None, Some("Offs en español")));
+        // Al quitar una hoja, los nombres siguen a sus hojas.
+        repositorio.quitar_hoja(1).unwrap();
+        assert_eq!(repositorio.nombre_de_hoja(1), Some("Offs in English"));
+        // Vacio vuelve al nombre de siempre.
+        repositorio.renombrar_hoja(1, "   ").unwrap();
+        assert_eq!(RepositorioDeBotonera::new(archivo).nombre_de_hoja(1), None);
     }
 
     #[test]
@@ -3098,6 +3307,22 @@ mod pruebas {
     }
 
     #[test]
+    fn la_ultima_reproduccion_se_corrige_o_se_borra_a_mano() {
+        let archivo = carpeta_temporal("sono").join("mezcla.json");
+        let mut repositorio = RepositorioDeCanciones::new(archivo.clone());
+        let audio = Path::new("C:/musica/a.mp3");
+        repositorio.registrar_reproduccion(audio, "2026-11-23T11:13:05Z".into());
+        // Sin pedirlo, no cambia.
+        repositorio.cambiar_datos(audio, CambiosDeDatos { titulo: Some("A".into()), ..Default::default() });
+        assert_eq!(repositorio.buscar(audio).unwrap().ultima_reproduccion.as_deref(), Some("2026-11-23T11:13:05Z"));
+        repositorio.cambiar_datos(audio, CambiosDeDatos { ultima_reproduccion: Some(Some("2026-11-20T09:00:00Z".into())), ..Default::default() });
+        let leida = RepositorioDeCanciones::new(archivo.clone());
+        assert_eq!(leida.buscar(audio).unwrap().ultima_reproduccion.as_deref(), Some("2026-11-20T09:00:00Z"));
+        repositorio.cambiar_datos(audio, CambiosDeDatos { ultima_reproduccion: Some(None), ..Default::default() });
+        assert_eq!(RepositorioDeCanciones::new(archivo).buscar(audio).unwrap().ultima_reproduccion, None);
+    }
+
+    #[test]
     fn la_ficha_guarda_album_anio_y_efecto_fijado() {
         let archivo = carpeta_temporal("album").join("mezcla.json");
         let mut repositorio = RepositorioDeCanciones::new(archivo.clone());
@@ -3139,7 +3364,7 @@ mod pruebas {
         // Corregir a mano marca solo lo que cambio.
         repositorio.cambiar_datos(&tema, CambiosDeDatos { titulo: Some("Amiga mía".into()), artista: Some(String::new()), ..Default::default() });
         assert_eq!(repositorio.buscar(&tema).unwrap().corregidos.claves(), ["titulo"]);
-        // Lo que se aplica de MusicBrainz cuenta como corregido; de las etiquetas, no.
+        // Lo que se aplica de internet cuenta como corregido; de las etiquetas, no.
         let propuesta = |campo, nuevo: &str| Propuesta {
             archivo: tema.clone(),
             campo,
@@ -3151,7 +3376,7 @@ mod pruebas {
         };
         let aplicados = repositorio.aplicar_propuestas(
             &[propuesta(CampoDescriptivo::Album, "Más"), propuesta(CampoDescriptivo::Anio, "1997")],
-            OrigenDeLosDatos::MusicBrainz,
+            OrigenDeLosDatos::Internet,
         );
         assert_eq!(aplicados, 2);
         repositorio.aplicar_propuestas(&[propuesta(CampoDescriptivo::Titulo, "Amiga Mia")], OrigenDeLosDatos::Etiquetas);
@@ -3194,6 +3419,9 @@ mod pruebas {
         let leidas = RepositorioDePreferencias::new(archivo.clone());
         assert!(leidas.ocultar_textos() && leidas.editor_centrado());
         assert!(!leidas.ajustes_de_efectos_visibles());
+        assert!(!leidas.caratulas_de_internet(), "no sale a internet sin que se pida");
+        RepositorioDePreferencias::new(archivo.clone()).guardar_caratulas_de_internet(true);
+        assert!(RepositorioDePreferencias::new(archivo.clone()).caratulas_de_internet());
         RepositorioDePreferencias::new(archivo.clone()).guardar_ajustes_de_efectos_visibles(true);
         assert!(RepositorioDePreferencias::new(archivo.clone()).ajustes_de_efectos_visibles());
         assert_eq!(RepositorioDePreferencias::new(archivo.clone()).ventana_del_editor(), Some(geometria));
@@ -3212,7 +3440,12 @@ mod pruebas {
         // La localidad se cambia a mano en el archivo; una invalida vuelve a la de siempre.
         fs::write(&archivo, r#"{ "localidadDelClima": { "nombre": "Cordoba", "latitud": -31.42, "longitud": -64.18 } }"#).unwrap();
         let cordoba = RepositorioDePreferencias::new(archivo.clone());
-        assert_eq!(cordoba.localidad_del_clima(), &Localidad { nombre: "Cordoba".into(), latitud: -31.42, longitud: -64.18 });
+        assert_eq!(cordoba.localidad_del_clima(), &Localidad { nombre: "Cordoba".into(), latitud: -31.42, longitud: -64.18, zona_horaria: None });
+        // La zona horaria se guarda y se lee con la localidad.
+        let mut con_zona = RepositorioDePreferencias::new(archivo.clone());
+        let bogota = Localidad { nombre: "Bogota".into(), latitud: 4.61, longitud: -74.08, zona_horaria: Some("America/Bogota".into()) };
+        con_zona.guardar_localidad_del_clima(bogota.clone());
+        assert_eq!(RepositorioDePreferencias::new(archivo.clone()).localidad_del_clima(), &bogota);
         fs::write(&archivo, r#"{ "localidadDelClima": { "latitud": 120, "longitud": 0 } }"#).unwrap();
         assert_eq!(RepositorioDePreferencias::new(archivo).localidad_del_clima(), &Localidad::default());
     }

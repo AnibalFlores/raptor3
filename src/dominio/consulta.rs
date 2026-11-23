@@ -12,7 +12,8 @@
 //!   `bpm:120-128`, `duracion:<3:30`.
 //! - La ultima reproduccion: `sonado:hoy`, `sonado:7d` (en los ultimos 7
 //!   dias), `sonado:>30d` (hace mas de 30 dias), `sonado:2026-11-03`,
-//!   `sonado:<01/10/2026`, `sonado:nunca`.
+//!   `sonado:<01/10/2026` (dia, mes y año en el orden del formato de fecha
+//!   elegido), `sonado:nunca`.
 //! - `-` adelante niega cualquier condicion: `-genero:cumbia`.
 
 use jiff::civil::Date;
@@ -375,7 +376,11 @@ fn numero(texto: &str) -> Option<f64> {
 
 fn interpretar_sonado(valor: &str, ahora: &Zoned) -> Result<Criterio, String> {
     let error = || {
-        tr!("No se entiende «{valor}» para sonado; por ejemplo: sonado:hoy, sonado:7d, sonado:>30d, sonado:2026-11-03, sonado:<01/10/2026 o sonado:nunca", valor = valor)
+        tr!(
+            "No se entiende «{valor}» para sonado; por ejemplo: sonado:hoy, sonado:7d, sonado:>30d, sonado:2026-11-03, sonado:<{ejemplo} o sonado:nunca",
+            valor = valor,
+            ejemplo = crate::formato_de_fecha::actual().ejemplo()
+        )
     };
     let simplificado = simplificar(valor);
     if simplificado == "nunca" || simplificado == "never" {
@@ -416,8 +421,17 @@ fn hace(texto: &str, ahora: &Zoned) -> Option<f64> {
 }
 
 /// Intervalo de un dia (o un mes) local: "hoy", "ayer", "2026-11-03",
-/// "03/11/2026", "3/11" (de este ano) o "2026-11" (todo el mes).
+/// "03/11/2026", "3/11" (de este ano) o "2026-11" (todo el mes). Las fechas
+/// con barras siguen el formato de fecha elegido.
 fn dias_de(texto: &str, ahora: &Zoned) -> Option<(f64, f64)> {
+    dias_de_en(texto, ahora, crate::formato_de_fecha::actual())
+}
+
+/// Como `dias_de`, con el formato dado: en mes/dia/año, "11/03/2026" es el 3
+/// de noviembre; en dia/mes/año (y en año-mes-dia, que con barras usa el
+/// orden de dia y mes de siempre) es el 11 de marzo. El año corto ("26")
+/// es de este siglo.
+fn dias_de_en(texto: &str, ahora: &Zoned, formato: crate::formato_de_fecha::FormatoDeFecha) -> Option<(f64, f64)> {
     let hoy = ahora.date();
     let texto = simplificar(texto);
     let (inicio, fin) = match texto.as_str() {
@@ -431,10 +445,18 @@ fn dias_de(texto: &str, ahora: &Zoned) -> Option<(f64, f64)> {
                 (inicio, inicio.last_of_month().tomorrow().ok()?)
             } else {
                 let partes: Vec<&str> = texto.split('/').collect();
-                let (dia, mes, anio) = match partes.as_slice() {
-                    [dia, mes] => (dia, mes, hoy.year()),
-                    [dia, mes, anio] => (dia, mes, anio.parse::<i16>().ok()?),
+                let (primero, segundo, anio) = match partes.as_slice() {
+                    [primero, segundo] => (primero, segundo, hoy.year()),
+                    [primero, segundo, anio] => {
+                        let anio = anio.parse::<i16>().ok()?;
+                        (primero, segundo, if anio < 100 { 2000 + anio } else { anio })
+                    }
                     _ => return None,
+                };
+                let (dia, mes) = if formato == crate::formato_de_fecha::FormatoDeFecha::MesDiaAnio {
+                    (segundo, primero)
+                } else {
+                    (primero, segundo)
                 };
                 let fecha = Date::new(anio, mes.parse().ok()?, dia.parse().ok()?).ok()?;
                 (fecha, fecha.tomorrow().ok()?)
@@ -446,7 +468,8 @@ fn dias_de(texto: &str, ahora: &Zoned) -> Option<(f64, f64)> {
     Some((segundos(inicio)?, segundos(fin)?))
 }
 
-fn simplificar(texto: &str) -> String {
+/// Texto en minusculas y sin acentos, para comparar sin importar ninguno.
+pub fn simplificar(texto: &str) -> String {
     texto.trim().chars().flat_map(char::to_lowercase).map(sin_acento).collect()
 }
 
@@ -570,6 +593,7 @@ mod pruebas {
         assert!(!consulta("sonado:2026-11-07").coincide(&tema()));
         assert!(consulta("sonado:06/11/2026").coincide(&tema()));
         assert!(consulta("sonado:6/11").coincide(&tema()));
+        assert!(consulta("sonado:06/11/26").coincide(&tema()), "año corto, como en la columna");
         assert!(consulta("sonado:2026-11").coincide(&tema()));
         assert!(consulta("sonado:2026-11-01..2026-11-06").coincide(&tema()));
         assert!(consulta("sonado:>=2026-11-06").coincide(&tema()));
@@ -591,5 +615,21 @@ mod pruebas {
         assert!(!consulta("-sanz").coincide(&tema()));
         assert!(consulta("sanz -soda ranking:>=3").coincide(&tema()));
         assert!(consulta("-").coincide(&DatosDelTema { titulo: "-", ..DatosDelTema::default() }), "un guion solo es texto");
+    }
+
+    #[test]
+    fn las_fechas_con_barras_siguen_el_formato_elegido() {
+        use crate::formato_de_fecha::FormatoDeFecha;
+        let ahora: Zoned = "2026-11-08T15:00:00-03:00[America/Argentina/Buenos_Aires]".parse().unwrap();
+        let dia = |texto: &str, formato| dias_de_en(texto, &ahora, formato).map(|(desde, _)| desde);
+        let tres_de_noviembre = dia("2026-11-03", FormatoDeFecha::DiaMesAnio);
+        assert!(tres_de_noviembre.is_some());
+        assert_eq!(dia("03/11/2026", FormatoDeFecha::DiaMesAnio), tres_de_noviembre);
+        assert_eq!(dia("11/03/2026", FormatoDeFecha::MesDiaAnio), tres_de_noviembre);
+        assert_eq!(dia("11/3", FormatoDeFecha::MesDiaAnio), tres_de_noviembre, "sin año: el de este año");
+        assert_eq!(dia("11/03/26", FormatoDeFecha::MesDiaAnio), tres_de_noviembre, "año corto");
+        assert_ne!(dia("11/03/2026", FormatoDeFecha::DiaMesAnio), tres_de_noviembre, "en dia/mes es el 11 de marzo");
+        assert_eq!(dia("2026-11-03", FormatoDeFecha::AnioMesDia), tres_de_noviembre);
+        assert_eq!(dia("13/25/2026", FormatoDeFecha::MesDiaAnio), None);
     }
 }

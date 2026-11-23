@@ -52,10 +52,17 @@ fn hora_de(salida: DateTime) -> String {
     format!("{:02}:{:02}", salida.hour(), salida.minute())
 }
 
-/// "vie 06/11 10:30".
+/// "vie 06/11/2026 10:30": con el año, en el formato elegido (columna
+/// Proxima salida de la pauta).
+pub(super) fn fecha_con_anio(salida: DateTime) -> String {
+    let dia = DIAS_DE_LA_SEMANA[salida.date().weekday().to_monday_zero_offset() as usize];
+    format!("{dia} {} {}", salida.strftime(crate::formato_de_fecha::actual().completa()), hora_de(salida))
+}
+
+/// "vie 06/11 10:30" (dia y mes en el orden elegido).
 pub(super) fn fecha_corta(salida: DateTime) -> String {
     let dia = DIAS_DE_LA_SEMANA[salida.date().weekday().to_monday_zero_offset() as usize];
-    format!("{dia} {:02}/{:02} {}", salida.day(), salida.month(), hora_de(salida))
+    format!("{dia} {} {}", salida.strftime(crate::formato_de_fecha::actual().dia_y_mes()), hora_de(salida))
 }
 
 /// Un aviso de una tanda y la orden de publicidad de la que es (si es de una).
@@ -500,6 +507,7 @@ mod pruebas {
         assert_eq!(describir_minutos(180), "3 min");
         assert_eq!(describir_minutos(90), "90 s");
         assert_eq!(fecha_corta(jiff::civil::date(2026, 11, 6).at(10, 30, 0, 0)), "vie 06/11 10:30");
+        assert_eq!(fecha_con_anio(jiff::civil::date(2026, 11, 6).at(10, 30, 0, 0)), "vie 06/11/2026 10:30");
         assert_eq!(formatear_cuenta(251.2), "4:12");
         assert_eq!(formatear_cuenta(3_930.0), "1:05:30");
     }

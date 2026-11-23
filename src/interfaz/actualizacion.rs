@@ -1,7 +1,7 @@
 //! Actualizar los datos del catalogo desde una fuente externa: releer las
 //! etiquetas de los archivos (despues de corregirlas con Picard u otro
-//! programa) o completar desde MusicBrainz. La lectura y las consultas van en
-//! un hilo; cada resultado se compara con la ficha y los cambios propuestos
+//! programa) o completar desde internet (MusicBrainz, Deezer, iTunes). La
+//! lectura y las consultas van en un hilo; cada resultado se compara con la ficha y los cambios propuestos
 //! se muestran para elegirlos antes de aplicarlos al catalogo.
 
 use std::path::{Path, PathBuf};
@@ -14,12 +14,12 @@ use slint::{CloseRequestResponse, ComponentHandle, Model, ModelRc, VecModel};
 use super::buscador::titulo_de_la_ficha;
 use super::{Controlador, con_controlador};
 use crate::audio::Decodificador;
-use crate::dominio::{DatosDescriptivos, OrigenDeLosDatos, Propuesta, ReglasDelTipo, proponer};
-use crate::servicio::{PAUSA_ENTRE_CONSULTAS, buscar_grabacion};
+use crate::dominio::{CampoDescriptivo, DatosDescriptivos, OrigenDeLosDatos, Propuesta, ReglasDelTipo, proponer};
+use crate::servicio::{PAUSA_ENTRE_CONSULTAS, TemaBuscado, buscar_datos};
 use crate::{ActualizacionDeDatos, CambioPropuesto};
 
-/// Errores seguidos de MusicBrainz tras los que se deja de consultar (sin
-/// conexion, servicio caido).
+/// Temas seguidos sin respuesta de ninguna fuente de internet tras los que
+/// se deja de consultar (sin conexion).
 const ERRORES_PARA_DETENER: usize = 3;
 /// Cada cuantos archivos leidos se muestran los resultados al releer.
 const LECTURAS_POR_ENTREGA: usize = 25;
@@ -72,10 +72,14 @@ impl ActualizacionDelCatalogo {
     }
 }
 
+/// Un tema leido: sus datos y de que fuente de internet salio cada uno
+/// (vacio con las etiquetas).
+type Lectura = (PathBuf, DatosDescriptivos, Vec<(CampoDescriptivo, &'static str)>);
+
 /// Lo que se manda del hilo de trabajo a la interfaz.
 struct Entrega {
     generacion: u64,
-    lecturas: Vec<(PathBuf, DatosDescriptivos)>,
+    lecturas: Vec<Lectura>,
     hechos: usize,
     sin_coincidencia: usize,
     errores: Vec<String>,
@@ -86,8 +90,9 @@ fn entregar(entrega: Entrega) {
     let _ = slint::invoke_from_event_loop(move || con_controlador(|c| c.recibir_entrega(entrega)));
 }
 
-/// Fila de la tabla para un cambio propuesto.
-fn fila(propuesta: &Propuesta, tema: String) -> CambioPropuesto {
+/// Fila de la tabla para un cambio propuesto; `fuente`, el servicio de
+/// internet del que salio el dato.
+fn fila(propuesta: &Propuesta, tema: String, fuente: Option<&str>) -> CambioPropuesto {
     let nota = if propuesta.corregido {
         tr!("corregido a mano")
     } else if propuesta.sin_registro && propuesta.actual.is_some() {
@@ -103,6 +108,7 @@ fn fila(propuesta: &Propuesta, tema: String) -> CambioPropuesto {
         actual: propuesta.actual.clone().unwrap_or_default().into(),
         nuevo: propuesta.nuevo.clone().into(),
         nota: nota.into(),
+        fuente: fuente.unwrap_or_default().into(),
     }
 }
 
@@ -136,6 +142,7 @@ impl Controlador {
                             anio: analisis.anio,
                             genero: analisis.genero,
                         },
+                        Vec::new(),
                     )),
                     Err(error) => errores.push(error),
                 }
@@ -157,34 +164,58 @@ impl Controlador {
         }
     }
 
-    /// Busca cada tema en MusicBrainz (uno por segundo) y propone completar
-    /// sus datos. Solo los temas (no los avisos ni los efectos).
-    pub(super) fn completar_desde_musicbrainz(&mut self, archivos: Vec<PathBuf>) {
-        let temas: Vec<(PathBuf, String, Option<String>, Option<f64>)> = archivos
+    /// Busca cada tema en internet (MusicBrainz, Deezer e iTunes, uno por
+    /// segundo) y propone completar sus datos. Solo los temas (no los avisos
+    /// ni los efectos).
+    pub(super) fn completar_desde_internet(&mut self, archivos: Vec<PathBuf>) {
+        let temas: Vec<(PathBuf, TemaBuscado)> = archivos
             .into_iter()
             .filter(|archivo| !self.repositorio_de_canciones.tipo_de(archivo).sin_mezcla())
             .filter_map(|archivo| {
-                let ficha = self.repositorio_de_canciones.buscar(&archivo);
-                let titulo = ficha
-                    .and_then(|ficha| ficha.titulo.clone())
-                    .or_else(|| archivo.file_stem().map(|nombre| nombre.to_string_lossy().into_owned()))?;
-                let artista = ficha.and_then(|ficha| ficha.artista.clone());
-                let duracion = ficha.and_then(|ficha| ficha.duracion);
-                Some((archivo, titulo, artista, duracion))
+                let tema = self.tema_para_buscar(&archivo, None, None)?;
+                Some((archivo, tema))
             })
             .collect();
+        self.completar_temas_desde_internet(temas);
+    }
+
+    /// Desde el editor: busca el tema con el titulo y el artista escritos en
+    /// el formulario (aunque todavia no se hayan guardado); vacios, los de la
+    /// ficha.
+    pub(super) fn completar_desde_internet_con(&mut self, archivo: PathBuf, titulo: &str, artista: &str) {
+        let Some(tema) = self.tema_para_buscar(&archivo, Some(titulo), Some(artista)) else {
+            self.mostrar_estado(&tr!("No hay temas para buscar en internet (los avisos, efectos, marcadores y anuncios HTH no se buscan)."));
+            return;
+        };
+        self.completar_temas_desde_internet(vec![(archivo, tema)]);
+    }
+
+    /// Lo que se busca de un tema: el titulo y el artista indicados o los de
+    /// su ficha (sin titulo, el nombre del archivo) y su duracion.
+    fn tema_para_buscar(&self, archivo: &Path, titulo: Option<&str>, artista: Option<&str>) -> Option<TemaBuscado> {
+        let ficha = self.repositorio_de_canciones.buscar(archivo);
+        let indicado = |texto: Option<&str>| texto.map(str::trim).filter(|texto| !texto.is_empty()).map(str::to_string);
+        let titulo = indicado(titulo)
+            .or_else(|| ficha.and_then(|ficha| ficha.titulo.clone()))
+            .or_else(|| archivo.file_stem().map(|nombre| nombre.to_string_lossy().into_owned()))?;
+        let artista = indicado(artista).or_else(|| ficha.and_then(|ficha| ficha.artista.clone()));
+        let duracion = ficha.and_then(|ficha| ficha.duracion);
+        Some(TemaBuscado { titulo, artista, duracion })
+    }
+
+    fn completar_temas_desde_internet(&mut self, temas: Vec<(PathBuf, TemaBuscado)>) {
         if temas.is_empty() {
-            self.mostrar_estado(&tr!("No hay temas para buscar en MusicBrainz (los avisos, efectos, marcadores y anuncios HTH no se buscan)."));
+            self.mostrar_estado(&tr!("No hay temas para buscar en internet (los avisos, efectos, marcadores y anuncios HTH no se buscan)."));
             return;
         }
         let (generacion, cancelar) = self.comenzar_actualizacion(
-            OrigenDeLosDatos::MusicBrainz,
+            OrigenDeLosDatos::Internet,
             temas.len(),
-            tr!("MusicBrainz (musicbrainz.org), la base libre de datos musicales que usa Picard: se busca cada tema por titulo y artista, de a uno por segundo. Solo se marcan los datos que faltan; los demas, revíselos."),
+            tr!("Internet: cada tema se busca por título y artista primero en MusicBrainz (la base libre que usa Picard), y lo que falte, en Deezer y en iTunes; de a uno por segundo. Solo se marcan los datos que faltan; los demás, revíselos."),
         );
-        let lanzado = std::thread::Builder::new().name("musicbrainz".into()).spawn(move || {
+        let lanzado = std::thread::Builder::new().name("datos-de-internet".into()).spawn(move || {
             let mut errores_seguidos = 0;
-            for (numero, (archivo, titulo, artista, duracion)) in temas.iter().enumerate() {
+            for (numero, (archivo, tema)) in temas.iter().enumerate() {
                 if cancelar.load(Ordering::Relaxed) {
                     break;
                 }
@@ -199,10 +230,11 @@ impl Controlador {
                     errores: Vec::new(),
                     terminado: false,
                 };
-                match buscar_grabacion(titulo, artista.as_deref(), *duracion) {
-                    Ok(Some(coincidencia)) => {
+                match buscar_datos(tema) {
+                    Ok(Some(encontrado)) => {
                         errores_seguidos = 0;
-                        entrega.lecturas.push((archivo.clone(), coincidencia.datos));
+                        let fuentes = encontrado.fuentes.iter().map(|(campo, fuente)| (*campo, fuente.nombre())).collect();
+                        entrega.lecturas.push((archivo.clone(), encontrado.datos, fuentes));
                     }
                     Ok(None) => {
                         errores_seguidos = 0;
@@ -249,6 +281,7 @@ impl Controlador {
         actualizacion.errores.clear();
         let ventana = actualizacion.ventana.clone_strong();
         ventana.set_origen(explicacion.into());
+        ventana.set_con_fuente(origen == OrigenDeLosDatos::Internet);
         ventana.set_trabajando(true);
         ventana.set_progreso(0.0);
         ventana.set_elegidos(0);
@@ -273,11 +306,12 @@ impl Controlador {
         }
         let origen = self.actualizacion.origen;
         let mut filas = Vec::new();
-        for (archivo, leidos) in entrega.lecturas {
+        for (archivo, leidos, fuentes) in entrega.lecturas {
             let ficha = self.repositorio_de_canciones.buscar(&archivo).cloned().unwrap_or_default();
             let tema = titulo_de_la_ficha(&archivo, &ficha);
             for propuesta in proponer(archivo.clone(), &ficha.datos_descriptivos(), ficha.corregidos, &leidos, origen) {
-                filas.push(fila(&propuesta, tema.clone()));
+                let fuente = fuentes.iter().find(|(campo, _)| *campo == propuesta.campo).map(|(_, fuente)| *fuente);
+                filas.push(fila(&propuesta, tema.clone(), fuente));
                 self.actualizacion.propuestas.push(propuesta);
             }
         }
@@ -310,7 +344,7 @@ impl Controlador {
             temas.len()
         );
         if actualizacion.sin_coincidencia > 0 {
-            resumen.push_str(&tr!("; {} sin una coincidencia segura en MusicBrainz", actualizacion.sin_coincidencia));
+            resumen.push_str(&tr!("; {} sin una coincidencia segura en internet", actualizacion.sin_coincidencia));
         }
         let ventana = &actualizacion.ventana;
         ventana.set_resumen(resumen.into());
@@ -360,7 +394,7 @@ impl Controlador {
         self.mostrar_estado(&aviso);
     }
 
-    fn detener_actualizacion(&mut self) {
+    pub(super) fn detener_actualizacion(&mut self) {
         let actualizacion = &mut self.actualizacion;
         actualizacion.cancelar.store(true, Ordering::Relaxed);
         if actualizacion.ventana.get_trabajando() {
@@ -394,10 +428,10 @@ impl Controlador {
     }
 }
 
-/// Origen elegido en un menu: 0 etiquetas, 1 MusicBrainz.
+/// Origen elegido en un menu: 0 etiquetas, 1 internet.
 pub(super) fn actualizar_desde(c: &mut Controlador, archivos: Vec<PathBuf>, origen: i32) {
     if origen == 1 {
-        c.completar_desde_musicbrainz(archivos);
+        c.completar_desde_internet(archivos);
     } else {
         c.releer_etiquetas(archivos);
     }

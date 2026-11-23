@@ -397,6 +397,11 @@ export component EditorDePista inherits Window {
     // Nota u observacion libre: se ve en el tooltip de la lista y de la botonera.
     in-out property <string> nota;
     in-out property <string> anio;
+    // Ultima vez que empezo a sonar ("23/11/2026 14:05:33", hora de la
+    // localidad del HTH); vacio: nunca sono.
+    in-out property <string> sono;
+    // Como se escribe una fecha en el formato elegido ("dd/mm/aaaa").
+    in property <string> patron-de-fecha: "dd/mm/aaaa";
     // Efecto que suena solo con el tema: 0 ninguno, i el (i - 1) de la lista.
     in property <[string]> efectos-fijables;
     in-out property <int> efecto-fijado;
@@ -457,8 +462,8 @@ export component EditorDePista inherits Window {
     callback usar-overlay-sugerido();
     // Pone en el campo BPM el tempo que estima el analisis.
     callback calcular-bpm();
-    // Busca el tema en MusicBrainz y abre la revision de los datos.
-    callback buscar-en-musicbrainz();
+    // Busca el tema en internet y abre la revision de los datos.
+    callback buscar-en-internet();
     // Multiplica el BPM escrito (2 o 0.5), para corregir un tempo detectado
     // al doble o a la mitad.
     callback multiplicar-bpm(factor: float);
@@ -1420,7 +1425,7 @@ export component EditorDePista inherits Window {
                                     ayuda: @tr("Estilo musical, libre: no cambia como suena el tema (eso lo decide el Tipo). La lista ofrece todos los generos que ya existen en el catalogo.");
                                 }
                                 RotuloConIcono {
-                                    texto: @tr("Ranking");
+                                    texto: @tr("Rate");
                                     icono: @image-url("iconos/dato-ranking.svg");
                                 }
                                 SpinBox {
@@ -1480,12 +1485,22 @@ export component EditorDePista inherits Window {
                                     text <=> root.anio;
                                     input-type: number;
                                 }
+                                RotuloConIcono {
+                                    texto: @tr("Sonó");
+                                    icono: @image-url("iconos/dato-sonado.svg");
+                                }
+                                LineEdit {
+                                    width: 170px;
+                                    text <=> root.sono;
+                                    placeholder-text: @tr("Nunca");
+                                    Tooltip { text: @markdown("\{@tr("Fecha y hora en que empezó a sonar por última vez ({} hh:mm:ss, en la hora de la localidad del HTH). Vacío: nunca sonó. Se actualiza sola cada vez que el tema empieza a sonar.", root.patron-de-fecha)}"); }
+                                }
                                 Button {
                                     icon: @image-url("iconos/buscar-en-catalogo.svg");
                                     colorize-icon: true;
-                                    text: @tr("MusicBrainz");
-                                    clicked => { root.buscar-en-musicbrainz(); }
-                                    Tooltip { text: @markdown("\{@tr("Busca el tema en MusicBrainz por titulo y artista y muestra los datos que propone (album, año, genero) para elegirlos. Se aplican al catalogo y se ven aqui.")}"); }
+                                    text: @tr("Internet");
+                                    clicked => { root.buscar-en-internet(); }
+                                    Tooltip { text: @markdown("\{@tr("Busca el tema en internet por titulo y artista (MusicBrainz, y lo que falte en Deezer e iTunes) y muestra los datos que propone (album, año, genero) para elegirlos. Se aplican al catalogo y se ven aqui.")}"); }
                                 }
                             }
                             HorizontalLayout {

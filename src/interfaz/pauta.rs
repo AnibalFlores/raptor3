@@ -10,7 +10,7 @@ use jiff::SignedDuration;
 use slint::{CloseRequestResponse, ComponentHandle, Model, ModelRc, VecModel};
 
 use super::avisos::DestinoDeAvisos;
-use super::tandas::{describir_minutos, fecha_corta, formatear_cuenta};
+use super::tandas::{describir_minutos, fecha_con_anio, formatear_cuenta};
 use super::{Controlador, con_controlador, formatear_minutos};
 use crate::dominio::{
     ModoDeEntrada, Pista, PRIORIDAD_POR_DEFECTO, Recurrencia, TOLERANCIA_POSTERIOR_POR_DEFECTO,
@@ -149,13 +149,13 @@ impl Controlador {
                     Some(salida) => {
                         let falta = salida.duration_since(ahora).as_secs_f64();
                         if falta < HORIZONTE_DE_LA_CUENTA {
-                            format!("{} (en {})", fecha_corta(salida), formatear_cuenta(falta))
+                            tr!("{} (en {})", fecha_con_anio(salida), formatear_cuenta(falta))
                         } else {
-                            fecha_corta(salida)
+                            fecha_con_anio(salida)
                         }
                     }
                     None if tanda.activa => tr!("sin proximas").into(),
-                    None => "inactiva".into(),
+                    None => tr!("inactiva"),
                 };
                 let tolerancia = format!("-{} / +{}", describir_minutos(tanda.antes), describir_minutos(tanda.despues));
                 let entrada = match tanda.modo {

@@ -21,11 +21,13 @@ use slint::{CloseRequestResponse, ComponentHandle, Model, ModelRc, Timer, TimerM
 mod capturas;
 mod actualizacion;
 mod buscador;
+mod caratula;
 mod localidad;
 mod editor;
 mod hth;
 mod mantenimiento;
 mod marcadores;
+mod modo;
 mod ordenes;
 mod anunciantes;
 mod avisos;
@@ -171,14 +173,14 @@ use crate::audio::{Analisis, Decodificador, FormaDeOnda, PrioridadDeHilo, fijar_
 pub use salida_de_preescucha::SalidaDePreescucha;
 use hth::{
     FRANJA_DEL_ANUNCIO_HTH, TIPO_DEL_ANUNCIO_HTH, titulo_del_anuncio_hth, elegir_carpeta_de_locuciones_con_dialogo, es_anuncio_hth,
-    es_base_hth, insertar_anuncio_hth_con_dialogo,
+    es_base_hth, es_base_hth_en, insertar_anuncio_hth_con_dialogo,
 };
 use marcadores::{TIPO_DEL_MARCADOR, ayuda_del_marcador, es_marcador, marcador_de, titulo_del_marcador};
 use crate::dominio::{
     AudiosDeCarpeta, audios_de_carpeta,
     Duplicado, EXTENSIONES_SOPORTADAS, ListaDeReproduccion, MarcadorDeBloque, Pista, PuntosDeMezcla, buscar_duplicados, clave_de_tema,
     formatear_duracion, formatear_tiempo, formatear_ventana, nombre_de_archivo, ReglasDelTipo, TipoDeElemento,
-    ConsultaDeTemas, DatosDelTema, saltar_a_coincidencia,
+    ConsultaDeTemas, DatosDelTema, saltar_a_coincidencia, ModoDeOperacion, OperacionSobreLaSecuencia,
 };
 use crate::persistencia::{
     FORMATO_DE_FECHA_Y_HORA,
@@ -235,7 +237,9 @@ pub enum AccionDeTransporte {
     Reproducir,
     Pausar,
     Alternar,
-    Detener,
+    /// Al aire, `salir_del_aire` pasa a modo EDITOR al detener; si no, sigue
+    /// al aire para cuando se vuelva a reproducir.
+    Detener { salir_del_aire: bool },
     Siguiente,
     Anterior,
 }
@@ -372,6 +376,10 @@ pub struct Controlador {
     // Fila que se centro por ultima vez con "Desplazar", para centrar solo
     // al cambiar de tema.
     fila_centrada: Option<usize>,
+    // Al aire, se detuvo con el boton: al quedar detenida se pregunta si
+    // salir del modo AL AIRE (la pregunta queda pendiente para el ciclo).
+    detenida_al_aire: bool,
+    pregunta_de_salir_del_aire: bool,
     // Forma de onda del ultimo tema sobre el que sono un efecto, para medir
     // como suena la musica en ese tramo.
     onda_de_musica: RefCell<Option<(PathBuf, Rc<FormaDeOnda>)>>,
@@ -379,6 +387,17 @@ pub struct Controlador {
     onda_del_detalle: RefCell<Option<PathBuf>>,
     // Sube con cada pedido de barras: la respuesta de uno anterior se descarta.
     generacion_de_barras: Cell<u64>,
+    // Tema cuya carátula muestra el panel de detalles (o se busca), las ya
+    // vistas por archivo (None: no tiene) y el pedido vigente, que tambien lee
+    // el hilo que la busca para no salir a internet por un tema que ya paso.
+    caratula_del_detalle: RefCell<Option<PathBuf>>,
+    caratulas_vistas: RefCell<HashMap<PathBuf, caratula::CaratulaVista>>,
+    generacion_de_caratula: std::sync::Arc<std::sync::atomic::AtomicU64>,
+    // Lo mismo para el tema elegido en el catalogo.
+    caratula_del_catalogo: RefCell<Option<PathBuf>>,
+    generacion_de_caratula_del_catalogo: std::sync::Arc<std::sync::atomic::AtomicU64>,
+    // Sube al empezar o detener una descarga de carátulas desde el catalogo.
+    descarga_de_caratulas: std::sync::Arc<std::sync::atomic::AtomicU64>,
     // Clima para el anuncio HTH, la duracion del ultimo armado y la eleccion
     // de tomas de las locuciones.
     clima: ServicioDeClima,
@@ -391,13 +410,16 @@ pub struct Controlador {
 }
 
 /// Accion sobre las hojas de la botonera, tal como la pide un cliente externo.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub enum AccionDeHoja {
     /// Mostrar la hoja indicada (desde 0).
     Ir(usize),
     Agregar,
     /// Quitar la hoja indicada (desde 0).
     Quitar(usize),
+    /// Ponerle nombre a la hoja indicada (desde 0; None, la que esta a la
+    /// vista); vacio vuelve al de siempre.
+    Renombrar(Option<usize>, String),
 }
 
 thread_local! {
@@ -508,9 +530,17 @@ pub fn conectar(
         analisis_pedidos: HashSet::new(),
         filas_por_refrescar: false,
         fila_centrada: None,
+        detenida_al_aire: false,
+        pregunta_de_salir_del_aire: false,
         onda_de_musica: RefCell::default(),
         onda_del_detalle: RefCell::default(),
         generacion_de_barras: Cell::new(0),
+        caratula_del_detalle: RefCell::default(),
+        caratulas_vistas: RefCell::default(),
+        generacion_de_caratula: std::sync::Arc::default(),
+        caratula_del_catalogo: RefCell::default(),
+        generacion_de_caratula_del_catalogo: std::sync::Arc::default(),
+        descarga_de_caratulas: std::sync::Arc::default(),
         clima: ServicioDeClima::default(),
         duracion_del_anuncio_hth: None,
         azar_de_locuciones: Azar::nuevo(),
@@ -528,7 +558,20 @@ pub fn conectar(
     cablear_callbacks(ventana)?;
 
     let temporizador = Timer::default();
-    temporizador.start(TimerMode::Repeated, INTERVALO_DEL_CICLO, || con_controlador(Controlador::ciclo));
+    let debil = ventana.as_weak();
+    temporizador.start(TimerMode::Repeated, INTERVALO_DEL_CICLO, move || {
+        let mut preguntar = false;
+        con_controlador(|c| {
+            c.ciclo();
+            preguntar = std::mem::take(&mut c.pregunta_de_salir_del_aire);
+        });
+        // El dialogo va fuera de este ciclo: mientras esta abierto, el
+        // temporizador sigue andando.
+        if preguntar {
+            let debil = debil.clone();
+            Timer::single_shot(Duration::ZERO, move || preguntar_si_salir_del_aire(&debil, true));
+        }
+    });
     Ok(temporizador)
 }
 
@@ -565,6 +608,40 @@ impl Controlador {
         });
         self.editor.global::<IdiomaDeLaInterfaz>().set_ingles(ingles);
         self.buscador.ventana_slint().global::<IdiomaDeLaInterfaz>().set_ingles(ingles);
+        self.mostrar_formato_de_fecha();
+    }
+
+    /// El formato de fecha elegido en el menu y en el editor (que lo muestra
+    /// en el globo del campo Sono).
+    fn mostrar_formato_de_fecha(&self) {
+        use crate::formato_de_fecha::{FormatoDeFecha, actual};
+        let nombres: Vec<slint::SharedString> = FormatoDeFecha::TODOS.iter().map(|formato| formato.nombre().into()).collect();
+        let elegido = FormatoDeFecha::TODOS.iter().position(|formato| *formato == actual()).unwrap_or(0) as i32;
+        self.con_ventana(|ventana| {
+            ventana.set_formatos_de_fecha(ModelRc::new(VecModel::from(nombres)));
+            ventana.set_formato_de_fecha(elegido);
+        });
+        self.editor.set_patron_de_fecha(actual().para_escribir().into());
+        let ejemplo: slint::SharedString = actual().ejemplo().into();
+        self.con_ventana(|ventana| ventana.global::<IdiomaDeLaInterfaz>().set_ejemplo_de_fecha(ejemplo.clone()));
+        self.buscador.ventana_slint().global::<IdiomaDeLaInterfaz>().set_ejemplo_de_fecha(ejemplo);
+    }
+
+    /// Menu Ventana > Formato de fecha: cambia como se ven (y se escriben)
+    /// las fechas en toda la interfaz y lo recuerda.
+    fn elegir_formato_de_fecha(&mut self, indice: i32) {
+        use crate::formato_de_fecha::FormatoDeFecha;
+        let formato = usize::try_from(indice).ok().and_then(|indice| FormatoDeFecha::TODOS.get(indice).copied()).unwrap_or_default();
+        crate::formato_de_fecha::establecer(formato);
+        self.repositorio_de_preferencias.guardar_formato_de_fecha(formato);
+        self.mostrar_formato_de_fecha();
+        self.refrescar_reloj();
+        self.refrescar_filas();
+        self.refrescar_detalles();
+        self.refrescar_buscador_si_esta_abierto();
+        self.refrescar_tabla_de_la_pauta();
+        self.refrescar_sono_del_editor();
+        self.mostrar_estado(&tr!("Formato de fecha: {}", formato.nombre()));
     }
 
     /// Menu Ventana > Idioma: cambia el idioma de toda la interfaz al momento
@@ -575,9 +652,12 @@ impl Controlador {
         self.repositorio_de_preferencias.guardar_idioma(idioma);
         aplicar_idioma_en_slint(idioma);
         self.aplicar_idioma_en_las_ventanas();
-        // Los textos que arma Rust se rehacen en el idioma nuevo.
+        // Los textos que arma Rust se rehacen en el idioma nuevo (tambien el
+        // origen de la carátula, que se vuelve a mostrar).
+        *self.caratula_del_detalle.borrow_mut() = None;
         self.refrescar_filas();
         self.refrescar_interfaz();
+        self.refrescar_detalles();
         self.refrescar_titulo();
         self.refrescar_clima();
         self.refrescar_tabla_de_la_pauta();
@@ -727,8 +807,10 @@ fn cablear_callbacks(ventana: &VentanaPrincipal) -> Result<(), String> {
         con_controlador(|c| {
             c.registrar_fin_de_reproduccion();
             c.guardar_lista();
+            // Ninguna ventana hija queda abierta mientras el programa termina.
+            let cerradas = c.cerrar_ventanas_hijas();
+            log::info!("Al salir se cerraron {cerradas} ventana(s) hija(s)");
         });
-        // Cierra tambien el editor y el Acerca de, si estan abiertos.
         let _ = slint::quit_event_loop();
         CloseRequestResponse::HideWindow
     });
@@ -764,8 +846,10 @@ fn cablear_callbacks(ventana: &VentanaPrincipal) -> Result<(), String> {
     ventana.on_traer_editor(|| con_controlador(|c| c.traer_ventanas()));
     ventana.on_alternar_editor_centrado(|| con_controlador(|c| c.alternar_editor_centrado()));
     ventana.on_alternar_ocultar_textos(|| con_controlador(|c| c.alternar_ocultar_textos()));
+    ventana.on_alternar_caratulas_de_internet(|| con_controlador(|c| c.alternar_caratulas_de_internet()));
     ventana.on_alternar_vista_del_detalle(|| con_controlador(Controlador::alternar_vista_del_detalle));
     ventana.on_elegir_idioma(|indice| con_controlador(|c| c.elegir_idioma(indice)));
+    ventana.on_elegir_formato_de_fecha(|indice| con_controlador(|c| c.elegir_formato_de_fecha(indice)));
     ventana.on_mantenimiento_del_catalogo(|| {
         con_controlador(|c| {
             if let Err(error) = c.abrir_mantenimiento() {
@@ -865,7 +949,8 @@ fn cablear_callbacks(ventana: &VentanaPrincipal) -> Result<(), String> {
         }
         quitar_con_confirmacion(&debil, posiciones);
     });
-    ventana.on_limpiar_lista(|| con_controlador(Controlador::limpiar_lista));
+    let debil = ventana.as_weak();
+    ventana.on_limpiar_lista(move || limpiar_con_confirmacion(&debil));
     ventana.on_editar_pista(|indice| con_controlador(|c| c.editar_pista_desde_la_lista(indice)));
     let debil = ventana.as_weak();
     ventana.on_quitar_fila(move |indice| {
@@ -920,12 +1005,12 @@ fn cablear_callbacks(ventana: &VentanaPrincipal) -> Result<(), String> {
     ventana.on_doble_clic_en_fila(|indice| {
         con_controlador(|c| {
             if !c.seleccionar_bloque(indice as usize) {
-                c.reproducir_pista(indice as usize);
+                c.reproducir_desde_la_lista(indice as usize);
             }
         })
     });
     ventana.on_alternar_reproduccion(|| con_controlador(Controlador::alternar_reproduccion));
-    ventana.on_detener(|| con_controlador(Controlador::detener_todo));
+    ventana.on_detener(|| con_controlador(Controlador::detener_desde_la_ventana));
     ventana.on_anterior(|| con_controlador(Controlador::reproducir_anterior));
     ventana.on_siguiente(|| con_controlador(Controlador::reproducir_siguiente));
     ventana.on_repetir_cambiado(|repetir| con_controlador(|c| c.definir_repetir(repetir)));
@@ -937,12 +1022,27 @@ fn cablear_callbacks(ventana: &VentanaPrincipal) -> Result<(), String> {
         }
     });
     ventana.on_desplazar_cambiado(|activo| con_controlador(|c| c.cambiar_desplazar(activo)));
+    // Entrar al aire es inmediato; salir pide confirmacion (como al Detener).
+    let debil = ventana.as_weak();
+    ventana.on_al_aire_cambiado(move |al_aire| {
+        if al_aire {
+            con_controlador(|c| {
+                c.cambiar_modo_de_operacion(ModoDeOperacion::AlAire);
+            });
+        } else {
+            preguntar_si_salir_del_aire(&debil, false);
+        }
+    });
     ventana.on_volumen_cambiado(|volumen| con_controlador(|c| c.ajustar_volumen(volumen as f64)));
     ventana.on_volumen_por_defecto(|| con_controlador(|c| c.cambiar_volumen(VOLUMEN_POR_DEFECTO)));
     ventana.on_fader_cambiado(|segundos| con_controlador(|c| c.guardar_fader(segundos.round() as u8)));
     ventana.on_fader_por_defecto(|| con_controlador(|c| c.cambiar_fader(FADER_POR_DEFECTO)));
     ventana.on_progreso_movido(|segundos| {
-        con_controlador(|c| c.busqueda_pendiente = Some((segundos as f64, Instant::now())))
+        con_controlador(|c| {
+            if c.admitida_o_avisar(OperacionSobreLaSecuencia::Adelantar) {
+                c.busqueda_pendiente = Some((segundos as f64, Instant::now()));
+            }
+        })
     });
     ventana.on_mezclar_lista(|| {
         con_controlador(|c| {
@@ -994,6 +1094,11 @@ fn cablear_callbacks(ventana: &VentanaPrincipal) -> Result<(), String> {
     ventana.on_agregar_hoja(|| {
         con_controlador(|c| {
             let _ = c.hojas_de_efectos(AccionDeHoja::Agregar);
+        })
+    });
+    ventana.on_renombrar_hoja(|nombre| {
+        con_controlador(|c| match c.hojas_de_efectos(AccionDeHoja::Renombrar(None, nombre.to_string())) {
+            Ok(mensaje) | Err(mensaje) => c.mostrar_estado(&mensaje),
         })
     });
     let debil = ventana.as_weak();
@@ -1255,6 +1360,11 @@ fn guardar_lista_con_dialogo(ventana: &slint::Weak<VentanaPrincipal>, como: bool
 
 /// Carga una lista; si la actual tiene cambios sin guardar, primero pregunta.
 fn cargar_lista_con_dialogo(ventana: &slint::Weak<VentanaPrincipal>) {
+    let mut admitida = false;
+    con_controlador(|c| admitida = c.admitida_o_avisar(OperacionSobreLaSecuencia::CargarLista));
+    if !admitida {
+        return;
+    }
     let mut modificada = false;
     con_controlador(|c| modificada = c.lista_modificada() && !c.lista.esta_vacia());
     if modificada {
@@ -1286,6 +1396,67 @@ fn cargar_lista_con_dialogo(ventana: &slint::Weak<VentanaPrincipal>) {
     }
 }
 
+/// Pregunta si salir del modo AL AIRE y pasar a EDITOR: despues de Detener
+/// al aire (`detenida`) o al pulsar el boton rojo AL AIRE. Si no, sigue al
+/// aire.
+fn preguntar_si_salir_del_aire(ventana: &slint::Weak<VentanaPrincipal>, detenida: bool) {
+    let (titulo, pregunta) = if detenida {
+        (
+            tr!("Reproduccion detenida"),
+            tr!("La reproducción se detuvo en modo AL AIRE. ¿Salir del modo AL AIRE y pasar a modo EDITOR?\n\nSí: todos los comandos quedan habilitados.\nNo: sigue AL AIRE para cuando se vuelva a reproducir."),
+        )
+    } else {
+        (
+            tr!("Modo AL AIRE"),
+            tr!("¿Salir del modo AL AIRE y pasar a modo EDITOR?\n\nSí: todos los comandos quedan habilitados.\nNo: sigue AL AIRE."),
+        )
+    };
+    let mut dialogo = rfd::MessageDialog::new()
+        .set_level(rfd::MessageLevel::Info)
+        .set_title(&titulo)
+        .set_description(pregunta)
+        .set_buttons(rfd::MessageButtons::YesNo);
+    if let Some(ventana) = ventana.upgrade() {
+        dialogo = dialogo.set_parent(&ventana.window().window_handle());
+    }
+    let salir = dialogo.show() == rfd::MessageDialogResult::Yes;
+    con_controlador(|c| {
+        // Si mientras tanto volvio a sonar o ya se cambio el modo, no se toca.
+        if !c.modo_de_operacion().al_aire() {
+            return;
+        }
+        if salir {
+            c.cambiar_modo_de_operacion(ModoDeOperacion::Editor);
+        } else {
+            c.mostrar_estado(&tr!("Sigue en modo AL AIRE"));
+        }
+    });
+}
+
+/// Vacia la lista despues de confirmar: no se puede deshacer.
+fn limpiar_con_confirmacion(ventana: &slint::Weak<VentanaPrincipal>) {
+    let mut cuantas = None;
+    con_controlador(|c| {
+        if c.lista.esta_vacia() {
+            c.mostrar_estado(&tr!("La lista esta vacia"));
+        } else if c.admitida_o_avisar(OperacionSobreLaSecuencia::Limpiar) {
+            cuantas = Some(c.lista.tamano());
+        }
+    });
+    let Some(cuantas) = cuantas else { return };
+    let mut dialogo = rfd::MessageDialog::new()
+        .set_level(rfd::MessageLevel::Warning)
+        .set_title(&tr!("Limpiar la lista"))
+        .set_description(tr!("¿Quitar las {} pistas de la lista y detener la reproducción? No se puede deshacer (los archivos y sus datos guardados no se borran).", cuantas))
+        .set_buttons(rfd::MessageButtons::YesNo);
+    if let Some(ventana) = ventana.upgrade() {
+        dialogo = dialogo.set_parent(&ventana.window().window_handle());
+    }
+    if dialogo.show() == rfd::MessageDialogResult::Yes {
+        con_controlador(Controlador::limpiar_lista);
+    }
+}
+
 /// Quita las pistas de esas posiciones; si son mas de una, pide confirmacion.
 /// La que suena no se quita y, si hay marcadores de bloque entre temas, la
 /// primera vez solo se quitan los marcadores.
@@ -1294,6 +1465,11 @@ fn quitar_con_confirmacion(ventana: &slint::Weak<VentanaPrincipal>, posiciones: 
     con_controlador(|c| por_quitar = c.preparar_quitar(&posiciones));
     let (posiciones, quedo_la_que_suena) = por_quitar;
     if posiciones.is_empty() {
+        return;
+    }
+    let mut admitida = false;
+    con_controlador(|c| admitida = c.admitida_o_avisar(OperacionSobreLaSecuencia::Quitar(posiciones.len())));
+    if !admitida {
         return;
     }
     if posiciones.len() > 1 {
@@ -1638,6 +1814,18 @@ fn suena_sin_mezcla(canciones: &RepositorioDeCanciones, pista: &Pista) -> bool {
     es_anuncio_hth(pista.archivo()) || canciones.tipo_de(pista.archivo()).sin_mezcla()
 }
 
+/// Nombre de una hoja de la botonera (desde 0) cuando no se le puso otro.
+fn nombre_de_siempre_de_la_hoja(hoja: usize) -> String {
+    tr!("Hoja {}", hoja + 1)
+}
+
+/// Si sobre la pista puede salir un efecto de la botonera en modo trabado:
+/// no sobre los tipos sin mezcla (Comercial, Publicidad, Anuncio...) ni sobre
+/// una base del anuncio HTH, cuya ventana es para la voz del anuncio.
+fn admite_efectos_de_la_botonera(canciones: &RepositorioDeCanciones, carpeta_de_bases: Option<&Path>, pista: &Pista) -> bool {
+    !suena_sin_mezcla(canciones, pista) && !es_base_hth_en(pista.archivo(), carpeta_de_bases)
+}
+
 /// Si el archivo es propaganda facturable (tipo Comercial o Publicidad): sus
 /// salidas al aire se anotan en el registro de comerciales.
 fn es_facturable(canciones: &RepositorioDeCanciones, archivo: &Path) -> bool {
@@ -1734,19 +1922,95 @@ fn hace(pasado: &jiff::Zoned, ahora: &jiff::Zoned) -> String {
     }
 }
 
-/// Fecha de la ultima reproduccion en hora local ("23/10/2026 12:34") y el
+/// Formato de la columna Sono (lista y catalogo), con el año corto y en el
+/// orden elegido: "23/10/26 12:34:56".
+fn formato_de_la_columna_sono() -> String {
+    format!("{} %H:%M:%S", crate::formato_de_fecha::actual().corta())
+}
+
+/// Formato completo de la ultima reproduccion (panel de detalle y editor):
+/// "23/10/2026 12:34:56".
+pub(super) fn formato_de_la_reproduccion() -> String {
+    format!("{} %H:%M:%S", crate::formato_de_fecha::actual().completa())
+}
+
+/// Un momento guardado (ISO 8601 UTC) con ese formato en esa zona; vacio si
+/// no se entiende.
+pub(super) fn texto_de_reproduccion(momento: &str, zona: &jiff::tz::TimeZone, formato: &str) -> String {
+    momento.parse::<jiff::Timestamp>().map(|instante| instante.to_zoned(zona.clone()).strftime(formato).to_string()).unwrap_or_default()
+}
+
+/// Lee la ultima reproduccion escrita a mano en el formato elegido
+/// ("23/10/2026 12:34:56", o sin los segundos) en la hora de la localidad y la devuelve como se guarda
+/// (ISO 8601 UTC). Vacio: nunca sono. No admite fechas futuras.
+pub(super) fn leer_reproduccion(texto: &str, zona: &jiff::tz::TimeZone, ahora: jiff::Timestamp) -> Result<Option<String>, String> {
+    let texto = texto.trim();
+    if texto.is_empty() {
+        return Ok(None);
+    }
+    let formato = crate::formato_de_fecha::actual();
+    let civil = jiff::civil::DateTime::strptime(formato_de_la_reproduccion(), texto)
+        .or_else(|_| jiff::civil::DateTime::strptime(format!("{} %H:%M", formato.completa()), texto))
+        .map_err(|_| tr!("Sonó debe tener la forma {} hh:mm:ss (o quedar vacío).", formato.para_escribir()))?;
+    let instante = civil.to_zoned(zona.clone()).map_err(|error| error.to_string())?.timestamp();
+    if instante > ahora {
+        return Err(tr!("Sonó no puede ser una fecha futura."));
+    }
+    Ok(Some(instante.strftime("%Y-%m-%dT%H:%M:%SZ").to_string()))
+}
+
+/// Lo que muestra la columna Sono de una fila: el texto, el globo (cuanto
+/// hace o cuanto falta) y si es una estimacion (va en cursiva).
+#[derive(Default)]
+struct HorarioDeInicio {
+    texto: String,
+    ayuda: String,
+    estimado: bool,
+}
+
+/// Fecha y hora de la ultima reproduccion para la columna de la lista;
+/// vacio si no se entiende.
+pub(super) fn reproduccion_para_la_lista(momento: &str, zona: &jiff::tz::TimeZone) -> String {
+    texto_de_reproduccion(momento, zona, &formato_de_la_columna_sono())
+}
+
+/// Fecha de la ultima reproduccion en hora local ("23/10/2026 12:34:56") y el
 /// tiempo transcurrido desde entonces, para el tooltip.
-fn ultima_reproduccion(momento: &str) -> (String, String) {
+fn ultima_reproduccion(momento: &str, zona: &jiff::tz::TimeZone) -> (String, String) {
     let Ok(instante) = momento.parse::<jiff::Timestamp>() else {
         return (momento.to_string(), String::new());
     };
-    let zona = jiff::tz::TimeZone::system();
+    let zona = zona.clone();
     let pasado = instante.to_zoned(zona.clone());
     let ahora = jiff::Zoned::now().with_time_zone(zona);
-    (pasado.strftime("%d/%m/%Y %H:%M").to_string(), hace(&pasado, &ahora))
+    (pasado.strftime(&formato_de_la_reproduccion()).to_string(), hace(&pasado, &ahora))
 }
 
 /// Fecha ("Lunes 02/11/2026") y hora ("14:05:33") locales, para el reloj.
+/// Tipo (clave fija: Tema, Comercial... HTH, Bloque fijo), numero (vacio si
+/// no esta en la lista), titulo y artista (vacio si no tiene) de una pista,
+/// para el renglon grande.
+#[derive(Default)]
+struct RenglonDestacado {
+    tipo: String,
+    numero: String,
+    titulo: String,
+    artista: String,
+}
+
+impl RenglonDestacado {
+    /// En una linea: "# 3 Titulo - Artista".
+    fn texto(&self) -> String {
+        let tema = if self.artista.is_empty() { self.titulo.clone() } else { format!("{} - {}", self.titulo, self.artista) };
+        if self.numero.is_empty() { tema } else { format!("# {} {tema}", self.numero) }
+    }
+}
+
+/// Nombre del archivo sin la extension ("Aplausos.wav" -> "Aplausos").
+fn nombre_sin_extension(archivo: &Path) -> String {
+    archivo.file_stem().map_or_else(|| nombre_de_archivo(archivo), |nombre| nombre.to_string_lossy().into_owned())
+}
+
 fn fecha_y_hora(momento: &jiff::Zoned) -> (String, String) {
     let dia = match momento.weekday() {
         jiff::civil::Weekday::Monday => tr!("Lunes"),
@@ -1757,7 +2021,7 @@ fn fecha_y_hora(momento: &jiff::Zoned) -> (String, String) {
         jiff::civil::Weekday::Saturday => tr!("Sábado"),
         jiff::civil::Weekday::Sunday => tr!("Domingo"),
     };
-    (format!("{dia} {}", momento.strftime("%d/%m/%Y")), momento.strftime("%H:%M:%S").to_string())
+    (format!("{dia} {}", momento.strftime(crate::formato_de_fecha::actual().completa())), momento.strftime("%H:%M:%S").to_string())
 }
 
 /// Fecha y hora local para los registros, en ISO 8601: "2026-11-02 14:05:33".
@@ -1795,6 +2059,7 @@ impl Controlador {
         ventana.set_volumen(self.volumen_seleccionado as f32);
         ventana.set_editor_centrado(self.repositorio_de_preferencias.editor_centrado());
         ventana.set_ocultar_textos(self.repositorio_de_preferencias.ocultar_textos());
+        ventana.set_caratulas_de_internet(self.repositorio_de_preferencias.caratulas_de_internet());
         ventana.set_ver_onda(self.repositorio_de_preferencias.ver_onda());
         ventana.set_controles_visibles(self.repositorio_de_preferencias.controles_visibles());
         ventana.set_ajustes_de_efectos_visibles(self.repositorio_de_preferencias.ajustes_de_efectos_visibles());
@@ -1803,6 +2068,7 @@ impl Controlador {
         ventana.set_nivelar_volumen(self.repositorio_de_preferencias.nivelar_volumen());
         ventana.set_objetivo_lufs(self.repositorio_de_preferencias.objetivo_de_sonoridad().indice() as i32);
         ventana.set_desplazar(self.repositorio_de_preferencias.desplazar());
+        ventana.set_al_aire(self.repositorio_de_preferencias.modo_de_operacion().al_aire());
         ventana.set_modo_libre(repositorio.modo() == ModoDeOverlay::Libre);
         let ajustes = repositorio.ajustes_de_efecto();
         self.overlay.definir_ajustes(ajustes);
@@ -1851,6 +2117,9 @@ impl Controlador {
         }
         self.atender_corte_de_tanda();
 
+        // Solo con un efecto de la botonera en espera hace falta saber cuales
+        // son las bases del HTH (sobre ellas no sale: va la voz del anuncio).
+        let carpeta_de_bases = self.overlay.en_espera().and_then(|_| self.carpeta_de_bases_en_la_lista());
         let musica = MedidorDeMusica {
             datos: &self.datos_de_mezcla,
             nivelar: self.repositorio_de_preferencias.nivelar_volumen(),
@@ -1861,7 +2130,7 @@ impl Controlador {
         let lista = &self.lista;
         let ventana_de = |pista: &Pista| lista.puntos_de(pista).overlay();
         let canciones = &self.repositorio_de_canciones;
-        let admite_efectos = |pista: &Pista| !suena_sin_mezcla(canciones, pista);
+        let admite_efectos = |pista: &Pista| admite_efectos_de_la_botonera(canciones, carpeta_de_bases.as_deref(), pista);
         let musica_de = |pista: &Pista, desde: f64, segundos: f64| musica.medir(pista, desde, segundos);
         let canciones_de_efectos = &self.repositorio_de_canciones;
         let recorte_de = |archivo: &Path| recorte_de_efecto(canciones_de_efectos, archivo);
@@ -1903,11 +2172,13 @@ impl Controlador {
             self.refrescar_analisis_de_mezcla();
         }
         self.refrescar_totales();
+        self.completar_zona_de_la_localidad();
         self.refrescar_reloj();
         self.ciclos += 1;
         // Una vez por segundo: el tiempo transcurrido de la ultima reproduccion.
         if self.ciclos % 20 == 0 {
             self.refrescar_detalles();
+            self.refrescar_horarios();
             self.refrescar_clima();
             self.ciclo_de_tandas();
             self.refrescar_pauta();
@@ -1915,27 +2186,62 @@ impl Controlador {
         }
     }
 
+    /// La hora de la localidad elegida para el anuncio HTH: la de su zona
+    /// horaria (guardada con la localidad o, si es una localidad de antes,
+    /// la que informo la consulta del clima); si no se conoce, la del equipo.
+    pub(super) fn ahora_en_la_localidad(&self) -> jiff::Zoned {
+        let ahora = jiff::Zoned::now();
+        let nombre = self.repositorio_de_preferencias.localidad_del_clima().zona_horaria.clone().or_else(|| self.clima.zona_informada());
+        match nombre.as_deref().and_then(crate::servicio::zona_horaria) {
+            Some(zona) => ahora.with_time_zone(zona),
+            None => ahora,
+        }
+    }
+
+    /// Zona horaria de la localidad del HTH (la del sistema si no se sabe).
+    pub(super) fn zona_de_la_localidad(&self) -> jiff::tz::TimeZone {
+        self.ahora_en_la_localidad().time_zone().clone()
+    }
+
+    /// Una localidad guardada sin zona horaria (de una version anterior) se
+    /// completa con la que informo la consulta del clima.
+    fn completar_zona_de_la_localidad(&mut self) {
+        let localidad = self.repositorio_de_preferencias.localidad_del_clima();
+        if localidad.zona_horaria.is_some() {
+            return;
+        }
+        if let Some(zona) = self.clima.zona_informada() {
+            let completa = crate::servicio::Localidad { zona_horaria: Some(zona), ..localidad.clone() };
+            self.repositorio_de_preferencias.guardar_localidad_del_clima(completa);
+            self.recalcular_por_la_localidad();
+        }
+    }
+
     fn refrescar_reloj(&self) {
-        let (fecha, hora) = fecha_y_hora(&jiff::Zoned::now());
+        let (fecha, hora) = fecha_y_hora(&self.ahora_en_la_localidad());
         self.con_ventana(|ventana| {
-            if ventana.get_hora_actual() != hora.as_str() {
+            if ventana.get_hora_actual() != hora.as_str() || ventana.get_fecha_actual() != fecha.as_str() {
                 ventana.set_hora_actual(hora.into());
                 ventana.set_fecha_actual(fecha.into());
             }
         });
     }
 
-    /// Registra la ultima reproduccion de una pista cuando deja de sonar
-    /// (termina, se pasa a otra o se detiene), no cuando empieza: asi el
-    /// tiempo transcurrido cuenta desde que se escucho por ultima vez.
+    /// Registra la ultima reproduccion de una pista cuando empieza a sonar:
+    /// la columna Sono de la lista muestra la fecha y hora de ese comienzo.
     fn seguir_reproduccion(&mut self) {
         let sonando = (self.gestor.esta_reproduciendo() || self.gestor.esta_pausado()) && self.gestor.hay_pista_cargada();
         let actual = self.gestor.pista_actual().filter(|_| sonando).cloned();
         if actual != self.pista_en_curso {
             self.registrar_fin_de_reproduccion();
+            if let Some(pista) = actual.as_ref().filter(|pista| !es_anuncio_hth(pista.archivo())) {
+                self.repositorio_de_canciones.registrar_reproduccion(pista.archivo(), momento_actual());
+            }
             self.pista_en_curso = actual;
             self.inicio_en_curso = hora_local_actual();
             self.posicion_en_curso = 0.0;
+            // La columna Sono muestra el comienzo y las nuevas estimaciones.
+            self.refrescar_filas();
         } else if actual.is_some() {
             self.posicion_en_curso = self.gestor.tiempo_transcurrido();
         }
@@ -1945,9 +2251,6 @@ impl Controlador {
         if let Some(pista) = self.pista_en_curso.take() {
             if es_facturable(&self.repositorio_de_canciones, pista.archivo()) {
                 self.anotar_comercial(&pista);
-            }
-            if !es_anuncio_hth(pista.archivo()) {
-                self.repositorio_de_canciones.registrar_reproduccion(pista.archivo(), momento_actual());
             }
             self.refrescar_detalles();
         }
@@ -1993,7 +2296,7 @@ impl Controlador {
     /// desde la seleccion; con `#508`, a esa posicion. Con el texto vacio, la
     /// lista vuelve a la normalidad.
     fn buscar(&mut self, texto: &str) {
-        (self.busqueda, self.problema_de_busqueda) = match ConsultaDeTemas::nueva(texto) {
+        (self.busqueda, self.problema_de_busqueda) = match ConsultaDeTemas::nueva_en(texto, &self.ahora_en_la_localidad()) {
             Ok(consulta) => (consulta, None),
             Err(problema) => (None, Some(problema)),
         };
@@ -2140,6 +2443,7 @@ impl Controlador {
     /// hay un tema sonando, sigue sonando: si esta en la lista nueva queda
     /// como actual y, si no, al terminar empieza la lista nueva.
     pub fn cargar_lista_desde(&mut self, archivo: &Path) -> Result<String, String> {
+        self.admitida(OperacionSobreLaSecuencia::CargarLista)?;
         let mut leida = leer_lista(archivo)?;
         // Lo que se guarda como contenido de la lista es lo del archivo: si
         // hubo reubicaciones, la lista queda con cambios para guardarla al dia.
@@ -2180,6 +2484,11 @@ impl Controlador {
         }
         self.mostrar_estado(&mensaje);
         Ok(mensaje)
+    }
+
+    /// Archivo de la lista abierta, si se cargo o se guardo con nombre.
+    pub fn archivo_de_lista_abierta(&self) -> Option<PathBuf> {
+        self.archivo_de_lista.clone()
     }
 
     /// Guarda la lista con ese nombre; queda como la lista abierta.
@@ -2237,6 +2546,14 @@ impl Controlador {
             AccionDeHoja::Quitar(hoja) => {
                 repositorio.quitar_hoja(hoja)?;
                 tr!("Se quito la hoja {}; quedan {}.", hoja + 1, repositorio.cantidad_de_hojas())
+            }
+            AccionDeHoja::Renombrar(hoja, nombre) => {
+                let hoja = hoja.unwrap_or(repositorio.hoja_actual());
+                repositorio.renombrar_hoja(hoja, &nombre)?;
+                match repositorio.nombre_de_hoja(hoja) {
+                    Some(nombre) => tr!("La hoja {} se llama «{nombre}».", hoja + 1, nombre = nombre),
+                    None => tr!("La hoja {} volvio a llamarse «{}».", hoja + 1, nombre_de_siempre_de_la_hoja(hoja)),
+                }
             }
         };
         self.refrescar_botones();
@@ -2308,12 +2625,20 @@ impl Controlador {
         let (ultima, transcurrido) = match (pista, ficha.ultima_reproduccion.as_deref()) {
             (None, _) => ("—".to_string(), String::new()),
             (Some(_), None) => (tr!("nunca"), String::new()),
-            (Some(_), Some(momento)) => ultima_reproduccion(momento),
+            (Some(_), Some(momento)) => ultima_reproduccion(momento, &self.zona_de_la_localidad()),
         };
         let ranking = if pista.is_some() { estrellas(ficha.ranking) } else { "—".into() };
         let anio = ficha.anio.map_or_else(|| "—".to_string(), |anio| anio.to_string());
         let efecto = ficha.efecto_fijado.as_deref().map_or_else(|| "—".to_string(), nombre_de_archivo);
+        // Clave fija del tipo: el color de la carátula por defecto y el icono del tipo.
+        let tipo_clave = match pista {
+            Some(pista) if es_marcador(pista.archivo()) => "Bloque fijo",
+            Some(pista) if es_anuncio_hth(pista.archivo()) => "HTH",
+            Some(_) => ficha.tipo.map_or("", TipoDeElemento::nombre),
+            None => "",
+        };
         self.con_ventana(|ventana| {
+            ventana.set_detalle_tipo_clave(tipo_clave.into());
             ventana.set_detalle_carpeta(carpeta.into());
             ventana.set_titulo_de_la_onda(titulo_de_la_onda.into());
             ventana.set_detalle_archivo(archivo.into());
@@ -2328,6 +2653,7 @@ impl Controlador {
         });
         self.refrescar_marcas_de_la_onda(pista);
         self.refrescar_onda_del_detalle(pista.map(Pista::archivo));
+        self.refrescar_caratula_del_detalle(pista);
     }
 
     /// Mueve las pistas seleccionadas (una, un bloque o varias salteadas)
@@ -2335,6 +2661,9 @@ impl Controlador {
     fn mover_seleccionada(&mut self, desplazamiento: i32) {
         if self.seleccion.is_empty() {
             self.mostrar_estado(&tr!("Seleccione una o mas pistas para moverlas"));
+            return;
+        }
+        if !self.admitida_o_avisar(OperacionSobreLaSecuencia::Mover(self.seleccion.len())) {
             return;
         }
         let abajo = desplazamiento > 0;
@@ -2433,6 +2762,7 @@ impl Controlador {
     }
 
     fn mezclar(&mut self, reordenamiento: Reordenamiento) -> Result<String, String> {
+        self.admitida(OperacionSobreLaSecuencia::Reordenar)?;
         // Lo que esta en un bloque fijo no se mueve.
         let (posiciones, fijas) = self.sin_bloques_fijos(&reordenamiento.posiciones);
         if posiciones.len() < 2 {
@@ -2472,6 +2802,7 @@ impl Controlador {
     }
 
     fn ordenar_por_bpm(&mut self, reordenamiento: Reordenamiento) -> Result<String, String> {
+        self.admitida(OperacionSobreLaSecuencia::Reordenar)?;
         // Lo que esta en un bloque fijo no se mueve.
         let (posiciones, fijas) = self.sin_bloques_fijos(&reordenamiento.posiciones);
         if posiciones.len() < 2 {
@@ -2823,20 +3154,24 @@ impl Controlador {
         self.gestor.definir_duraciones(duraciones);
     }
 
-    /// Pasa al gestor la ganancia de nivelacion de cada tema de la lista.
+    /// Pasa al gestor la ganancia de cada elemento de la lista: la de la
+    /// nivelacion, si esta activa, y la del maximo volumen para los avisos
+    /// (Comercial, Publicidad y Anuncio), siempre.
     fn aplicar_ganancias(&mut self) {
-        let objetivo = self.objetivo_de_sonoridad();
-        let ganancias: HashMap<Pista, f64> = if self.nivelar_volumen() {
-            self.lista
-                .pistas()
-                .iter()
-                .filter_map(|pista| {
-                    self.datos_de_mezcla.get(pista.archivo()).map(|datos| (pista.clone(), datos.ganancia_de_nivelacion(objetivo)))
-                })
-                .collect()
-        } else {
-            HashMap::new()
-        };
+        let (objetivo, nivelar) = (self.objetivo_de_sonoridad(), self.nivelar_volumen());
+        let ganancias: HashMap<Pista, f64> = self
+            .lista
+            .pistas()
+            .iter()
+            .filter_map(|pista| {
+                let a_volumen_maximo = self.repositorio_de_canciones.tipo_de(pista.archivo()).a_volumen_maximo();
+                if !nivelar && !a_volumen_maximo {
+                    return None;
+                }
+                let datos = self.datos_de_mezcla.get(pista.archivo())?;
+                Some((pista.clone(), datos.ganancia(objetivo, nivelar, a_volumen_maximo)))
+            })
+            .collect();
         self.gestor.definir_ganancias(ganancias);
     }
 
@@ -3120,9 +3455,29 @@ impl Controlador {
             self.lista.quitar_en(indice);
         }
         let quitadas = posiciones.len();
-        self.limpiar_seleccion();
+        // El selector queda en el lugar de la primera quitada (ahora la
+        // siguiente; o la ultima, si se quito el final) para no perderse en
+        // listas largas.
+        let lugar = posiciones.first().copied().zip(self.lista.tamano().checked_sub(1)).map(|(primera, ultima)| primera.min(ultima));
+        match lugar {
+            Some(indice) => self.seleccionar_solo(indice),
+            None => self.limpiar_seleccion(),
+        }
+        // Lo que suena solo cambio de numero: "Desplazar" no debe llevarse la
+        // lista hacia el y perder el lugar donde se estaba quitando.
+        self.fila_centrada = self.lista.indice_actual();
         self.guardar_lista();
         self.refrescar_interfaz();
+        if let Some(indice) = lugar {
+            let centrar = self.repositorio_de_preferencias.desplazar();
+            self.con_ventana(|ventana| {
+                if centrar {
+                    ventana.invoke_centrar_fila(indice as i32);
+                } else {
+                    ventana.invoke_mostrar_fila(indice as i32);
+                }
+            });
+        }
         self.mostrar_estado(&tr!("{} pista(s) en la lista", self.lista.tamano()));
         quitadas
     }
@@ -3168,9 +3523,16 @@ impl Controlador {
         if cambia_el_tipo && self.reaplicar_puntos_automaticos(pista.archivo()) {
             ficha = self.ficha_de(pista);
         }
+        // Un aviso suena al maximo volumen: el tipo cambia su ganancia.
+        if cambia_el_tipo {
+            self.aplicar_ganancias();
+        }
         // Los datos se ven en la lista, y la nota tambien en los botones de efectos.
         self.refrescar_filas();
         self.refrescar_botones();
+        // Con otro artista o album puede corresponder otra carátula.
+        self.olvidar_caratula(pista.archivo());
+        self.refrescar_detalles();
         ficha
     }
 
@@ -3187,6 +3549,12 @@ impl Controlador {
             let pista = self.lista.pista_en(indice).expect("indice validado");
             return Ok(tr!("{} es la pista actual; Siguiente sigue el orden de la lista.", etiqueta(&self.lista, pista)));
         }
+        if self.marcada_para_siguiente().is_none() {
+            let pista = self.lista.pista_en(indice).expect("indice validado");
+            let mensaje = tr!("{} queda elegida; al aire Siguiente sigue el orden de la lista.", etiqueta(&self.lista, pista));
+            self.mostrar_estado(&mensaje);
+            return Ok(mensaje);
+        }
         self.informar_marcador();
         Ok(self.estado_visible())
     }
@@ -3199,7 +3567,16 @@ impl Controlador {
             AccionDeTransporte::Reproducir | AccionDeTransporte::Pausar | AccionDeTransporte::Alternar => {
                 self.alternar_reproduccion()
             }
-            AccionDeTransporte::Detener => self.detener_todo(),
+            AccionDeTransporte::Detener { salir_del_aire } => {
+                self.detener_todo();
+                if self.modo_de_operacion().al_aire() {
+                    if salir_del_aire {
+                        self.cambiar_modo_de_operacion(ModoDeOperacion::Editor);
+                    } else {
+                        self.mostrar_estado(&tr!("{} Sigue en modo AL AIRE.", self.estado_visible()));
+                    }
+                }
+            }
             AccionDeTransporte::Siguiente => self.reproducir_siguiente(),
             AccionDeTransporte::Anterior => self.reproducir_anterior(),
         }
@@ -3215,6 +3592,7 @@ impl Controlador {
             self.cambiar_fader(fader);
         }
         if let Some(posicion) = ajustes.posicion {
+            self.admitida(OperacionSobreLaSecuencia::Adelantar)?;
             self.gestor.buscar(posicion).map_err(|error| error.to_string())?;
         }
         if let Some(repetir) = ajustes.repetir {
@@ -3297,6 +3675,7 @@ impl Controlador {
         let efecto = self.overlay.ajustes();
         let (total, restante, sin_duracion) = self.totales();
         texto.push_str(&tr!("Duracion total de la lista: {} | Restante: {}{}\n", formatear_duracion(total), restante.map_or_else(|| "-".into(), formatear_duracion), if sin_duracion > 0 { format!(" ({sin_duracion} pista(s) sin duracion)") } else { String::new() }));
+        texto.push_str(&tr!("Modo: {}\n", if self.modo_de_operacion().al_aire() { tr!("AL AIRE") } else { tr!("EDITOR") }));
         texto.push_str(&tr!("Volumen: {} % | Fader: {} s | Repetir lista: {} | Pistas en la lista: {}\n", (self.volumen_seleccionado * 100.0).round(), self.fader(), si_no(self.lista.repite()), self.lista.tamano()));
         texto.push_str(&tr!("Crossfade inteligente: {} | Nivelar volumen: {} (a {} LUFS){}\n", si_no(self.crossfade_inteligente()), si_no(self.nivelar_volumen()), self.objetivo_de_sonoridad().lufs(), match self.analisis_pedidos.len() {
                 0 => String::new(),
@@ -3307,7 +3686,13 @@ impl Controlador {
             texto.push_str(&tr!("Ultimo efecto: {}\n", plan.descripcion()));
         }
         let repositorio = &self.repositorio_de_botonera;
-        texto.push_str(&tr!("Hoja de efectos a la vista: {} de {}\n", repositorio.hoja_actual() + 1, repositorio.cantidad_de_hojas()));
+        // Numero de la hoja (desde 1) seguido de su nombre propio, si tiene.
+        let hoja_con_nombre = |hoja: usize| match repositorio.nombre_de_hoja(hoja) {
+            Some(nombre) => format!("{} «{nombre}»", hoja + 1),
+            None => (hoja + 1).to_string(),
+        };
+        let actual = repositorio.hoja_actual();
+        texto.push_str(&tr!("Hoja de efectos a la vista: {} de {}\n", hoja_con_nombre(actual), repositorio.cantidad_de_hojas()));
         for hoja in (0..repositorio.cantidad_de_hojas()).filter(|hoja| *hoja != repositorio.hoja_actual()) {
             let asignados: Vec<String> = repositorio
                 .efectos()
@@ -3315,9 +3700,9 @@ impl Controlador {
                 .map(|(_, boton, archivo)| format!("{boton}: {}", nombre_de_archivo(archivo)))
                 .collect();
             let detalle = if asignados.is_empty() { "vacia".to_string() } else { asignados.join(", ") };
-            texto.push_str(&tr!("  Hoja {}: {detalle}\n", hoja + 1, detalle = detalle));
+            texto.push_str(&tr!("  Hoja {}: {detalle}\n", hoja_con_nombre(hoja), detalle = detalle));
         }
-        texto.push_str(&tr!("Botones de la hoja {}:\n", repositorio.hoja_actual() + 1));
+        texto.push_str(&tr!("Botones de la hoja {}:\n", hoja_con_nombre(actual)));
         for indice in 0..CANTIDAD_DE_BOTONES {
             let archivo = self.repositorio_de_botonera.archivo_del_boton(indice);
             let marca = match archivo {
@@ -3363,6 +3748,9 @@ impl Controlador {
     }
 
     fn limpiar_lista(&mut self) {
+        if !self.admitida_o_avisar(OperacionSobreLaSecuencia::Limpiar) {
+            return;
+        }
         self.gestor.detener();
         self.lista.limpiar();
         self.limpiar_seleccion();
@@ -3400,7 +3788,7 @@ impl Controlador {
     }
 
     fn informar_marcador(&self) {
-        let Some(pista) = self.marcador().and_then(|indice| self.lista.pista_en(indice)) else {
+        let Some(pista) = self.marcada_para_siguiente().and_then(|indice| self.lista.pista_en(indice)) else {
             return;
         };
         let como = match self.fader() {
@@ -3437,6 +3825,21 @@ impl Controlador {
         self.repositorio_de_canciones.buscar(pista.archivo()).and_then(|ficha| ficha.duracion)
     }
 
+    /// Reproducir (doble clic o menu) una fila: al aire, mientras suena
+    /// una pista no se salta a otra.
+    fn reproducir_desde_la_lista(&mut self, indice: usize) {
+        if self.gestor.hay_pista_cargada() && !self.admitida_o_avisar(OperacionSobreLaSecuencia::SaltarA) {
+            return;
+        }
+        self.reproducir_pista(indice);
+    }
+
+    /// Pista marcada con el selector a la que pasa Siguiente: al aire no hay
+    /// (Siguiente sigue el orden de la lista).
+    fn marcada_para_siguiente(&self) -> Option<usize> {
+        self.marcador().filter(|_| self.modo_de_operacion().admite(OperacionSobreLaSecuencia::SiguienteMarcada))
+    }
+
     fn reproducir_pista(&mut self, indice: usize) {
         if indice < self.lista.tamano() {
             self.lista.seleccionar_indice(indice);
@@ -3470,7 +3873,7 @@ impl Controlador {
     fn reproducir_siguiente(&mut self) {
         // La marcada con el selector, o la proxima cuyo archivo exista.
         let (proxima, salteadas) = self.proxima_reproducible();
-        let (destino, salteadas) = match self.marcador() {
+        let (destino, salteadas) = match self.marcada_para_siguiente() {
             Some(marcada) => (Some(marcada), Vec::new()),
             None => (proxima, salteadas),
         };
@@ -3550,6 +3953,9 @@ impl Controlador {
     }
 
     fn reproducir_anterior(&mut self) {
+        if !self.admitida_o_avisar(OperacionSobreLaSecuencia::Anterior) {
+            return;
+        }
         if self.lista.anterior().is_some() {
             self.reproducir_pista_actual();
         } else {
@@ -3584,6 +3990,19 @@ impl Controlador {
         self.refrescar_etiqueta_de_tiempo();
         self.refrescar_interfaz();
         self.mostrar_estado(&tr!("Reproduccion detenida"));
+        // Detenida con el boton estando al aire: se pregunta si salir.
+        if std::mem::take(&mut self.detenida_al_aire) && self.modo_de_operacion().al_aire() {
+            self.pregunta_de_salir_del_aire = true;
+        }
+    }
+
+    /// Detener (el boton): al aire, cuando termina el fundido se pregunta si
+    /// pasar a modo EDITOR o seguir al aire.
+    fn detener_desde_la_ventana(&mut self) {
+        if self.modo_de_operacion().al_aire() && self.gestor.hay_pista_cargada() {
+            self.detenida_al_aire = true;
+        }
+        self.detener_todo();
     }
 
     fn definir_repetir(&mut self, repetir: bool) {
@@ -3668,6 +4087,8 @@ impl Controlador {
 
     /// Registra el inicio de una pista y mueve el selector a ella.
     fn al_empezar_pista(&mut self, pista: &Pista) {
+        // Si volvio a sonar antes de quedar detenida, ya no se pregunta.
+        self.detenida_al_aire = false;
         self.disparar_efecto_fijado(pista);
         self.guardar_lista();
         if let Some(indice) = self.lista.indice_actual() {
@@ -3804,7 +4225,8 @@ impl Controlador {
             .unwrap_or_else(|| tr!("Sin pista cargada").into());
         let indice_actual = self.lista.indice_actual();
         let hay_anterior = indice_actual.is_some_and(|indice| indice > 0);
-        let hay_siguiente = self.marcador().is_some() || self.lista.indice_siguiente(indice_actual).is_some();
+        let hay_siguiente = self.marcada_para_siguiente().is_some() || self.lista.indice_siguiente(indice_actual).is_some();
+        self.refrescar_renglon_destacado();
         self.con_ventana(|ventana| {
             ventana.set_pista_actual(actual.into());
             if reproduciendo {
@@ -3826,18 +4248,52 @@ impl Controlador {
     /// Titulo grande de la pista que suena: "# 84 Titulo - Artista". Sin
     /// titulo en la ficha se usa el nombre del archivo sin la extension.
     fn titulo_destacado(&self, pista: &Pista) -> String {
+        self.renglon_destacado(pista, self.lista.indice_de(pista)).texto()
+    }
+
+    /// Numero, titulo y artista de una pista para el renglon grande.
+    fn renglon_destacado(&self, pista: &Pista, indice: Option<usize>) -> RenglonDestacado {
         let ficha = self.repositorio_de_canciones.buscar(pista.archivo());
         let titulo = ficha.and_then(|ficha| ficha.titulo.clone()).unwrap_or_else(|| {
             pista.archivo().file_stem().map_or_else(|| pista.nombre(), |nombre| nombre.to_string_lossy().into_owned())
         });
-        let tema = match ficha.and_then(|ficha| ficha.artista.as_deref()) {
-            Some(artista) => format!("{titulo} - {artista}"),
-            None => titulo,
+        let artista = ficha.and_then(|ficha| ficha.artista.clone()).filter(|artista| !artista.trim().is_empty()).unwrap_or_default();
+        // Lo que no tiene tipo suena como un tema: lleva su icono.
+        let tipo = if es_marcador(pista.archivo()) {
+            TIPO_DEL_MARCADOR.to_string()
+        } else if es_anuncio_hth(pista.archivo()) || es_base_hth(pista.archivo(), self.carpeta_de_bases_en_la_lista().as_deref()) {
+            TIPO_DEL_ANUNCIO_HTH.to_string()
+        } else {
+            ficha.and_then(|ficha| ficha.tipo).map_or(TipoDeElemento::Tema.nombre(), TipoDeElemento::nombre).to_string()
         };
-        match self.lista.indice_de(pista) {
-            Some(indice) => format!("# {} {tema}", indice + 1),
-            None => tema,
-        }
+        RenglonDestacado { tipo, numero: indice.map(|indice| (indice + 1).to_string()).unwrap_or_default(), titulo, artista }
+    }
+
+    /// El renglon grande: la pista que suena y la que sigue en la secuencia
+    /// (al aire se alternan).
+    fn refrescar_renglon_destacado(&self) {
+        let actual = self.gestor.pista_actual().filter(|_| self.gestor.hay_pista_cargada());
+        let en_curso = actual.map(|pista| {
+            let indice = self.lista.indice_actual().filter(|&indice| self.lista.pista_en(indice) == Some(pista)).or_else(|| self.lista.indice_de(pista));
+            self.renglon_destacado(pista, indice)
+        });
+        let siguiente = en_curso.as_ref().and_then(|_| {
+            let (proxima, _) = self.proxima_reproducible();
+            proxima.and_then(|indice| self.lista.pista_en(indice).map(|pista| self.renglon_destacado(pista, Some(indice))))
+        });
+        let en_curso = en_curso.unwrap_or_default();
+        let siguiente = siguiente.unwrap_or_default();
+        self.con_ventana(|ventana| {
+            ventana.set_tipo_en_curso(en_curso.tipo.as_str().into());
+            ventana.set_numero_en_curso(en_curso.numero.as_str().into());
+            ventana.set_titulo_en_curso(en_curso.titulo.as_str().into());
+            ventana.set_artista_en_curso(en_curso.artista.as_str().into());
+            ventana.set_tipo_siguiente(siguiente.tipo.as_str().into());
+            ventana.set_numero_siguiente(siguiente.numero.as_str().into());
+            ventana.set_titulo_siguiente(siguiente.titulo.as_str().into());
+            ventana.set_artista_siguiente(siguiente.artista.as_str().into());
+            ventana.set_siguiente_en_una_linea(siguiente.texto().into());
+        });
     }
 
     /// BPM del tema: el fijado a mano o, si no hay, el del analisis.
@@ -3856,9 +4312,88 @@ impl Controlador {
         }
     }
 
+    /// La columna Sono de cada fila: cuando empezo a sonar por ultima vez o,
+    /// en las que siguen a la que suena, cuando se estima que va a empezar
+    /// (descontando lo que se superpone en cada mezcla). La estimacion se
+    /// corta en la primera pista sin duracion conocida.
+    fn horarios_de_inicio(&self) -> Vec<HorarioDeInicio> {
+        // Todo en la hora de la localidad del HTH, como el reloj.
+        let zona = self.zona_de_la_localidad();
+        let mut horarios: Vec<HorarioDeInicio> = self
+            .lista
+            .pistas()
+            .iter()
+            .map(|pista| {
+                if es_marcador(pista.archivo()) {
+                    return HorarioDeInicio::default();
+                }
+                self.repositorio_de_canciones
+                    .buscar(pista.archivo())
+                    .and_then(|ficha| ficha.ultima_reproduccion.as_deref())
+                    .map(|momento| HorarioDeInicio {
+                        texto: reproduccion_para_la_lista(momento, &zona),
+                        ayuda: ultima_reproduccion(momento, &zona).1,
+                        estimado: false,
+                    })
+                    .unwrap_or_default()
+            })
+            .collect();
+        let sonando = (self.gestor.esta_reproduciendo() || self.gestor.esta_pausado()) && self.gestor.hay_pista_cargada();
+        let Some(actual) = self.lista.indice_actual().filter(|_| sonando) else {
+            return horarios;
+        };
+        let ahorro = |indice: usize| self.ahorros_de_mezcla.get(indice).copied().unwrap_or(0.0);
+        let puntos_actuales = self.lista.pista_en(actual).map(|pista| self.lista.puntos_de(pista)).unwrap_or_default();
+        let duracion_actual = self.gestor.duracion_total().or(self.duraciones.get(actual).copied().flatten()).unwrap_or(0.0);
+        // Segundos hasta que empiece la siguiente.
+        let mut faltan = (duracion_actual - puntos_actuales.recorte_final() - self.gestor.tiempo_transcurrido()).max(0.0) - ahorro(actual);
+        let ahora = jiff::Timestamp::now();
+        for (indice, pista) in self.lista.pistas().iter().enumerate().skip(actual + 1) {
+            if es_marcador(pista.archivo()) {
+                continue;
+            }
+            let espera = faltan.max(0.0);
+            let inicio = ahora.checked_add(jiff::SignedDuration::from_secs_f64(espera)).unwrap_or(ahora);
+            horarios[indice] = HorarioDeInicio {
+                texto: inicio.to_zoned(zona.clone()).strftime(&formato_de_la_columna_sono()).to_string(),
+                ayuda: tr!("Hora estimada: empieza dentro de {}", formatear_duracion(espera)),
+                estimado: true,
+            };
+            let Some(duracion) = self.duraciones.get(indice).copied().flatten() else {
+                break;
+            };
+            let puntos = self.lista.puntos_de(pista);
+            faltan += (duracion - puntos.recorte_inicial() - puntos.recorte_final()).max(0.0) - ahorro(indice);
+        }
+        horarios
+    }
+
+    /// Actualiza solo la columna Sono (las estimaciones corren con el reloj),
+    /// sin rearmar el resto de las filas.
+    fn refrescar_horarios(&self) {
+        let horarios = self.horarios_de_inicio();
+        if horarios.len() != self.filas.row_count() {
+            return;
+        }
+        for (indice, horario) in horarios.into_iter().enumerate() {
+            let Some(mut fila) = self.filas.row_data(indice) else { continue };
+            if fila.marcador > 0 {
+                continue;
+            }
+            if fila.sono.as_str() != horario.texto || fila.ayuda_de_sono.as_str() != horario.ayuda || fila.sono_estimada != horario.estimado {
+                fila.sono = horario.texto.into();
+                fila.ayuda_de_sono = horario.ayuda.into();
+                fila.sono_estimada = horario.estimado;
+                self.filas.set_row_data(indice, fila);
+            }
+        }
+    }
+
     /// Actualiza solo las filas que cambiaron, para no interrumpir una
     /// edicion en curso en otra fila.
     fn refrescar_filas(&mut self) {
+        // La siguiente del renglon grande cambia con la lista.
+        self.refrescar_renglon_destacado();
         // Los recortes de cada tema cambian con sus puntos, que siempre
         // terminan refrescando la lista.
         self.aplicar_recortes();
@@ -3869,6 +4404,7 @@ impl Controlador {
         let hay_pista = self.gestor.hay_pista_cargada();
         let carpeta_de_bases = self.carpeta_de_bases_en_la_lista();
         let en_bloque_fijo = self.posiciones_en_bloques_fijos();
+        let horarios = self.horarios_de_inicio();
         let filas: Vec<FilaDePista> = self
             .lista
             .pistas()
@@ -3912,6 +4448,9 @@ impl Controlador {
                     },
                     nota: dato(ficha.and_then(|ficha| ficha.nota.as_ref())).into(),
                     ranking: if anuncio { "".into() } else { estrellas_de_la_lista(ficha.map_or(0, |ficha| ficha.ranking)).into() },
+                    sono: horarios[indice].texto.as_str().into(),
+                    ayuda_de_sono: horarios[indice].ayuda.as_str().into(),
+                    sono_estimada: horarios[indice].estimado,
                     // Una base HTH conserva su genero; el anuncio no tiene.
                     genero: if anuncio { "".into() } else { dato(ficha.and_then(|ficha| ficha.genero.as_ref())).into() },
                     anio: if anuncio { "".into() } else { ficha.and_then(|ficha| ficha.anio).map(|anio| anio.to_string()).unwrap_or_default().into() },
@@ -3958,6 +4497,9 @@ impl Controlador {
                     fila.tipo = TIPO_DEL_MARCADOR.into();
                     fila.genero = "".into();
                     fila.ranking = "".into();
+                    fila.sono = "".into();
+                    fila.ayuda_de_sono = "".into();
+                    fila.sono_estimada = false;
                     fila.nota = "".into();
                     fila.duracion = "".into();
                     fila.mezcla = "".into();
@@ -3980,7 +4522,7 @@ impl Controlador {
         });
         actualizar_modelo(&self.filas, filas);
         // El boton Siguiente tambien depende del selector.
-        let hay_siguiente = self.marcador().is_some() || self.lista.indice_siguiente(self.lista.indice_actual()).is_some();
+        let hay_siguiente = self.marcada_para_siguiente().is_some() || self.lista.indice_siguiente(self.lista.indice_actual()).is_some();
         let hay_seleccion = !self.seleccion.is_empty();
         self.con_ventana(|ventana| {
             ventana.set_siguiente_habilitado(hay_siguiente);
@@ -4014,16 +4556,22 @@ impl Controlador {
             return Ok(aviso);
         }
         let modo = self.repositorio_de_botonera.modo();
-        // Los tipos sin mezcla no tienen ventana de overlay: en modo
-        // trabado no aceptan efectos (en modo libre si).
+        let carpeta_de_bases = self.carpeta_de_bases_en_la_lista();
+        // Los tipos sin mezcla no tienen ventana de overlay y la de una base
+        // del HTH es para la voz del anuncio: en modo trabado no aceptan
+        // efectos (en modo libre si).
         let en_curso_reservada = self
             .gestor
             .pista_actual()
             .filter(|_| self.gestor.esta_reproduciendo() || self.gestor.esta_pausado())
-            .filter(|pista| suena_sin_mezcla(&self.repositorio_de_canciones, pista))
+            .filter(|pista| !admite_efectos_de_la_botonera(&self.repositorio_de_canciones, carpeta_de_bases.as_deref(), pista))
             .cloned();
         if let (ModoDeOverlay::Trabada, Some(pista)) = (modo, en_curso_reservada) {
-            let aviso = tr!("{} no es un Tema y no admite efectos (solo en modo libre).", etiqueta(&self.lista, &pista));
+            let aviso = if es_base_hth_en(pista.archivo(), carpeta_de_bases.as_deref()) {
+                tr!("{} es la base de un anuncio HTH y no admite efectos (solo en modo libre).", etiqueta(&self.lista, &pista))
+            } else {
+                tr!("{} no es un Tema y no admite efectos (solo en modo libre).", etiqueta(&self.lista, &pista))
+            };
             self.aviso_de_botonera = Some((aviso.clone(), Instant::now()));
             return Ok(aviso);
         }
@@ -4038,7 +4586,7 @@ impl Controlador {
         let lista = &self.lista;
         let ventana_de = |pista: &Pista| lista.puntos_de(pista).overlay();
         let canciones = &self.repositorio_de_canciones;
-        let admite_efectos = |pista: &Pista| !suena_sin_mezcla(canciones, pista);
+        let admite_efectos = |pista: &Pista| admite_efectos_de_la_botonera(canciones, carpeta_de_bases.as_deref(), pista);
         let musica_de = |pista: &Pista, desde: f64, segundos: f64| musica.medir(pista, desde, segundos);
         let canciones_de_efectos = &self.repositorio_de_canciones;
         let recorte_de = |archivo: &Path| recorte_de_efecto(canciones_de_efectos, archivo);
@@ -4129,8 +4677,9 @@ impl Controlador {
 
     /// Si el tema tiene un efecto fijado, lo deja programado en modo trabado:
     /// suena entero dentro de su ventana de overlay (o enseguida si no
-    /// tiene). Reemplaza al efecto que estuviera esperando. Los generos
-    /// reservados no admiten efecto fijado.
+    /// tiene). Va antes que el efecto de la botonera que este esperando, que
+    /// no se pierde: sale despues o en la pista siguiente que lo admita. Los
+    /// tipos sin mezcla no admiten efecto fijado.
     fn disparar_efecto_fijado(&mut self, pista: &Pista) {
         // Sobre una base del anuncio HTH, el efecto es la voz recien armada.
         let efecto = match self.voz_para_la_base_hth(pista) {
@@ -4171,10 +4720,9 @@ impl Controlador {
             musica_de: &musica_de,
             recorte_de: &recorte_de,
         };
-        if let Err(error) = self.overlay.disparar(&efecto, ModoDeOverlay::Trabada, &self.gestor, &entorno) {
+        if let Err(error) = self.overlay.disparar_fijado(&efecto, &self.gestor, &entorno) {
             self.errores.push(error.to_string());
         }
-        self.boton_del_efecto = None;
         self.refrescar_botones();
     }
 
@@ -4238,8 +4786,13 @@ impl Controlador {
         actualizar_modelo(&self.botones, botones);
         let repositorio = &self.repositorio_de_botonera;
         let (hoja, hojas) = (repositorio.hoja_actual(), repositorio.cantidad_de_hojas());
+        let de_siempre = nombre_de_siempre_de_la_hoja(hoja);
+        let propio = repositorio.nombre_de_hoja(hoja).map(str::to_string);
         self.con_ventana(|ventana| {
             ventana.set_hoja_de_efectos(tr!("Hoja {} de {hojas}", hoja + 1, hojas = hojas).into());
+            ventana.set_nombre_de_hoja_propio(propio.is_some());
+            ventana.set_nombre_de_hoja(propio.as_deref().unwrap_or(&de_siempre).into());
+            ventana.set_nombre_de_hoja_de_siempre(de_siempre.as_str().into());
             ventana.set_hay_hoja_anterior(hoja > 0);
             ventana.set_hay_hoja_siguiente(hoja + 1 < hojas);
             ventana.set_puede_quitar_hoja(hojas > 1);
@@ -4257,13 +4810,13 @@ impl Controlador {
             aviso.clone()
         } else if let Some(en_espera) = self.overlay.en_espera() {
             let detalle = match self.overlay.estado_de_espera(&self.gestor, &ventana_de) {
-                Some(EstadoDeEspera::Faltan(segundos)) => tr!(" (faltan {:.0} s)", segundos.ceil()),
+                Some(EstadoDeEspera::Faltan(segundos)) => tr!(" (faltan {:.1} s)", segundos.max(0.0)),
                 Some(EstadoDeEspera::ProximaPista) => tr!(" (espera la ventana de la proxima pista)").into(),
                 None => String::new(),
             };
-            tr!("En espera: {}{detalle}", nombre_de_archivo(en_espera), detalle = detalle)
+            tr!("En espera: {}{detalle}", nombre_sin_extension(en_espera), detalle = detalle)
         } else if let Some(sonando) = self.overlay.sonando() {
-            format!("Sonando: {}", nombre_de_archivo(sonando))
+            tr!("Sonando: {}", nombre_sin_extension(sonando))
         } else {
             String::new()
         };
@@ -4477,5 +5030,38 @@ impl Controlador {
             Some(artista) => format!("{titulo} - {artista}"),
             None => titulo,
         }
+    }
+}
+
+#[cfg(test)]
+mod pruebas_de_la_reproduccion {
+    use super::{formato_de_la_reproduccion, leer_reproduccion, reproduccion_para_la_lista, texto_de_reproduccion};
+
+    fn zona(nombre: &str) -> jiff::tz::TimeZone {
+        jiff::tz::TimeZone::get(nombre).unwrap()
+    }
+
+    #[test]
+    fn la_reproduccion_se_muestra_con_segundos_en_la_hora_de_la_localidad() {
+        let momento = "2026-11-23T11:13:05Z";
+        assert_eq!(reproduccion_para_la_lista(momento, &zona("America/Argentina/Buenos_Aires")), "23/11/26 08:13:05");
+        assert_eq!(reproduccion_para_la_lista(momento, &zona("Asia/Tokyo")), "23/11/26 20:13:05");
+        assert_eq!(texto_de_reproduccion(momento, &zona("Asia/Tokyo"), &formato_de_la_reproduccion()), "23/11/2026 20:13:05");
+        assert_eq!(reproduccion_para_la_lista("cualquier cosa", &zona("Asia/Tokyo")), "");
+    }
+
+    #[test]
+    fn la_reproduccion_escrita_a_mano_se_guarda_en_utc() {
+        let ahora: jiff::Timestamp = "2026-11-23T12:00:00Z".parse().unwrap();
+        let buenos_aires = zona("America/Argentina/Buenos_Aires");
+        assert_eq!(leer_reproduccion("23/11/2026 08:13:05", &buenos_aires, ahora), Ok(Some("2026-11-23T11:13:05Z".into())));
+        // Sin los segundos tambien vale; vacio es "nunca sono".
+        assert_eq!(leer_reproduccion(" 23/11/2026 08:13 ", &buenos_aires, ahora), Ok(Some("2026-11-23T11:13:00Z".into())));
+        assert_eq!(leer_reproduccion("  ", &buenos_aires, ahora), Ok(None));
+        // Lo que se escribe es hora de la localidad.
+        assert_eq!(leer_reproduccion("23/11/2026 20:13:05", &zona("Asia/Tokyo"), ahora), Ok(Some("2026-11-23T11:13:05Z".into())));
+        assert!(leer_reproduccion("ayer", &buenos_aires, ahora).is_err());
+        assert!(leer_reproduccion("31/02/2026 10:00:00", &buenos_aires, ahora).is_err());
+        assert!(leer_reproduccion("24/11/2026 10:00:00", &buenos_aires, ahora).is_err(), "futura");
     }
 }

@@ -133,6 +133,49 @@ impl Controlador {
             tr!("{traidas} ventana(s) centrada(s) sobre la ventana principal.", traidas = traidas)
         });
     }
+
+    /// Al salir del programa: cierra las ventanas hijas abiertas (editor,
+    /// catalogo, mantenimiento, actualizacion, pauta, ordenes, avisos,
+    /// anunciantes, localidad y Acerca de), cada una con lo que hace al
+    /// cerrarla a mano (detener la preescucha, las descargas o las busquedas).
+    /// Devuelve cuantas cerro.
+    pub(super) fn cerrar_ventanas_hijas(&mut self) -> usize {
+        let mut cerradas = 0;
+        if self.editor.window().is_visible() {
+            self.al_cerrarse_el_editor();
+            let _ = self.editor.window().hide();
+            cerradas += 1;
+        }
+        if self.buscador.ventana().is_visible() {
+            self.detener_descarga_de_caratulas();
+        }
+        if self.actualizacion.ventana().is_visible() {
+            self.detener_actualizacion();
+        }
+        if self.mantenimiento.window().is_visible() {
+            self.cerrar_mantenimiento();
+            cerradas += 1;
+        }
+        let acerca = self.acerca.as_ref().and_then(slint::Weak::upgrade);
+        let ventanas: Vec<&slint::Window> = [
+            Some(self.buscador.ventana()),
+            Some(self.pauta.ventana()),
+            Some(self.ventana_de_ordenes.ventana()),
+            Some(self.avisos_del_catalogo.ventana()),
+            Some(self.anunciantes_de_la_ventana.ventana()),
+            Some(self.selector_de_localidad.ventana()),
+            Some(self.actualizacion.ventana()),
+            acerca.as_ref().map(|acerca| acerca.window()),
+        ]
+        .into_iter()
+        .flatten()
+        .filter(|ventana| ventana.is_visible())
+        .collect();
+        for ventana in &ventanas {
+            let _ = ventana.hide();
+        }
+        cerradas + ventanas.len()
+    }
 }
 
 #[cfg(test)]

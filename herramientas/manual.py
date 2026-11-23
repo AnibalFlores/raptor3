@@ -50,7 +50,7 @@ IMAGENES = {
     "anunciantes.png": "anunciantes-inicial.png",
     "localidad.png": "localidad-inicial.png",
     "actualizacion-etiquetas.png": "actualizacion-etiquetas.png",
-    "actualizacion-musicbrainz.png": "actualizacion-musicbrainz.png",
+    "actualizacion-internet.png": "actualizacion-internet.png",
 }
 
 # Navegadores que imprimen a PDF sin ventana, en orden de preferencia.

@@ -37,6 +37,9 @@ pub const SONORIDAD_DE_REFERENCIA: f64 = -11.0;
 /// Pico real maximo al subir el volumen, en dBTP: deja margen para los picos
 /// entre muestras.
 pub const TECHO_DE_PICO_REAL_DB: f64 = -1.0;
+/// Lo que mas puede subir un aviso para llegar al techo: lo que admite el
+/// motor de audio (+6 dB).
+const SUBIDA_MAXIMA_DE_UN_AVISO_DB: f64 = 6.0;
 
 /// Sonoridad integrada a la que la nivelacion lleva cada tema. Cada objetivo
 /// tiene sus propios limites, porque no se llega igual a uno bajo (casi todo
@@ -181,6 +184,30 @@ impl DatosDeMezcla {
         }
     }
 
+    /// Factor de volumen con que suena el elemento: un aviso (`a_volumen_maximo`)
+    /// va al maximo sin distorsionar, este o no la nivelacion; lo demas, a la
+    /// sonoridad objetivo si se nivela, o como esta.
+    pub fn ganancia(&self, objetivo: ObjetivoDeSonoridad, nivelar: bool, a_volumen_maximo: bool) -> f64 {
+        if a_volumen_maximo {
+            self.ganancia_maxima()
+        } else if nivelar {
+            self.ganancia_de_nivelacion(objetivo)
+        } else {
+            1.0
+        }
+    }
+
+    /// Factor que sube el elemento hasta que su pico real toque el techo
+    /// (-1 dBTP), sin pasar de +6 dB ni bajarlo nunca: el maximo volumen sin
+    /// distorsion, para que un aviso se destaque de la musica.
+    pub fn ganancia_maxima(&self) -> f64 {
+        if self.pico <= 0.0 {
+            return 1.0;
+        }
+        let techo = 10f64.powf(TECHO_DE_PICO_REAL_DB / 20.0);
+        (techo / self.pico).clamp(1.0, 10f64.powf(SUBIDA_MAXIMA_DE_UN_AVISO_DB / 20.0))
+    }
+
     /// Factor de volumen que lleva el tema a la sonoridad objetivo.
     pub fn ganancia_de_nivelacion(&self, objetivo: ObjetivoDeSonoridad) -> f64 {
         let Some(sonoridad) = self.sonoridad else {
@@ -222,33 +249,45 @@ impl DatosDeMezcla {
     ///   iguales o una el doble de la otra, aunque cada una sea debil. Gana
     ///   el votado si es una de ellas; si no, la de mas confianza.
     pub fn bpm(&self) -> Option<f64> {
-        let votado = self.tempo.filter(|tempo| tempo.ventanas > 1);
-        if let Some(tempo) = votado.filter(|tempo| tempo.acuerdo >= ACUERDO_MINIMO_DE_TEMPO) {
-            return Some(tempo.bpm);
-        }
-        if let Some(ritmo) = confiable(self.ritmo_final).or(confiable(self.ritmo_inicial)) {
-            return Some(ritmo.bpm());
-        }
-        let candidatos: Vec<(f64, f64)> = votado
-            .map(|tempo| (tempo.bpm, f64::INFINITY))
-            .into_iter()
-            .chain(
-                [self.ritmo_final, self.ritmo_inicial]
-                    .into_iter()
-                    .flatten()
-                    .filter(|ritmo| ritmo.confianza >= CONFIANZA_PARA_COINCIDIR)
-                    .map(|ritmo| (ritmo.bpm(), ritmo.confianza)),
-            )
-            .collect();
-        candidatos
-            .iter()
-            .enumerate()
-            .filter(|&(indice, &(bpm, _))| {
-                candidatos.iter().enumerate().any(|(otro, &(otro_bpm, _))| otro != indice && tempos_coinciden(bpm, otro_bpm))
-            })
-            .max_by(|(_, a), (_, b)| a.1.total_cmp(&b.1))
-            .map(|(_, &(bpm, _))| bpm)
+        estimar_bpm(self.tempo, self.ritmo_inicial, self.ritmo_final)
     }
+}
+
+/// El BPM de un tema con lo que guarda la cache de su onda (sin cargarla
+/// entera), con el mismo criterio que el analisis. Para el catalogo.
+pub fn bpm_de_la_cache(archivo: &std::path::Path, carpeta_de_cache: &std::path::Path) -> Option<f64> {
+    let (tempo, ritmo_inicial, ritmo_final) = FormaDeOnda::ritmo_de_la_cache(archivo, carpeta_de_cache)?;
+    estimar_bpm(tempo, ritmo_inicial, ritmo_final)
+}
+
+/// Ver `DatosDeMezcla::bpm`.
+fn estimar_bpm(tempo: Option<Tempo>, ritmo_inicial: Option<Ritmo>, ritmo_final: Option<Ritmo>) -> Option<f64> {
+    let votado = tempo.filter(|tempo| tempo.ventanas > 1);
+    if let Some(tempo) = votado.filter(|tempo| tempo.acuerdo >= ACUERDO_MINIMO_DE_TEMPO) {
+        return Some(tempo.bpm);
+    }
+    if let Some(ritmo) = confiable(ritmo_final).or(confiable(ritmo_inicial)) {
+        return Some(ritmo.bpm());
+    }
+    let candidatos: Vec<(f64, f64)> = votado
+        .map(|tempo| (tempo.bpm, f64::INFINITY))
+        .into_iter()
+        .chain(
+            [ritmo_final, ritmo_inicial]
+                .into_iter()
+                .flatten()
+                .filter(|ritmo| ritmo.confianza >= CONFIANZA_PARA_COINCIDIR)
+                .map(|ritmo| (ritmo.bpm(), ritmo.confianza)),
+        )
+        .collect();
+    candidatos
+        .iter()
+        .enumerate()
+        .filter(|&(indice, &(bpm, _))| {
+            candidatos.iter().enumerate().any(|(otro, &(otro_bpm, _))| otro != indice && tempos_coinciden(bpm, otro_bpm))
+        })
+        .max_by(|(_, a), (_, b)| a.1.total_cmp(&b.1))
+        .map(|(_, &(bpm, _))| bpm)
 }
 
 fn confiable(ritmo: Option<Ritmo>) -> Option<Ritmo> {
@@ -420,6 +459,27 @@ mod pruebas {
         // Si ya pasa del techo no lo sube, pero tampoco lo baja por eso.
         assert_eq!(con(-14.0, 0.95).ganancia_de_nivelacion(medio), 1.0);
         assert_eq!(DatosDeMezcla { sonoridad: None, ..datos(10.0) }.ganancia_de_nivelacion(medio), 1.0);
+    }
+
+    #[test]
+    fn un_aviso_suena_al_maximo_volumen_sin_distorsionar() {
+        let con = |sonoridad: f64, pico_db: f64| DatosDeMezcla { sonoridad: Some(sonoridad), pico: 10f64.powf(pico_db / 20.0), ..datos(30.0) };
+        let decibeles = |ganancia: f64| 20.0 * ganancia.log10();
+        let medio = ObjetivoDeSonoridad::Menos14;
+        // Un aviso fuerte (-9 LUFS) no baja aunque se nivele: queda como esta
+        // si ya toca el techo...
+        let fuerte = con(-9.0, -0.5);
+        assert_eq!(fuerte.ganancia(medio, true, true), 1.0);
+        assert!(decibeles(fuerte.ganancia(medio, true, false)) < -4.0, "un tema igual de fuerte si baja");
+        // ...y sube hasta que su pico llega a -1 dBTP, con o sin nivelacion.
+        let suave = con(-20.0, -4.0);
+        assert!((decibeles(suave.ganancia(medio, false, true)) - 3.0).abs() < 1e-9);
+        assert!((decibeles(suave.ganancia(medio, true, true)) - 3.0).abs() < 1e-9);
+        // Como mucho +6 dB, lo que admite el motor.
+        assert!((decibeles(con(-30.0, -20.0).ganancia_maxima()) - 6.0).abs() < 1e-9);
+        // Sin nivelacion, lo que no es un aviso suena como esta.
+        assert_eq!(suave.ganancia(medio, false, false), 1.0);
+        assert_eq!(DatosDeMezcla { pico: 0.0, ..datos(10.0) }.ganancia_maxima(), 1.0);
     }
 
     #[test]

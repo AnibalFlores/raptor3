@@ -12,6 +12,11 @@
 //! Una pista sin ventana deja sonar el efecto enseguida, igual que la musica
 //! detenida. Un efecto nuevo reemplaza al que estaba esperando.
 //!
+//! El efecto fijado de un tema (o la voz del anuncio HTH sobre su base) espera
+//! aparte del de la botonera: no lo reemplaza, sale solo en la ventana de esa
+//! pista y tiene prioridad. Mientras espera o suena, el de la botonera sigue
+//! esperando, y si la ventana se le pasa, espera la de la pista siguiente.
+//!
 //! Volumen del efecto y atenuacion de la musica: ver `mezcla_de_efectos`. El
 //! efecto se programa en un frame exacto de la salida y la musica empieza a
 //! bajar un instante antes en el atenuador comun; la vuelta tambien queda
@@ -181,8 +186,13 @@ pub struct GestorDeOverlay {
     carpeta_de_ondas: PathBuf,
     /// Perfil y duracion de cada efecto ya usado.
     perfiles: HashMap<PathBuf, (PerfilDeEfecto, Option<f64>)>,
+    /// Efecto de la botonera que espera su ventana.
     espera: Option<Espera>,
+    /// Efecto fijado del tema (o voz del anuncio HTH) que espera su ventana.
+    espera_fijada: Option<Espera>,
     sonando: Option<PathBuf>,
+    /// Lo que suena es el efecto fijado (o la voz del HTH), no uno de la botonera.
+    sonando_fijado: bool,
     ajustes: AjustesDeEfecto,
     // Efectos que siempre bajan la musica, aunque el panel diga que no (la
     // voz del anuncio HTH sobre su base).
@@ -203,7 +213,9 @@ impl GestorDeOverlay {
             carpeta_de_ondas,
             perfiles: HashMap::new(),
             espera: None,
+            espera_fijada: None,
             sonando: None,
+            sonando_fijado: false,
             ajustes: AjustesDeEfecto::default(),
             siempre_atenuados: HashSet::new(),
             ultimo_plan: None,
@@ -283,7 +295,7 @@ impl GestorDeOverlay {
             (ModoDeOverlay::Trabada, Some(pista)) => pista.clone(),
             (_, en_curso) => {
                 let alrededor = en_curso.and_then(|pista| (entorno.musica_de)(pista, posicion, duracion.unwrap_or(0.0)));
-                return self.emitir(archivo, None, alrededor, 1.0, recorte);
+                return self.emitir(archivo, None, alrededor, 1.0, recorte, false);
             }
         };
         let decision = if (entorno.admite_efectos)(&pista) {
@@ -292,9 +304,10 @@ impl GestorDeOverlay {
             Decision::ProximaPista
         };
         match decision {
-            Decision::Sonar => {
+            // El efecto fijado (o la voz del HTH) va primero: este espera.
+            Decision::Sonar if !self.fijado_ocupa_la_ventana() => {
                 let alrededor = (entorno.musica_de)(&pista, posicion, duracion.unwrap_or(0.0));
-                self.emitir(archivo, None, alrededor, 1.0, recorte)
+                self.emitir(archivo, None, alrededor, 1.0, recorte, false)
             }
             decision => {
                 let a_la_proxima = decision == Decision::ProximaPista;
@@ -304,7 +317,41 @@ impl GestorDeOverlay {
         }
     }
 
-    /// Cancela el efecto en espera, si lo hay.
+    /// Programa el efecto fijado de la pista que empieza (o la voz del anuncio
+    /// HTH sobre su base): suena entero dentro de la ventana de esa pista, o
+    /// enseguida si no tiene. No toca el efecto de la botonera que espera, que
+    /// sale despues; si ya no cabe en la ventana, se descarta (es de esta pista).
+    pub fn disparar_fijado(&mut self, archivo: &Path, musica: &GestorDeReproduccion, entorno: &Entorno) -> Result<(), PistaInvalida> {
+        self.espera_fijada = None;
+        let recorte = (entorno.recorte_de)(archivo);
+        let duracion = recorte.duracion(self.perfil(archivo).1);
+        let posicion = musica.tiempo_transcurrido();
+        let Some(pista) = pista_en_curso(musica).cloned() else {
+            return self.emitir(archivo, None, None, 1.0, recorte, true);
+        };
+        match decidir(posicion, (entorno.ventana_de)(&pista), duracion) {
+            Decision::Sonar => {
+                let alrededor = (entorno.musica_de)(&pista, posicion, duracion.unwrap_or(0.0));
+                self.emitir(archivo, None, alrededor, 1.0, recorte, true)
+            }
+            Decision::Esperar(_) => {
+                self.espera_fijada = Some(Espera { archivo: archivo.to_path_buf(), duracion, pista, a_la_proxima: false });
+                Ok(())
+            }
+            Decision::ProximaPista => {
+                log::warn!("El efecto fijado {} ya no cabe en la ventana de {}", archivo.display(), pista.archivo().display());
+                Ok(())
+            }
+        }
+    }
+
+    /// El efecto fijado (o la voz del HTH) espera o suena: el de la botonera
+    /// no puede salir sin taparlo o cortarlo.
+    fn fijado_ocupa_la_ventana(&self) -> bool {
+        self.espera_fijada.is_some() || (self.sonando.is_some() && self.sonando_fijado)
+    }
+
+    /// Cancela el efecto de la botonera en espera, si lo hay.
     pub fn cancelar_espera(&mut self) {
         self.espera = None;
     }
@@ -313,8 +360,10 @@ impl GestorDeOverlay {
     /// la musica a su nivel con una rampa corta.
     pub fn detener(&mut self) {
         self.cancelar_espera();
+        self.espera_fijada = None;
         self.motor.detener();
         self.sonando = None;
+        self.sonando_fijado = false;
         self.volver_al_terminar = false;
         self.cortar_en = None;
         self.atenuador.restituir(RECUPERACION_AL_CORTAR);
@@ -334,7 +383,7 @@ impl GestorDeOverlay {
         recorte: RecorteDeEfecto,
     ) -> Result<(), PistaInvalida> {
         self.espera = None;
-        self.emitir(archivo, arranque, musica, escala, recorte)
+        self.emitir(archivo, arranque, musica, escala, recorte, false)
     }
 
     pub fn en_espera(&self) -> Option<&Path> {
@@ -364,6 +413,8 @@ impl GestorDeOverlay {
     /// libera el que espera si ya llego su momento.
     pub fn ciclo(&mut self, musica: &GestorDeReproduccion, entorno: &Entorno) -> Result<(), PistaInvalida> {
         self.registrar_fin()?;
+        self.ciclo_del_fijado(musica, entorno)?;
+        let fijado_ocupa = self.fijado_ocupa_la_ventana();
         let Some(espera) = self.espera.as_mut() else {
             return Ok(());
         };
@@ -371,7 +422,7 @@ impl GestorDeOverlay {
         let Some(actual) = pista_en_curso(musica) else {
             let archivo = self.espera.take().expect("hay espera").archivo;
             let recorte = (entorno.recorte_de)(&archivo);
-            return self.emitir(&archivo, None, None, 1.0, recorte);
+            return self.emitir(&archivo, None, None, 1.0, recorte, false);
         };
         if *actual != espera.pista {
             // Cambio la pista: ahora cuenta la ventana de la nueva, salvo que
@@ -388,11 +439,13 @@ impl GestorDeOverlay {
         let ventana = (entorno.ventana_de)(actual);
         let duracion = espera.duracion.unwrap_or(0.0);
         match decidir(posicion, ventana, espera.duracion) {
+            // El efecto fijado (o la voz del HTH) va primero: este sigue esperando.
+            Decision::Sonar | Decision::Esperar(_) if fijado_ocupa => Ok(()),
             Decision::Sonar => {
                 let alrededor = (entorno.musica_de)(actual, posicion, duracion);
                 let archivo = self.espera.take().expect("hay espera").archivo;
                 let recorte = (entorno.recorte_de)(&archivo);
-                self.emitir(&archivo, None, alrededor, 1.0, recorte)
+                self.emitir(&archivo, None, alrededor, 1.0, recorte, false)
             }
             // Falta muy poco: se programa en el comienzo exacto de la ventana.
             Decision::Esperar(falta) if falta <= PROGRAMAR_CON => {
@@ -405,11 +458,56 @@ impl GestorDeOverlay {
                 let alrededor = (entorno.musica_de)(actual, inicio, duracion);
                 let archivo = self.espera.take().expect("hay espera").archivo;
                 let recorte = (entorno.recorte_de)(&archivo);
-                self.emitir(&archivo, Some(frame), alrededor, 1.0, recorte)
+                self.emitir(&archivo, Some(frame), alrededor, 1.0, recorte, false)
             }
             Decision::Esperar(_) => Ok(()),
             Decision::ProximaPista => {
                 espera.a_la_proxima = true;
+                Ok(())
+            }
+        }
+    }
+
+    /// Libera el efecto fijado (o la voz del HTH) cuando llega su ventana. Si
+    /// cambio la pista o la ventana ya no alcanza, se descarta: es de esa pista.
+    fn ciclo_del_fijado(&mut self, musica: &GestorDeReproduccion, entorno: &Entorno) -> Result<(), PistaInvalida> {
+        let Some(espera) = self.espera_fijada.as_ref() else {
+            return Ok(());
+        };
+        let Some(actual) = pista_en_curso(musica) else {
+            let archivo = self.espera_fijada.take().expect("hay espera").archivo;
+            let recorte = (entorno.recorte_de)(&archivo);
+            return self.emitir(&archivo, None, None, 1.0, recorte, true);
+        };
+        if *actual != espera.pista {
+            self.espera_fijada = None;
+            return Ok(());
+        }
+        let posicion = musica.tiempo_transcurrido();
+        let ventana = (entorno.ventana_de)(actual);
+        let duracion = espera.duracion.unwrap_or(0.0);
+        match decidir(posicion, ventana, espera.duracion) {
+            Decision::Sonar => {
+                let alrededor = (entorno.musica_de)(actual, posicion, duracion);
+                let archivo = self.espera_fijada.take().expect("hay espera").archivo;
+                let recorte = (entorno.recorte_de)(&archivo);
+                self.emitir(&archivo, None, alrededor, 1.0, recorte, true)
+            }
+            Decision::Esperar(falta) if falta <= PROGRAMAR_CON => {
+                let Some(inicio) = ventana.map(|ventana| ventana.inicio()) else {
+                    return Ok(());
+                };
+                let Some(frame) = musica.frame_de_salida_en(inicio) else {
+                    return Ok(());
+                };
+                let alrededor = (entorno.musica_de)(actual, inicio, duracion);
+                let archivo = self.espera_fijada.take().expect("hay espera").archivo;
+                let recorte = (entorno.recorte_de)(&archivo);
+                self.emitir(&archivo, Some(frame), alrededor, 1.0, recorte, true)
+            }
+            Decision::Esperar(_) => Ok(()),
+            Decision::ProximaPista => {
+                self.espera_fijada = None;
                 Ok(())
             }
         }
@@ -422,6 +520,7 @@ impl GestorDeOverlay {
     pub fn registrar_fin(&mut self) -> Result<(), PistaInvalida> {
         if let Some(motivo) = self.motor.tomar_error() {
             self.sonando = None;
+            self.sonando_fijado = false;
             self.cortar_en = None;
             return Err(PistaInvalida(motivo));
         }
@@ -443,6 +542,7 @@ impl GestorDeOverlay {
     /// vuelve si su vuelta no habia quedado programada.
     fn al_terminar_el_efecto(&mut self) {
         self.sonando = None;
+        self.sonando_fijado = false;
         self.cortar_en = None;
         if std::mem::take(&mut self.volver_al_terminar) {
             let recuperacion = self.ultimo_plan.map_or(self.ajustes.recuperacion, |plan| plan.recuperacion);
@@ -452,7 +552,8 @@ impl GestorDeOverlay {
 
     /// Hace sonar el efecto con su plan: la musica empieza a bajar un
     /// instante antes de `arranque` (o de lo antes posible) y su vuelta queda
-    /// programada para cuando el efecto deja de sonar.
+    /// programada para cuando el efecto deja de sonar. `fijado` dice si es el
+    /// efecto fijado del tema (o la voz del HTH) y no uno de la botonera.
     fn emitir(
         &mut self,
         archivo: &Path,
@@ -460,6 +561,7 @@ impl GestorDeOverlay {
         musica: Option<MusicaAlrededor>,
         escala: f64,
         recorte: RecorteDeEfecto,
+        fijado: bool,
     ) -> Result<(), PistaInvalida> {
         let (perfil, duracion) = self.perfil(archivo);
         let perfil = recorte.perfil(perfil, duracion);
@@ -479,6 +581,7 @@ impl GestorDeOverlay {
         match resultado {
             Ok(()) => {
                 self.sonando = Some(archivo.to_path_buf());
+                self.sonando_fijado = fijado;
                 // Sin duracion del analisis vale la que sondeo el motor al cargar.
                 self.cortar_en = recorte.corte(duracion.or(self.motor.duracion()));
                 self.ultimo_plan = Some(plan);
@@ -489,6 +592,7 @@ impl GestorDeOverlay {
             Err(error) => {
                 log::warn!("No se pudo reproducir el efecto {}: {error}", archivo.display());
                 self.sonando = None;
+                self.sonando_fijado = false;
                 Err(error)
             }
         }

@@ -156,3 +156,15 @@ fn generar_icono_de_windows() {
     std::fs::create_dir_all(raiz.join("recursos")).expect("carpeta de recursos");
     std::fs::write(raiz.join("recursos/raptor.ico"), ico).expect("escribir raptor.ico");
 }
+
+#[test]
+#[ignore = "regenera recursos/raptor-mcp.png; se pide a mano"]
+fn generar_icono_del_mcp() {
+    // El icono que el servidor MCP declara en su serverInfo (lo muestran los
+    // clientes junto al conector): la R con el margen del de macOS.
+    let raiz = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let svg = std::fs::read(raiz.join("ui/iconos/ventana-raptor.svg")).expect("SVG del icono");
+    let arbol = usvg::Tree::from_data(&svg, &usvg::Options::default()).expect("SVG valido");
+    let png = dibujar_con_margen(&arbol, 64).encode_png().expect("PNG del icono");
+    std::fs::write(raiz.join("recursos/raptor-mcp.png"), png).expect("escribir raptor-mcp.png");
+}

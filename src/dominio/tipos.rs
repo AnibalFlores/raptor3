@@ -127,6 +127,12 @@ impl TipoDeElemento {
         matches!(self, Self::Comercial | Self::Publicidad)
     }
 
+    /// Suena al maximo volumen para destacarse de la musica: Comercial,
+    /// Publicidad y Anuncio (no los baja la nivelacion).
+    pub fn a_volumen_maximo(self) -> bool {
+        matches!(self, Self::Comercial | Self::Publicidad | Self::Anuncio)
+    }
+
     /// Un Efecto solo puede estar en la botonera, no en la lista.
     pub fn solo_para_la_botonera(self) -> bool {
         self == Self::Efecto
@@ -188,11 +194,11 @@ impl TipoDeElemento {
 impl TipoDeElemento {
     /// Tipo que se deduce del genero al migrar el catalogo o al leer las
     /// etiquetas de un archivo nuevo: el que nombra el genero ("Publicidad
-    /// radial") o, si es un genero comun ("Rock"), Tema. Sin genero no se
-    /// deduce nada: queda sin clasificar.
+    /// radial") o, si es un genero comun ("Rock") o no hay genero, Tema. Sin
+    /// clasificar queda solo lo que se elige asi.
     pub fn deducido_del_genero(genero: Option<&str>) -> Option<Self> {
-        let genero = genero.map(str::trim).filter(|genero| !genero.is_empty())?;
-        Some(Self::segun_genero(genero).unwrap_or(Self::Tema))
+        let genero = genero.map(str::trim).filter(|genero| !genero.is_empty());
+        Some(genero.and_then(Self::segun_genero).unwrap_or(Self::Tema))
     }
 }
 
@@ -208,6 +214,7 @@ pub trait ReglasDelTipo {
     fn solo_para_la_botonera(self) -> bool;
     fn va_en_tanda(self) -> bool;
     fn efecto_o_seco(self) -> bool;
+    fn a_volumen_maximo(self) -> bool;
 }
 
 impl ReglasDelTipo for Option<TipoDeElemento> {
@@ -225,6 +232,9 @@ impl ReglasDelTipo for Option<TipoDeElemento> {
     }
     fn efecto_o_seco(self) -> bool {
         self.is_some_and(TipoDeElemento::efecto_o_seco)
+    }
+    fn a_volumen_maximo(self) -> bool {
+        self.is_some_and(TipoDeElemento::a_volumen_maximo)
     }
 }
 
@@ -270,8 +280,8 @@ mod pruebas {
     fn un_genero_comun_es_un_tema_y_sin_genero_no_se_clasifica() {
         assert_eq!(TipoDeElemento::deducido_del_genero(Some("Rock")), Some(Tema));
         assert_eq!(TipoDeElemento::deducido_del_genero(Some("Anuncios")), Some(Anuncio));
-        assert_eq!(TipoDeElemento::deducido_del_genero(Some("  ")), None);
-        assert_eq!(TipoDeElemento::deducido_del_genero(None), None);
+        assert_eq!(TipoDeElemento::deducido_del_genero(Some("  ")), Some(Tema), "sin genero, por defecto un Tema");
+        assert_eq!(TipoDeElemento::deducido_del_genero(None), Some(Tema));
     }
 
     #[test]

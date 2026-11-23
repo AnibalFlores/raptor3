@@ -13,6 +13,7 @@ mod busqueda;
 mod consulta;
 mod carpetas;
 mod duplicados;
+mod modo;
 mod tipos;
 mod ordenes;
 mod tandas;
@@ -22,11 +23,13 @@ pub use anunciantes::Anunciante;
 pub use ordenes::simplificar as simplificar_nombre;
 pub use bloques::{MarcadorDeBloque, bloque_de, posiciones_fijas};
 pub use busqueda::{Busqueda, saltar_a_coincidencia};
-pub use consulta::{ConsultaDeTemas, DatosDelTema};
+pub use consulta::{ConsultaDeTemas, DatosDelTema, simplificar as simplificar_texto};
 pub use duplicados::{Duplicado, buscar_duplicados, clave_de_tema};
+pub use modo::{ModoDeOperacion, OperacionSobreLaSecuencia};
 pub use carpetas::{AudiosDeCarpeta, audios_de_carpeta};
 pub use ordenes::{
-    Asignacion, Frecuencia, Hueco, OrdenDePublicidad, PautaDelDia, Reposicion, repartir, salidas_contratadas,
+    Asignacion, AvisoEntregado, Frecuencia, Hueco, OrdenDePublicidad, PautaDelDia, Reposicion, avisos_sin_entregar,
+    etiqueta_de_salida, repartir, salidas_contratadas,
 };
 pub use tandas::{
     DIAS_DE_LA_SEMANA, EntradaDeTanda, ModoDeEntrada, PRIORIDAD_MAXIMA, PRIORIDAD_MINIMA, PRIORIDAD_POR_DEFECTO,

@@ -1,6 +1,6 @@
 [package]
 name = "mcp-raptor-player"
-version = "1.0.1"
+version = "1.1.0"
 edition = "2024"
 description = "Reproductor de escritorio con lista de audio en secuencia, mezcla y servidor MCP"
 license = "GPL-3.0-or-later"
@@ -14,6 +14,8 @@ cpal = { version = "0.18.2", features = ["realtime"] }
 dirs = "7.0.0"
 ebur128 = "0.1.11"
 env_logger = "0.11.11"
+# Carátulas del panel de detalle: solo JPEG y PNG, los que ya usa Slint.
+image = { version = "0.25.10", default-features = false, features = ["jpeg", "png"] }
 jiff = "0.2.38"
 log = "0.4.34"
 rfd = { version = "0.17.2", default-features = false, features = ["gtk3"] }

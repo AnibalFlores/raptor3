@@ -1,9 +1,9 @@
 //! Actualizacion de los datos descriptivos del catalogo (titulo, artista,
 //! album, anio y genero) desde una fuente externa: las etiquetas de los
 //! archivos, releidas despues de corregirlas con otro programa (Picard, por
-//! ejemplo), o MusicBrainz. Se arma una lista de cambios propuestos que el
-//! usuario revisa y elige antes de aplicarlos; lo que corrigio a mano no se
-//! propone elegido.
+//! ejemplo), o internet (MusicBrainz, Deezer, iTunes). Se arma una lista de
+//! cambios propuestos que el usuario revisa y elige antes de aplicarlos; lo
+//! que corrigio a mano no se propone elegido.
 
 use std::path::PathBuf;
 
@@ -41,7 +41,7 @@ impl CampoDescriptivo {
 }
 
 /// Campos que el usuario corrigio a mano (en el editor o por MCP) o eligio
-/// de MusicBrainz: al releer las etiquetas no se proponen elegidos. Las
+/// de internet: al releer las etiquetas no se proponen elegidos. Las
 /// fichas de versiones anteriores no lo registraban (`sin_registro`).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct CamposCorregidos {
@@ -94,9 +94,10 @@ impl CamposCorregidos {
 pub enum OrigenDeLosDatos {
     /// Las etiquetas del archivo: lo aplicado deja de contar como corregido.
     Etiquetas,
-    /// MusicBrainz: lo aplicado es una eleccion del usuario y cuenta como
-    /// corregido (releer las etiquetas no lo propone pisar).
-    MusicBrainz,
+    /// Internet (MusicBrainz, Deezer, iTunes): lo aplicado es una eleccion
+    /// del usuario y cuenta como corregido (releer las etiquetas no lo
+    /// propone pisar).
+    Internet,
 }
 
 /// Valores descriptivos de un tema (los de la ficha o los leidos de una
@@ -145,7 +146,7 @@ pub struct Propuesta {
 /// - siempre, los que completan un dato vacio;
 /// - de las etiquetas, los que reemplazan un dato que el usuario no corrigio
 ///   (si la ficha no lo registra, no se eligen: puede haberlo corregido);
-/// - de MusicBrainz, ningun reemplazo: el usuario decide.
+/// - de internet, ningun reemplazo: el usuario decide.
 pub fn proponer(
     archivo: PathBuf,
     actuales: &DatosDescriptivos,
@@ -165,7 +166,7 @@ pub fn proponer(
             let elegida = match (&actual, origen) {
                 (None, _) => true,
                 (Some(_), OrigenDeLosDatos::Etiquetas) => !corregido && !corregidos.es_anterior(),
-                (Some(_), OrigenDeLosDatos::MusicBrainz) => false,
+                (Some(_), OrigenDeLosDatos::Internet) => false,
             };
             Some(Propuesta {
                 archivo: archivo.clone(),
@@ -216,12 +217,12 @@ mod pruebas {
     }
 
     #[test]
-    fn sin_registro_o_desde_musicbrainz_solo_se_completan_los_vacios() {
+    fn sin_registro_o_desde_internet_solo_se_completan_los_vacios() {
         let actuales = datos("Amiga mia", "", None);
         let leidos = datos("Amiga mía", "Alejandro Sanz", Some(1997));
         for (corregidos, origen) in [
             (CamposCorregidos::sin_registro(), OrigenDeLosDatos::Etiquetas),
-            (CamposCorregidos::default(), OrigenDeLosDatos::MusicBrainz),
+            (CamposCorregidos::default(), OrigenDeLosDatos::Internet),
         ] {
             let propuestas = proponer("a.mp3".into(), &actuales, corregidos, &leidos, origen);
             let elegidas: Vec<_> = propuestas.iter().filter(|propuesta| propuesta.elegida).map(|propuesta| propuesta.campo).collect();

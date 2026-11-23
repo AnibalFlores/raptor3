@@ -13,8 +13,8 @@ use slint::{CloseRequestResponse, ComponentHandle, Model, ModelRc, VecModel};
 use super::avisos::DestinoDeAvisos;
 use super::{Controlador, abrir_con_el_sistema, con_controlador, formatear_minutos};
 use crate::dominio::{
-    Asignacion, Frecuencia, Hueco, OrdenDePublicidad, PRIORIDAD_POR_DEFECTO, PautaDelDia, Reposicion,
-    formatear_hora, nombre_de_archivo, parsear_hora, repartir, salidas_contratadas,
+    Asignacion, AvisoEntregado, Frecuencia, Hueco, OrdenDePublicidad, PRIORIDAD_POR_DEFECTO, PautaDelDia, Reposicion,
+    avisos_sin_entregar, etiqueta_de_salida, formatear_hora, nombre_de_archivo, parsear_hora, repartir, salidas_contratadas,
 };
 use crate::persistencia::{EmisionDeComercial, escribir_certificado};
 use crate::{FilaDeOrden, LineaDePauta, OrdenesDePublicidad};
@@ -225,6 +225,106 @@ impl Controlador {
         }
     }
 
+    /// Despues de cargar o cambiar una orden: lo que la pauta le asigna a
+    /// salidas de hoy que ya se atendieron y no se les entrego (la tanda se
+    /// encolo antes que la orden) entra al final de su bloque si todavia esta
+    /// en la lista, o se repone en la proxima tanda posible. Devuelve que
+    /// hizo, para el mensaje; None si no faltaba nada.
+    pub(super) fn completar_salidas_atendidas(&mut self) -> Option<String> {
+        let fecha = hoy();
+        let atendidas: Vec<(String, DateTime)> = self
+            .tandas
+            .tandas()
+            .iter()
+            .filter_map(|tanda| tanda.ultima_salida.filter(|ultima| ultima.date() == fecha).map(|ultima| (tanda.nombre.clone(), ultima)))
+            .collect();
+        if atendidas.is_empty() {
+            return None;
+        }
+        let pauta = self.pauta_de(fecha).clone();
+        let mut entregados: Vec<AvisoEntregado> = self
+            .pistas_de_tanda
+            .iter()
+            .flat_map(|(pista, cola)| {
+                cola.iter().filter_map(move |origen| {
+                    origen.orden.clone().map(|orden| AvisoEntregado { etiqueta: origen.tanda.clone(), orden, aviso: pista.archivo().to_path_buf() })
+                })
+            })
+            .collect();
+        match self.registro_de_comerciales.emisiones_entre(fecha, fecha) {
+            Ok(emisiones) => entregados.extend(
+                emisiones
+                    .into_iter()
+                    .filter(|emision| !emision.orden.is_empty())
+                    .map(|emision| AvisoEntregado { etiqueta: emision.tanda, orden: emision.orden, aviso: emision.archivo }),
+            ),
+            Err(error) => {
+                // Sin saber que salio al aire no se repone nada: seria duplicar.
+                log::warn!("No se pudo leer el registro de comerciales para completar las tandas ya atendidas: {error}");
+                return None;
+            }
+        }
+        let faltan = avisos_sin_entregar(&pauta, &atendidas, &entregados, &self.reposiciones);
+        if faltan.is_empty() {
+            return None;
+        }
+        let (mut en_su_bloque, mut repuestos) = (0, 0);
+        for asignacion in faltan {
+            if self.sumar_al_bloque_encolado(&asignacion) {
+                en_su_bloque += 1;
+            } else {
+                self.agregar_reposicion(&asignacion.orden, asignacion.aviso.clone());
+                repuestos += 1;
+            }
+        }
+        self.refrescar_filas();
+        let mut partes = Vec::new();
+        if en_su_bloque > 0 {
+            partes.push(tr!("{en_su_bloque} aviso(s) se sumaron a su tanda ya encolada", en_su_bloque = en_su_bloque));
+        }
+        if repuestos > 0 {
+            partes.push(tr!("{repuestos} aviso(s) de tandas que ya salieron se reponen en la proxima tanda posible", repuestos = repuestos));
+        }
+        let resumen = partes.join("; ");
+        log::info!("Ordenes en tandas ya atendidas: {resumen}");
+        Some(resumen)
+    }
+
+    /// Agrega el aviso al final del bloque de su salida si ese bloque todavia
+    /// esta en la lista por sonar (o sonando). Las colas de origen van por
+    /// archivo y en el orden de la lista: la ocurrencia numero k de un archivo,
+    /// desde la pista actual, es la k-esima de su cola.
+    fn sumar_al_bloque_encolado(&mut self, asignacion: &Asignacion) -> bool {
+        let etiqueta = etiqueta_de_salida(&asignacion.tanda, asignacion.salida);
+        let desde = self.lista.indice_actual().unwrap_or(0);
+        let mut vistas: HashMap<PathBuf, usize> = HashMap::new();
+        let mut ultimo = None;
+        for indice in desde..self.lista.tamano() {
+            let Some(pista) = self.lista.pista_en(indice) else { continue };
+            let Some(cola) = self.pistas_de_tanda.get(pista) else { continue };
+            let vista = vistas.entry(pista.archivo().to_path_buf()).or_default();
+            if cola.get(*vista).is_some_and(|origen| origen.tanda == etiqueta) {
+                ultimo = Some(indice);
+            }
+            *vista += 1;
+        }
+        let Some(ultimo) = ultimo else { return false };
+        let posicion = ultimo + 1;
+        let (seleccion, ancla) = (self.seleccion.clone(), self.ancla_de_seleccion);
+        let Some(nueva) = self.insertar_pistas(vec![asignacion.aviso.clone()], Some(posicion), true).into_iter().next() else {
+            return false;
+        };
+        let corrida = |indice: usize| if indice >= posicion { indice + 1 } else { indice };
+        self.seleccion = seleccion.into_iter().map(corrida).collect();
+        self.ancla_de_seleccion = ancla.map(corrida);
+        let antes = (desde..posicion).filter(|&indice| self.lista.pista_en(indice) == Some(&nueva)).count();
+        let cola = self.pistas_de_tanda.entry(nueva).or_default();
+        let lugar = antes.min(cola.len());
+        cola.insert(lugar, OrigenDelAviso { tanda: etiqueta.clone(), orden: Some(asignacion.orden.clone()) });
+        log::info!("Aviso {} de la orden {} sumado a la tanda {etiqueta} ya encolada", asignacion.aviso.display(), asignacion.orden);
+        true
+    }
+
     /// Un aviso de una orden salio cortado o se perdio: se repone hoy.
     pub(super) fn agregar_reposicion(&mut self, orden: &str, aviso: PathBuf) {
         let _ = self.pauta_de(hoy());
@@ -323,6 +423,9 @@ impl Controlador {
         self.invalidar_pauta();
         let resumen = self.resumen_de_orden(&nombre);
         let mut mensaje = if reemplaza { tr!("Orden actualizada: {resumen}", resumen = resumen) } else { tr!("Orden cargada: {resumen}", resumen = resumen) };
+        if let Some(completadas) = self.completar_salidas_atendidas() {
+            mensaje.push_str(&format!(". {completadas}"));
+        }
         if sin_ficha {
             mensaje.push_str(&tr!(". Atencion: «{anunciante}» no tiene ficha de anunciante; carguela en Archivo › Anunciantes (razon social, CUIT, contacto).", anunciante = anunciante));
         }
@@ -579,6 +682,9 @@ impl Controlador {
         let (nombre, activa) = (orden.nombre.clone(), orden.activa);
         self.ordenes.guardar_orden(orden);
         self.invalidar_pauta();
+        if activa {
+            self.completar_salidas_atendidas();
+        }
         if self.ventana_de_ordenes.elegida.as_deref() == Some(nombre.as_str()) {
             self.ventana_de_ordenes.ventana.set_activa(activa);
         }
@@ -670,17 +776,23 @@ impl Controlador {
             return self.avisar_en_ordenes(&tr!("Ya hay una orden llamada «{}»: elija otro nombre.", orden.nombre), true);
         }
         let nombre = orden.nombre.clone();
+        // Al renombrar, la anterior sale antes de cargar la nueva: si no, las
+        // dos estarian en la pauta al completar las tandas ya atendidas. Si la
+        // nueva no se carga, la anterior vuelve.
+        let quitada = renombrada.and_then(|anterior| self.ordenes.quitar_orden(anterior));
         match self.programar_orden(orden) {
             Ok(mensaje) => {
-                if let Some(anterior) = renombrada {
-                    self.ordenes.quitar_orden(anterior);
-                    self.invalidar_pauta();
-                }
                 let guardada = self.ordenes.ordenes().iter().find(|orden| orden.se_llama(&nombre)).cloned();
                 self.cargar_formulario_de_orden(guardada.as_ref());
                 self.avisar_en_ordenes(&mensaje, false);
             }
-            Err(error) => self.avisar_en_ordenes(&error, true),
+            Err(error) => {
+                if let Some(anterior) = quitada {
+                    self.ordenes.guardar_orden(anterior);
+                    self.invalidar_pauta();
+                }
+                self.avisar_en_ordenes(&error, true);
+            }
         }
     }
 

@@ -9,7 +9,7 @@
 //! cache en disco (una por archivo, invalidada si cambia su tamano o fecha).
 
 use std::fs;
-use std::io::{Read, Write};
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 
 use super::Decodificador;
@@ -384,6 +384,30 @@ impl FormaDeOnda {
         fs::rename(&temporal, ruta)
     }
 
+    /// Solo el ritmo y el tempo guardados en la cache (sin los picos ni la
+    /// voz): se leen el encabezado y el bloque de datos, sin cargar todo el
+    /// archivo. Sirve para mostrar el BPM de muchos temas del catalogo.
+    pub fn ritmo_de_la_cache(archivo: &Path, carpeta_de_cache: &Path) -> Option<(Option<Tempo>, Option<Ritmo>, Option<Ritmo>)> {
+        let mut leido = fs::File::open(ruta_de_cache(archivo, carpeta_de_cache)?).ok()?;
+        let mut cabecera = vec![0u8; ENCABEZADO.len() + 1 + 8];
+        leido.read_exact(&mut cabecera).ok()?;
+        let resto = cabecera.strip_prefix(ENCABEZADO)?;
+        if resto[0] != VERSION_DE_CACHE {
+            return None;
+        }
+        let cantidad = u64::from(u32::from_le_bytes(resto[5..9].try_into().ok()?));
+        leido.seek(SeekFrom::Current((cantidad * 6) as i64)).ok()?;
+        let mut extra = [0u8; 60];
+        leido.read_exact(&mut extra).ok()?;
+        let real = |desde: usize| f64::from(f32::from_le_bytes(extra[desde..desde + 4].try_into().expect("4 bytes")));
+        let ritmo = |desde: usize| {
+            let ritmo = Ritmo { periodo: real(desde), fase: real(desde + 4), confianza: real(desde + 8) };
+            ritmo.periodo.is_finite().then_some(ritmo)
+        };
+        let tempo = Some(Tempo { bpm: real(48), acuerdo: real(52), ventanas: real(56) as usize }).filter(|tempo| tempo.bpm.is_finite());
+        Some((tempo, ritmo(24), ritmo(36)))
+    }
+
     fn leer(ruta: &Path) -> Result<Self, String> {
         let mut datos = Vec::new();
         fs::File::open(ruta).and_then(|mut archivo| archivo.read_to_end(&mut datos)).map_err(|error| error.to_string())?;
@@ -651,6 +675,10 @@ pub mod pruebas {
         assert_eq!(leida.pico_real(), calculada.pico_real());
         assert_eq!(leida.rango_dinamico(), calculada.rango_dinamico());
         assert!(leida.sonoridad().is_some() && leida.pico_real().is_some());
+        // El ritmo y el tempo se leen tambien sin cargar el archivo entero.
+        let (tempo, inicial, final_) = FormaDeOnda::ritmo_de_la_cache(&wav, &cache).expect("ritmo de la cache");
+        assert_eq!((tempo, inicial, final_), (leida.tempo(), leida.ritmo_inicial(), leida.ritmo_final()));
+        assert!(FormaDeOnda::ritmo_de_la_cache(&carpeta.join("otro.wav"), &cache).is_none());
         for (a, b) in leida.picos().iter().zip(calculada.picos()) {
             assert!((a.maximo - b.maximo).abs() < 1e-3 && (a.rms - b.rms).abs() < 1e-3);
         }

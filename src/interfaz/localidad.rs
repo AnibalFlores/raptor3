@@ -7,7 +7,8 @@ use std::rc::Rc;
 use slint::{CloseRequestResponse, ComponentHandle, ModelRc, VecModel};
 
 use super::{Controlador, con_controlador};
-use crate::servicio::{LocalidadEncontrada, buscar_localidades};
+use crate::dominio::OperacionSobreLaSecuencia;
+use crate::servicio::{Localidad, LocalidadEncontrada, buscar_localidades};
 use crate::{LocalidadEncontrada as FilaDeLocalidad, SelectorDeLocalidad};
 
 /// La ventana del selector y las localidades que muestra.
@@ -50,6 +51,10 @@ fn fila(encontrada: &LocalidadEncontrada) -> FilaDeLocalidad {
 impl Controlador {
     /// Menu del boton HTH: abre (o trae al frente) el selector de localidad.
     pub(super) fn abrir_selector_de_localidad(&mut self) {
+        // La localidad fija la hora de referencia: solo se cambia en modo Editor.
+        if !self.admitida_o_avisar(OperacionSobreLaSecuencia::CambiarLocalidad) {
+            return;
+        }
         self.refrescar_localidad_en_el_selector();
         let ventana = self.selector_de_localidad.ventana.clone_strong();
         if let Err(error) = self.mostrar_sobre_la_principal(ventana.window(), || ventana.show()) {
@@ -65,7 +70,7 @@ impl Controlador {
         ventana.set_actual(self.ventana.upgrade().map(|principal| principal.get_clima_hth()).unwrap_or_default().replace('\n', " · ").into());
     }
 
-    fn cerrar_selector_de_localidad(&mut self) {
+    pub(super) fn cerrar_selector_de_localidad(&mut self) {
         let _ = self.selector_de_localidad.ventana.hide();
     }
 
@@ -120,17 +125,45 @@ impl Controlador {
         selector.ventana.set_resumen(resumen.into());
     }
 
+    /// Localidad de la que se anuncia el clima.
+    pub fn localidad_del_clima(&self) -> Localidad {
+        self.repositorio_de_preferencias.localidad_del_clima().clone()
+    }
+
+    /// Fija la localidad del clima del anuncio (por ejemplo, desde el MCP) y
+    /// la consulta en el momento. Solo en modo Editor: la localidad fija la
+    /// hora del reloj y de la columna Sono, que se recalculan.
+    pub fn fijar_localidad_del_clima(&mut self, encontrada: LocalidadEncontrada) -> Result<String, String> {
+        if let Err(aviso) = self.admitida(OperacionSobreLaSecuencia::CambiarLocalidad) {
+            self.mostrar_estado(&aviso);
+            return Err(aviso);
+        }
+        let LocalidadEncontrada { localidad, region } = encontrada;
+        let donde = if region.is_empty() { localidad.nombre.clone() } else { format!("{} ({region})", localidad.nombre) };
+        self.cambiar_localidad_del_clima(localidad);
+        self.recalcular_por_la_localidad();
+        let mensaje = tr!("Clima del anuncio HTH: {donde}. Consultando...", donde = donde);
+        self.mostrar_estado(&mensaje);
+        Ok(mensaje)
+    }
+
+    /// Con otra localidad cambia la hora de referencia: el reloj, el panel de
+    /// detalle, la columna Sono de la lista y la del catalogo se vuelven a
+    /// calcular.
+    pub(super) fn recalcular_por_la_localidad(&mut self) {
+        self.refrescar_reloj();
+        self.refrescar_filas();
+        self.refrescar_buscador_si_esta_abierto();
+    }
+
     /// Usa la localidad de esa fila para el clima del anuncio y cierra.
     fn usar_localidad_encontrada(&mut self, indice: i32) {
         let Some(encontrada) = usize::try_from(indice).ok().and_then(|indice| self.selector_de_localidad.encontradas.get(indice))
         else {
             return;
         };
-        let localidad = encontrada.localidad.clone();
-        let region = encontrada.region.clone();
-        self.cambiar_localidad_del_clima(localidad.clone());
+        let encontrada = encontrada.clone();
         let _ = self.selector_de_localidad.ventana.hide();
-        let donde = if region.is_empty() { localidad.nombre } else { format!("{} ({region})", localidad.nombre) };
-        self.mostrar_estado(&tr!("Clima del anuncio HTH: {donde}. Consultando...", donde = donde));
+        let _ = self.fijar_localidad_del_clima(encontrada);
     }
 }

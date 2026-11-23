@@ -255,6 +255,8 @@ La primera vez, `npx` descarga el paquete.
 | `agregar_pistas` | Agregar archivos o carpetas completas, con rutas absolutas. Entran después de la pista seleccionada (o al final), o en la `posicion` indicada. A los temas nuevos se les aplican intro y outro sugeridas. |
 | `quitar_pistas` | Quitar pistas por número o por ruta. No borra archivos del disco. |
 | `mover_pista` | Cambiar el orden de la lista: lleva una pista a otra posición. |
+| `localidad_del_clima` | Ver o cambiar la localidad del clima del anuncio HTH. Con `nombre` la busca en Open-Meteo; `region` filtra las coincidencias (por ejemplo `Entre Rios`) y `numero` elige una. Si queda una sola, la fija y consulta el clima; si quedan varias, las lista sin cambiar nada. Cambiarla solo se puede en modo EDITOR, porque la localidad fija la hora del reloj y de la columna Sonó. |
+| `guardar_lista` | Guardar la lista con un `nombre` (en la carpeta de listas, o una ruta absoluta; `.json` por defecto, o `.m3u`/`.m3u8`), que queda como la lista abierta. `con_fecha` antepone la fecha y hora local (`AAAAMMDDhhmm_`). No pisa un archivo existente salvo con `sobrescribir`. Sin `nombre`, guarda la lista abierta. |
 | `definir_mezcla` | Fijar intro, outro y la ventana de overlay (`overlay_inicio`, `overlay_fin`), en segundos o como `m:ss`; `quitar_overlay` la elimina. |
 | `sugerir_puntos` | Analizar la forma de onda y sugerir intro y outro, sin cambiar nada. |
 | `abrir_editor` | Abrir en pantalla el editor de una pista para ajustarla a mano. |
@@ -265,7 +267,7 @@ La primera vez, `npx` descarga el paquete.
 | `ajustar_controles` | Volumen (0–100), fader (0–10 s), posición dentro de la pista, repetir lista, mostrar el panel de efectos, modo libre, bajar la música y nivel de la música. |
 | `asignar_efecto` / `quitar_efecto` | Cargar o vaciar los botones 0 a 9 de una hoja de efectos (`hoja`, desde 1; si se omite, la que está a la vista). |
 | `disparar_efecto` / `detener_efecto` | Hacer sonar un efecto (de cualquier hoja) o cortarlo. |
-| `hojas_de_efectos` | Ir a una hoja de efectos, agregar una o quitar una (siempre queda al menos una). |
+| `hojas_de_efectos` | Ir a una hoja de efectos, agregar una (con `nombre`, ya nombrada), quitar una (siempre queda al menos una) o `renombrar` una: vacío vuelve a «Hoja N». |
 
 ### Ejemplos de pedidos
 
@@ -366,6 +368,7 @@ Se abre con el botón **Editar pista**, con clic derecho sobre una fila (**Edita
 | La IA responde pero nunca usa las herramientas | El modelo no soporta tool calling o es demasiado chico. Probá con otro modelo, o pedile explícitamente: "usá la herramienta listar_pistas". |
 | "La interfaz no respondió a tiempo" | Había un diálogo abierto en el reproductor (por ejemplo, el de elegir archivos). Cerralo y repetí. |
 | Puerto ocupado al abrir el reproductor | Otro programa usa el 8765. Usá `RAPTOR_MCP_PUERTO` (ver arriba). |
+| «No se pudo iniciar sesión en raptor» | Raptor no usa inicio de sesión (solo atiende en 127.0.0.1). Ese aviso sale si se elige *Iniciar sesión* / *Authenticate* en el cliente; no hace falta: el conector funciona igual. |
 
 ---
 
@@ -376,6 +379,8 @@ Se abre con el botón **Editar pista**, con clic derecho sobre una fila (**Edita
 - **No tiene autenticación.** No lo expongas con túneles (ngrok, Cloudflare Tunnel, etc.) ni abras el puerto en el router.
 - Las herramientas pueden agregar y quitar pistas de la lista, pero **nunca borran archivos del disco**.
 - La mayoría de los clientes piden confirmación antes de cada llamada. Conviene mantenerla activa, al menos para `quitar_pistas` y `quitar_efecto`.
+- En **modo AL AIRE** (botón junto al engranaje del transporte) el reproductor rechaza, también por MCP, lo que rompe la secuencia que sale: `anterior`, `ordenar_lista`, `posicion_segundos` y quitar más de una pista a la vez. La respuesta explica el motivo.
+  Al aire, `controlar_reproduccion` con `detener` sigue en modo AL AIRE; con `"salir_del_aire": true` detiene y pasa a modo EDITOR. `estado_del_reproductor` informa el modo.
 
 ---
 

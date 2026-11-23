@@ -159,16 +159,16 @@ const MUESTRAS_COMPLETAS: &[(&str, &str)] = &[
     ("Promo fin de semana", "Weekend promo"),
     ("18:00, sab y dom", "18:00, Sat and Sun"),
     ("2 aviso(s), 0:58.0", "2 spot(s), 0:58.0"),
-    ("sab 07/11 18:00", "Sat 07/11 18:00"),
+    ("sab 07/11/2026 18:00", "Sat 07/11/2026 18:00"),
     ("Tanda A", "Break A"),
     ("10:30 y cada 30 min hasta 20:00, lun a vie", "10:30 and every 30 min until 20:00, Mon to Fri"),
     ("4 aviso(s), 1:45.0", "4 spot(s), 1:45.0"),
-    ("vie 06/11 10:30 (en 4:12)", "Fri 06/11 10:30 (in 4:12)"),
+    ("vie 06/11/2026 10:30 (en 4:12)", "Fri 06/11/2026 10:30 (in 4:12)"),
     ("Hora en punto", "Top of the hour"),
     ("07:00 y cada 60 min hasta 22:00, todos los dias", "07:00 and every 60 min until 22:00, every day"),
     ("Exacta (-1 min / +0 min)", "Exact (-1 min / +0 min)"),
     ("1 aviso(s), 0:12.0", "1 spot(s), 0:12.0"),
-    ("vie 06/11 11:00 (en 34:12)", "Fri 06/11 11:00 (in 34:12)"),
+    ("vie 06/11/2026 11:00 (en 34:12)", "Fri 06/11/2026 11:00 (in 34:12)"),
     ("Navidad", "Christmas"),
     ("12:00, todos los dias", "12:00, every day"),
     ("3 aviso(s), 1:20.0", "3 spot(s), 1:20.0"),
@@ -253,6 +253,28 @@ fn capturar(adaptador: &MinimalSoftwareWindow, ancho: u32, alto: u32, escala: f3
 }
 
 /// Datos de muestra largos, para que se note lo que no entra.
+/// Una carátula inventada para las capturas: un degradado con un circulo,
+/// como un disco, sin arte de nadie.
+fn caratula_de_muestra() -> slint::Image {
+    const LADO: u32 = 136;
+    let mut pixeles = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::new(LADO, LADO);
+    let centro = LADO as f32 / 2.0;
+    for (indice, pixel) in pixeles.make_mut_slice().iter_mut().enumerate() {
+        let (x, y) = ((indice as u32 % LADO) as f32, (indice as u32 / LADO) as f32);
+        let distancia = ((x - centro).powi(2) + (y - centro).powi(2)).sqrt();
+        let fondo = [(40.0 + x * 0.8) as u8, (60.0 + y * 0.6) as u8, 140];
+        let [rojo, verde, azul] = if distancia < 8.0 {
+            [230, 230, 230]
+        } else if distancia < 46.0 {
+            [20, 20, 24]
+        } else {
+            fondo
+        };
+        *pixel = slint::Rgba8Pixel { r: rojo, g: verde, b: azul, a: 255 };
+    }
+    slint::Image::from_rgba8(pixeles)
+}
+
 fn llenar_ventana(ventana: &VentanaPrincipal) {
     let filas: Vec<FilaDePista> = (0..40)
         .map(|indice| FilaDePista {
@@ -274,6 +296,17 @@ fn llenar_ventana(ventana: &VentanaPrincipal) {
                 3 | 5 => "",
                 _ => "★★★★☆",
             }),
+            // Hasta la que suena, cuando empezo; despues, la hora estimada.
+            sono: texto(&match indice {
+                1 => String::new(),
+                0 => "23/11/26 13:27".into(),
+                _ => {
+                    let minutos = 13 * 60 + 52 + (indice - 2) * 12;
+                    format!("23/11/26 {:02}:{:02}", minutos / 60 % 24, minutos % 60)
+                }
+            }),
+            ayuda_de_sono: texto(""),
+            sono_estimada: indice > 2,
             genero: texto(match indice % 7 {
                 3 | 5 => "",
                 _ => "Rock alternativo latino",
@@ -320,7 +353,7 @@ fn llenar_ventana(ventana: &VentanaPrincipal) {
         fila.artista = texto("Mezclar y BPM no cambian lo que queda dentro");
         fila.tipo = texto("Bloque fijo");
         fila.genero = texto("");
-        for campo in [&mut fila.duracion, &mut fila.mezcla, &mut fila.bpm, &mut fila.overlay, &mut fila.ventana_de_overlay, &mut fila.ranking, &mut fila.nota] {
+        for campo in [&mut fila.duracion, &mut fila.mezcla, &mut fila.bpm, &mut fila.overlay, &mut fila.ventana_de_overlay, &mut fila.ranking, &mut fila.sono, &mut fila.nota] {
             *campo = texto("");
         }
         fila.reservado = 0;
@@ -346,6 +379,11 @@ fn llenar_ventana(ventana: &VentanaPrincipal) {
     ventana.set_botones(ModelRc::new(VecModel::from(botones)));
     ventana.set_nombre_de_lista(texto("Programa de la tarde *"));
     ventana.set_pista_actual(texto("Orquesta Sinfonica y Coro de la Ciudad - Tema numero 3 con un titulo bastante largo"));
+    // El renglon grande por partes: numero, titulo (play) y artista (microfono).
+    ventana.set_tipo_en_curso("Tema".into());
+    ventana.set_numero_en_curso("3".into());
+    ventana.set_titulo_en_curso(texto(&format!("Tema numero {} con un titulo bastante largo (Remix extendido)", 3)));
+    ventana.set_artista_en_curso(texto("Orquesta Sinfonica y Coro de la Ciudad"));
     // El formato mas largo del tiempo del tema.
     ventana.set_tiempo(texto("-1:02:33.4 / 1:02:33.4"));
     ventana.set_progreso_maximo(300.0);
@@ -373,12 +411,16 @@ Ultima lectura hace 4 min"));
     ventana.set_detalle_carpeta(texto("D:\\musica\\coleccion\\rock alternativo\\Orquesta Sinfonica"));
     ventana.set_detalle_genero(texto("Rock alternativo latino"));
     ventana.set_detalle_tipo(texto("Tema"));
+    ventana.set_detalle_tipo_clave("Tema".into());
     ventana.set_detalle_album(texto("Grandes exitos de la orquesta, volumen tres (edicion de lujo)"));
     ventana.set_detalle_anio(texto("1999"));
     ventana.set_detalle_efecto(texto("Hoja 1 · 4: Aplausos del publico en vivo.mp3"));
     ventana.set_detalle_ranking(texto("★★★★☆"));
     ventana.set_detalle_ultima(texto("02/11/2026 14:05:33"));
     ventana.set_detalle_hace(texto("Hace 3 horas"));
+    ventana.set_detalle_caratula(caratula_de_muestra());
+    ventana.set_origen_de_la_caratula(texto("Carátula: la imagen de la carpeta"));
+    ventana.set_hay_caratula(true);
     ventana.set_fecha_actual(texto("Miercoles 30/09/2026"));
     ventana.set_hora_actual(texto("23:59:59"));
     ventana.set_hay_seleccion(true);
@@ -423,6 +465,7 @@ fn llenar_editor(editor: &EditorDePista) {
     editor.set_album(texto("Grandes exitos de la orquesta, volumen tres"));
     editor.set_nota(texto("Version editada para radio: sin el solo de guitarra del final"));
     editor.set_anio(texto("1999"));
+    editor.set_sono(texto("23/11/2026 13:52:07"));
     editor.set_bpm(texto("128.5"));
     let generos = ["Balada", "Cumbia", "Pop", "Rock", "Rock alternativo latino"].map(texto);
     editor.set_generos_sugeridos(ModelRc::new(VecModel::from(generos.to_vec())));
@@ -499,13 +542,13 @@ fn capturas_de_las_ventanas() {
     for (ancho, alto, tamano) in [(680, 480, "inicial"), (520, 360, "minimo")] {
         capturar(&del_selector_de_localidad, ancho, alto, 1.0, &format!("localidad-{tamano}"));
     }
-    // Actualizar datos del catalogo: con las etiquetas releidas y con MusicBrainz.
+    // Actualizar datos del catalogo: con las etiquetas releidas y desde internet.
     let actualizacion = ActualizacionDeDatos::new().expect("actualizacion de datos");
     actualizacion.show().expect("mostrar actualizacion de datos");
     let de_la_actualizacion = VENTANAS.with(|ventanas| ventanas.borrow()[10].clone());
-    for musicbrainz in [false, true] {
-        llenar_actualizacion(&actualizacion, musicbrainz);
-        let origen = if musicbrainz { "musicbrainz" } else { "etiquetas" };
+    for de_internet in [false, true] {
+        llenar_actualizacion(&actualizacion, de_internet);
+        let origen = if de_internet { "internet" } else { "etiquetas" };
         capturar(&de_la_actualizacion, 1120, 640, 1.0, &format!("actualizacion-{origen}"));
     }
     for (ancho, alto, tamano) in [(1180, 780, "inicial"), (980, 640, "minimo")] {
@@ -520,7 +563,7 @@ fn capturas_de_las_ventanas() {
     for (ancho, alto, tamano) in [(1180, 760, "inicial"), (960, 640, "minimo")] {
         capturar(&de_la_pauta, ancho, alto, 1.0, &format!("pauta-{tamano}"));
     }
-    for (ancho, alto, tamano) in [(1000, 620, "inicial"), (900, 380, "minimo")] {
+    for (ancho, alto, tamano) in [(1240, 680, "inicial"), (1000, 420, "minimo")] {
         capturar(&del_buscador, ancho, alto, 1.0, &format!("buscador-{tamano}"));
     }
     capturar(&del_acerca, 560, 600, 1.0, "acerca-de");
@@ -566,8 +609,10 @@ fn llenar_buscador(ventana: &BuscadorDelCatalogo) {
             artista: texto(artista),
             tipo: texto("Tema"),
             genero: texto(genero),
+            album: texto(if anio == "1997" { "Más" } else { "El alma al aire" }),
             anio: texto(anio),
             duracion: texto(duracion),
+            bpm: texto(if seleccionada { "96" } else { "74" }),
             sonado: texto(if en_lista { "20/09/2026" } else if seleccionada { "14/08/2026" } else { "02/09/2026" }),
             ruta: texto("D:\\musica\\tema.mp3"),
             en_lista,
@@ -589,35 +634,53 @@ fn llenar_buscador(ventana: &BuscadorDelCatalogo) {
     ventana.set_texto(texto("artista:sanz sonado:>30d"));
     ventana.set_resumen(texto("6 tema(s) coinciden"));
     ventana.set_seleccionadas(2);
+    // El ultimo elegido, con la carátula de muestra.
+    ventana.set_elegida_titulo(texto("Y si fuera ella — Alejandro Sanz"));
+    ventana.set_elegida_datos(texto("Más · 1997 · Pop latino"));
+    ventana.set_elegida_tipo("Tema".into());
+    ventana.set_caratula(caratula_de_muestra());
+    ventana.set_hay_caratula(true);
+    ventana.set_hay_elegida(true);
 }
 
 /// Cambios propuestos como los que arma la ventana real: releyendo las
-/// etiquetas o consultando MusicBrainz.
-fn llenar_actualizacion(ventana: &ActualizacionDeDatos, musicbrainz: bool) {
-    let cambio = |elegido: bool, tema: &str, campo: &str, actual: &str, nuevo: &str, nota: String| CambioPropuesto {
-        elegido,
-        tema: tema.into(),
-        ruta: "D:\\musica\\tema.mp3".into(),
-        campo: campo.into(),
-        actual: actual.into(),
-        nuevo: nuevo.into(),
-        nota: nota.into(),
+/// etiquetas o consultando internet.
+fn llenar_actualizacion(ventana: &ActualizacionDeDatos, de_internet: bool) {
+    let cambio = |elegido: bool, tema: &str, campo: &str, actual: &str, nuevo: &str, nota: String| {
+        // La fuente va adelante de la nota en las muestras de internet ("Deezer" o "iTunes|corregido").
+        let (fuente, nota) = match nota.split_once('|') {
+            Some((fuente, nota)) => (fuente.to_string(), nota.to_string()),
+            None if ["MusicBrainz", "Deezer", "iTunes"].contains(&nota.as_str()) => (nota, String::new()),
+            None => (String::new(), nota),
+        };
+        CambioPropuesto {
+            elegido,
+            tema: tema.into(),
+            ruta: "D:\\musica\\tema.mp3".into(),
+            campo: campo.into(),
+            actual: actual.into(),
+            nuevo: nuevo.into(),
+            nota: nota.into(),
+            fuente: fuente.into(),
+        }
     };
-    let (origen, cambios, resumen) = if musicbrainz {
+    let (origen, cambios, resumen) = if de_internet {
+        let fuente = |nombre: &str| nombre.to_string();
         let cambios = vec![
-            cambio(true, "Amiga mía", "album", "", "Más", String::new()),
-            cambio(true, "Amiga mía", "anio", "", "1997", String::new()),
-            cambio(true, "Amiga mía", "genero", "", "Pop", String::new()),
-            cambio(true, "Mariposa tecknicolor", "album", "", "No sé si es Baires o Madrid", String::new()),
-            cambio(true, "Mariposa tecknicolor", "anio", "", "2008", String::new()),
-            cambio(true, "Rasguña las piedras", "album", "", "Adiós Sui Generis, parte 2", String::new()),
-            cambio(true, "Rasguña las piedras", "anio", "", "1993", String::new()),
-            cambio(false, "Rasguña las piedras", "genero", "Rock nacional", "Latin", tr!("corregido a mano")),
+            cambio(true, "Amiga mía", "album", "", "Más", fuente("MusicBrainz")),
+            cambio(true, "Amiga mía", "anio", "", "1997", fuente("MusicBrainz")),
+            cambio(true, "Amiga mía", "genero", "", "Pop", fuente("MusicBrainz")),
+            cambio(true, "Mariposa tecknicolor", "album", "", "No sé si es Baires o Madrid", fuente("MusicBrainz")),
+            cambio(true, "Mariposa tecknicolor", "anio", "", "2008", fuente("Deezer")),
+            cambio(true, "Mariposa tecknicolor", "genero", "", "Rock", fuente("Deezer")),
+            cambio(true, "Rasguña las piedras", "album", "", "Adiós Sui Generis, parte 2", fuente("MusicBrainz")),
+            cambio(true, "Rasguña las piedras", "anio", "", "1993", fuente("MusicBrainz")),
+            cambio(false, "Rasguña las piedras", "genero", "Rock nacional", "Latin", format!("iTunes|{}", tr!("corregido a mano"))),
         ];
-        let mut resumen = tr!("{} de {} tema(s) revisados: {} dato(s) distintos en {} tema(s)", 4, 4, 8, 3);
-        resumen.push_str(&tr!("; {} sin una coincidencia segura en MusicBrainz", 1));
+        let mut resumen = tr!("{} de {} tema(s) revisados: {} dato(s) distintos en {} tema(s)", 4, 4, 9, 3);
+        resumen.push_str(&tr!("; {} sin una coincidencia segura en internet", 1));
         (
-            tr!("MusicBrainz (musicbrainz.org), la base libre de datos musicales que usa Picard: se busca cada tema por titulo y artista, de a uno por segundo. Solo se marcan los datos que faltan; los demas, revíselos."),
+            tr!("Internet: cada tema se busca por título y artista primero en MusicBrainz (la base libre que usa Picard), y lo que falte, en Deezer y en iTunes; de a uno por segundo. Solo se marcan los datos que faltan; los demás, revíselos."),
             cambios,
             resumen,
         )
@@ -638,6 +701,7 @@ fn llenar_actualizacion(ventana: &ActualizacionDeDatos, musicbrainz: bool) {
     };
     let elegidos = cambios.iter().filter(|cambio| cambio.elegido).count();
     ventana.set_origen(origen.into());
+    ventana.set_con_fuente(de_internet);
     ventana.set_resumen(resumen.into());
     ventana.set_cambios(ModelRc::new(VecModel::from(cambios)));
     ventana.set_elegidos(elegidos as i32);
@@ -746,11 +810,11 @@ fn llenar_pauta(ventana: &PautaDeTandas) {
         problema: false,
         seleccionada,
     };
-    let mut sin_archivo = fila("Promo fin de semana", "18:00, sab y dom", "-3 min / +2 min", "2 aviso(s), 0:58.0", "sab 07/11 18:00", true, false);
+    let mut sin_archivo = fila("Promo fin de semana", "18:00, sab y dom", "-3 min / +2 min", "2 aviso(s), 0:58.0", "sab 07/11/2026 18:00", true, false);
     sin_archivo.problema = true;
     let filas = vec![
-        fila("Tanda A", "10:30 y cada 30 min hasta 20:00, lun a vie", "-3 min / +2 min", "4 aviso(s), 1:45.0", "vie 06/11 10:30 (en 4:12)", true, true),
-        fila("Hora en punto", "07:00 y cada 60 min hasta 22:00, todos los dias", "Exacta (-1 min / +0 min)", "1 aviso(s), 0:12.0", "vie 06/11 11:00 (en 34:12)", true, false),
+        fila("Tanda A", "10:30 y cada 30 min hasta 20:00, lun a vie", "-3 min / +2 min", "4 aviso(s), 1:45.0", "vie 06/11/2026 10:30 (en 4:12)", true, true),
+        fila("Hora en punto", "07:00 y cada 60 min hasta 22:00, todos los dias", "Exacta (-1 min / +0 min)", "1 aviso(s), 0:12.0", "vie 06/11/2026 11:00 (en 34:12)", true, false),
         sin_archivo,
         fila("Navidad", "12:00, todos los dias", "-3 min / +2 min", "3 aviso(s), 1:20.0", "inactiva", false, false),
     ];

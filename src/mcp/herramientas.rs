@@ -16,13 +16,13 @@ use crate::audio::{FormaDeOnda, anio_valido};
 use crate::dominio::{
     EXTENSIONES_SOPORTADAS, Frecuencia, ModoDeEntrada, OrdenDePublicidad, PRIORIDAD_MAXIMA, PRIORIDAD_MINIMA, PRIORIDAD_POR_DEFECTO, Pista, Recurrencia, TOLERANCIA_POSTERIOR_POR_DEFECTO, TOLERANCIA_PREVIA_POR_DEFECTO, TandaProgramada, TipoDeElemento,
     parsear_dias, parsear_hora, audios_de_carpeta, PuntosDeMezcla, VentanaDeOverlay, formatear_tiempo, formatear_ventana, normalizar,
-    parsear_tiempo,
+    parsear_tiempo, simplificar_texto,
 };
 use crate::interfaz::{AccionDeHoja, AccionDeTransporte, Ajustes, Controlador, ejecutar_en_interfaz, formatear_minutos};
-use crate::servicio::{DatosDeMezcla, ObjetivoDeSonoridad, RANGO_DINAMICO_AMPLIO};
+use crate::servicio::{DatosDeMezcla, Localidad, LocalidadEncontrada, ObjetivoDeSonoridad, RANGO_DINAMICO_AMPLIO, buscar_localidades};
 use crate::persistencia::{
     BPM_MAXIMO, BPM_MINIMO, CANTIDAD_DE_BOTONES, CambiosDeDatos, FADER_MAXIMO, FichaDeCancion, RANKING_MAXIMO,
-    carpeta_del_usuario,
+    LARGO_MAXIMO_DEL_NOMBRE_DE_HOJA, carpeta_de_listas, carpeta_del_usuario,
 };
 
 const LISTAR: &str = "listar_pistas";
@@ -42,6 +42,8 @@ const ABRIR_EDITOR: &str = "abrir_editor";
 const SUGERIR: &str = "sugerir_puntos";
 const MOVER: &str = "mover_pista";
 const ORDENAR: &str = "ordenar_lista";
+const GUARDAR_LISTA: &str = "guardar_lista";
+const LOCALIDAD_DEL_CLIMA: &str = "localidad_del_clima";
 const HOJAS: &str = "hojas_de_efectos";
 const INSERTAR_HTH: &str = "insertar_hth";
 const BASE_HTH: &str = "base_hth";
@@ -80,9 +82,11 @@ const HERRAMIENTAS: &[&str] = &[
     SUGERIR,
     MOVER,
     ORDENAR,
+    GUARDAR_LISTA,
     HOJAS,
     INSERTAR_HTH,
     BASE_HTH,
+    LOCALIDAD_DEL_CLIMA,
     BLOQUE_FIJO,
     BUSCAR_EN_CATALOGO,
     ENCOLAR,
@@ -199,11 +203,12 @@ static DEFINICIONES: LazyLock<Value> = LazyLock::new(|| {
         },
         {
             "name": CONTROLAR,
-            "description": "Acciona los botones de transporte. reproducir: empieza o reanuda. pausar: pausa al instante. alternar: lo mismo que el boton Reproducir/Pausa. detener: detiene con un fundido de los segundos del fader (una segunda vez, o con fader 0, detiene al instante). siguiente: pasa a la pista marcada con el selector (o a la que sigue en la lista) mezclando los segundos del fader. anterior: vuelve a la pista anterior sin mezcla.",
+            "description": "Acciona los botones de transporte. reproducir: empieza o reanuda. pausar: pausa al instante. alternar: lo mismo que el boton Reproducir/Pausa. detener: detiene con un fundido de los segundos del fader (una segunda vez, o con fader 0, detiene al instante); en modo AL AIRE sigue al aire salvo que se pase salir_del_aire: true, que pasa a modo EDITOR. siguiente: pasa a la pista marcada con el selector (o a la que sigue en la lista) mezclando los segundos del fader. anterior: vuelve a la pista anterior sin mezcla.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "accion": {"type": "string", "enum": ["reproducir", "pausar", "alternar", "detener", "siguiente", "anterior"]}
+                    "accion": {"type": "string", "enum": ["reproducir", "pausar", "alternar", "detener", "siguiente", "anterior"]},
+                    "salir_del_aire": {"type": "boolean", "description": "Solo con detener y en modo AL AIRE: true pasa a modo EDITOR; false (por defecto) sigue AL AIRE para cuando se vuelva a reproducir."}
                 },
                 "required": ["accion"]
             }
@@ -307,13 +312,26 @@ static DEFINICIONES: LazyLock<Value> = LazyLock::new(|| {
             }
         },
         {
-            "name": HOJAS,
-            "description": "Maneja las hojas de la botonera (10 botones cada una). ir: pone a la vista la hoja indicada. agregar: crea una hoja vacia al final y la muestra. quitar: elimina la hoja indicada con sus asignaciones (los archivos no se borran); siempre queda al menos una.",
+            "name": GUARDAR_LISTA,
+            "description": "Guarda la lista en un archivo, que queda como la lista abierta (su nombre se ve en el titulo de la ventana). 'nombre' es un nombre de archivo, que se guarda en la carpeta de listas del reproductor, o una ruta absoluta. Sin extension se guarda como lista del reproductor (.json); con .m3u o .m3u8, como M3U (solo las rutas). Sin 'nombre', guarda la lista abierta en su mismo archivo. 'con_fecha' antepone la fecha y hora local al nombre (AAAAMMDDhhmm_). No pisa un archivo existente salvo con 'sobrescribir'. Se guarda el orden de las pistas, la actual y repetir lista; los puntos de mezcla y los datos de cada tema se recuerdan aparte, por archivo.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "accion": {"type": "string", "enum": ["ir", "agregar", "quitar"]},
-                    "hoja": {"type": "integer", "minimum": 1, "description": "Hoja, empezando en 1 (para ir y quitar)"}
+                    "nombre": {"type": "string", "description": "Nombre de archivo (por ejemplo 'tarde_viernes') o ruta absoluta; vacio u omitido, la lista abierta"},
+                    "con_fecha": {"type": "boolean", "description": "true para anteponer la fecha y hora local al nombre: AAAAMMDDhhmm_nombre"},
+                    "sobrescribir": {"type": "boolean", "description": "true para reemplazar un archivo que ya existe (por defecto false)"}
+                }
+            }
+        },
+        {
+            "name": HOJAS,
+            "description": format!("Maneja las hojas de la botonera (10 botones cada una). ir: pone a la vista la hoja indicada. agregar: crea una hoja vacia al final y la muestra (con 'nombre', ya nombrada). quitar: elimina la hoja indicada con sus asignaciones (los archivos no se borran); siempre queda al menos una. renombrar: le pone 'nombre' a la hoja indicada (o a la que esta a la vista), hasta {LARGO_MAXIMO_DEL_NOMBRE_DE_HOJA} caracteres; vacio vuelve al de siempre ('Hoja N'). El nombre de cada hoja se ve en estado_del_reproductor."),
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "accion": {"type": "string", "enum": ["ir", "agregar", "quitar", "renombrar"]},
+                    "hoja": {"type": "integer", "minimum": 1, "description": "Hoja, empezando en 1 (para ir y quitar; para renombrar, si se omite, la que esta a la vista)"},
+                    "nombre": {"type": "string", "description": "Nombre de la hoja (para renombrar y agregar); vacio vuelve a 'Hoja N'"}
                 },
                 "required": ["accion"]
             }
@@ -338,6 +356,18 @@ static DEFINICIONES: LazyLock<Value> = LazyLock::new(|| {
                     "base": {"type": "integer", "minimum": 0, "description": "Numero de la base (desde 1); 0 la quita"}
                 },
                 "required": ["posicion", "base"]
+            }
+        },
+        {
+            "name": LOCALIDAD_DEL_CLIMA,
+            "description": "Consulta o cambia la localidad de la que el anuncio HTH dice la temperatura y la humedad. Sin 'nombre', devuelve la localidad en uso con sus coordenadas. Con 'nombre', la busca en el geocodificador de Open-Meteo (necesita internet): si queda una sola coincidencia (despues de filtrar por 'region'), o se elige una con 'numero', pasa a ser la localidad del clima, se guarda y se consulta en el momento; si quedan varias, las lista con su region y coordenadas sin cambiar nada. Cambiarla solo se puede en modo EDITOR: la localidad fija la hora del reloj y de la columna Sono (al aire se rechaza).",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "nombre": {"type": "string", "description": "Nombre de la localidad a buscar (por ejemplo 'Parana')"},
+                    "region": {"type": "string", "description": "Palabras que deben aparecer en la region (provincia, departamento o pais), sin importar mayusculas ni acentos; por ejemplo 'Entre Rios'"},
+                    "numero": {"type": "integer", "minimum": 1, "description": "Cual de las coincidencias usar (desde 1, en el orden en que se listan tras filtrar por region)"}
+                }
             }
         },
         {
@@ -566,9 +596,11 @@ pub fn ejecutar(nombre: &str, argumentos: &Map<String, Value>) -> Value {
         SUGERIR => sugerir_puntos(argumentos),
         MOVER => mover_pista(argumentos),
         ORDENAR => ordenar_lista(argumentos),
+        GUARDAR_LISTA => guardar_lista(argumentos),
         HOJAS => hojas_de_efectos(argumentos),
         INSERTAR_HTH => insertar_hth(argumentos),
         BASE_HTH => base_hth(argumentos),
+        LOCALIDAD_DEL_CLIMA => localidad_del_clima(argumentos),
         BLOQUE_FIJO => bloque_fijo(argumentos),
         BUSCAR_EN_CATALOGO => buscar_en_catalogo(argumentos),
         ENCOLAR => encolar_pista(argumentos),
@@ -656,8 +688,14 @@ fn listar_pistas() -> Result<String, String> {
         }
         if let Some(datos) = datos {
             if let Some(sonoridad) = datos.sonoridad {
-                let ajuste = 20.0 * datos.ganancia_de_nivelacion(objetivo).log10();
-                salida.push_str(&format!(" | sonoridad {sonoridad:.1} LUFS (nivelacion {ajuste:+.1} dB)"));
+                if ficha.tipo.is_some_and(TipoDeElemento::a_volumen_maximo) {
+                    // Un aviso suena al maximo volumen, este o no la nivelacion.
+                    let ajuste = 20.0 * datos.ganancia_maxima().log10();
+                    salida.push_str(&format!(" | sonoridad {sonoridad:.1} LUFS (aviso al maximo volumen {ajuste:+.1} dB)"));
+                } else {
+                    let ajuste = 20.0 * datos.ganancia_de_nivelacion(objetivo).log10();
+                    salida.push_str(&format!(" | sonoridad {sonoridad:.1} LUFS (nivelacion {ajuste:+.1} dB)"));
+                }
             }
             if let Some(pico) = datos.pico_real_db() {
                 salida.push_str(&format!(" | pico real {pico:.1} dBTP"));
@@ -869,6 +907,7 @@ fn definir_datos(argumentos: &Map<String, Value>) -> Result<Value, String> {
         efecto_fijado,
         ranking,
         bpm,
+        ultima_reproduccion: None,
     };
     if cambios == CambiosDeDatos::default() {
         return Err("Indique 'tipo', 'titulo', 'artista', 'genero', 'album', 'nota', 'anio', 'efecto_fijado', 'ranking' y/o 'bpm'.".into());
@@ -918,7 +957,7 @@ fn controlar(argumentos: &Map<String, Value>) -> Result<Value, String> {
         Some("reproducir") => AccionDeTransporte::Reproducir,
         Some("pausar") => AccionDeTransporte::Pausar,
         Some("alternar") => AccionDeTransporte::Alternar,
-        Some("detener") => AccionDeTransporte::Detener,
+        Some("detener") => AccionDeTransporte::Detener { salir_del_aire: booleano_opcional(argumentos, "salir_del_aire")?.unwrap_or(false) },
         Some("siguiente") => AccionDeTransporte::Siguiente,
         Some("anterior") => AccionDeTransporte::Anterior,
         Some(otra) => return Err(format!("Accion desconocida: {otra}.")),
@@ -1055,6 +1094,152 @@ fn ordenar_lista(argumentos: &Map<String, Value>) -> Result<Value, String> {
             Err(error) => texto(&error, true),
         }
     })
+}
+
+/// Extensiones con que se puede guardar una lista: la del reproductor y M3U.
+const EXTENSIONES_DE_LISTA: [&str; 3] = ["json", "m3u", "m3u8"];
+
+/// Archivo donde guardar la lista pedida: un nombre suelto va a la carpeta de
+/// listas; una ruta debe ser absoluta. Sin extension se usa .json. Con
+/// `prefijo`, se antepone al nombre del archivo.
+fn destino_de_lista(nombre: &str, prefijo: Option<&str>, carpeta_de_listas: &Path) -> Result<PathBuf, String> {
+    let nombre = nombre.trim();
+    if nombre.is_empty() || nombre.contains('\0') {
+        return Err("Indique un 'nombre' de archivo valido.".into());
+    }
+    let pedido = Path::new(nombre);
+    let es_nombre_suelto = pedido.components().count() == 1 && !pedido.has_root();
+    let mut destino = if es_nombre_suelto {
+        if nombre == "." || nombre == ".." {
+            return Err(format!("Nombre de lista invalido: {nombre}"));
+        }
+        carpeta_de_listas.join(nombre)
+    } else {
+        ruta_absoluta(nombre)?
+    };
+    let archivo = destino
+        .file_name()
+        .and_then(|archivo| archivo.to_str())
+        .filter(|archivo| !archivo.is_empty())
+        .ok_or_else(|| format!("Falta el nombre del archivo en: {nombre}"))?
+        .to_string();
+    if let Some(prefijo) = prefijo {
+        destino.set_file_name(format!("{prefijo}{archivo}"));
+    }
+    match destino.extension().and_then(|extension| extension.to_str()) {
+        None => Ok(destino.with_extension("json")),
+        Some(extension) if EXTENSIONES_DE_LISTA.iter().any(|valida| valida.eq_ignore_ascii_case(extension)) => Ok(destino),
+        Some(_) => {
+            // Un punto en el nombre ("lista 1.5") no es una extension de lista.
+            let mut con_json = destino.into_os_string();
+            con_json.push(".json");
+            Ok(PathBuf::from(con_json))
+        }
+    }
+}
+
+/// Fecha y hora local como prefijo de nombre de archivo: AAAAMMDDhhmm_.
+fn prefijo_de_fecha() -> String {
+    jiff::Zoned::now().strftime("%Y%m%d%H%M_").to_string()
+}
+
+fn guardar_lista(argumentos: &Map<String, Value>) -> Result<Value, String> {
+    let nombre = texto_opcional(argumentos, "nombre")?.filter(|nombre| !nombre.trim().is_empty());
+    let con_fecha = booleano_opcional(argumentos, "con_fecha")?.unwrap_or(false);
+    let sobrescribir = booleano_opcional(argumentos, "sobrescribir")?.unwrap_or(false);
+    let destino = match nombre {
+        Some(nombre) => {
+            let prefijo = con_fecha.then(prefijo_de_fecha);
+            let destino = destino_de_lista(&nombre, prefijo.as_deref(), &carpeta_de_listas())?;
+            if destino.is_dir() {
+                return Err(format!("{} es una carpeta; indique un nombre de archivo.", destino.display()));
+            }
+            Some(destino)
+        }
+        None if con_fecha => return Err("Con 'con_fecha' indique tambien un 'nombre'.".into()),
+        None => None,
+    };
+    ejecutar_en_interfaz(move |controlador| {
+        let abierta = controlador.archivo_de_lista_abierta();
+        let Some(destino) = destino.or_else(|| abierta.clone()) else {
+            return texto("La lista no tiene nombre todavia: indique un 'nombre'.", true);
+        };
+        let es_la_abierta = abierta.as_deref().is_some_and(|abierta| normalizar(abierta) == normalizar(&destino));
+        if destino.exists() && !sobrescribir && !es_la_abierta {
+            return texto(
+                &format!("Ya existe {}; use 'sobrescribir' para reemplazarlo o elija otro nombre.", destino.display()),
+                true,
+            );
+        }
+        match controlador.guardar_lista_en(&destino) {
+            Ok(_) => texto(
+                &format!("Lista guardada en {} ({} pista(s)).", destino.display(), controlador.pistas_en_lista().len()),
+                false,
+            ),
+            Err(error) => texto(&error, true),
+        }
+    })
+}
+
+/// Localidad con su region y coordenadas, para mostrarla al agente.
+fn describir_localidad(localidad: &Localidad, region: &str) -> String {
+    let donde = if region.is_empty() { localidad.nombre.clone() } else { format!("{} ({region})", localidad.nombre) };
+    format!("{donde} [{:.4}, {:.4}]", localidad.latitud, localidad.longitud)
+}
+
+/// Deja las localidades cuya region tiene todas las palabras pedidas, sin
+/// importar mayusculas ni acentos; sin region, las deja todas.
+fn filtrar_por_region(encontradas: Vec<LocalidadEncontrada>, region: Option<&str>) -> Vec<LocalidadEncontrada> {
+    let palabras: Vec<String> = region.map(simplificar_texto).unwrap_or_default().split_whitespace().map(str::to_string).collect();
+    encontradas
+        .into_iter()
+        .filter(|encontrada| {
+            let donde = simplificar_texto(&encontrada.region);
+            palabras.iter().all(|palabra| donde.contains(palabra.as_str()))
+        })
+        .collect()
+}
+
+fn localidad_del_clima(argumentos: &Map<String, Value>) -> Result<Value, String> {
+    let nombre = texto_opcional(argumentos, "nombre")?.filter(|nombre| !nombre.trim().is_empty());
+    let region = texto_opcional(argumentos, "region")?.filter(|region| !region.trim().is_empty());
+    let numero = entero_opcional(argumentos, "numero")?;
+    if numero.is_some_and(|numero| numero < 1) {
+        return Err("'numero' empieza en 1.".into());
+    }
+    let Some(nombre) = nombre else {
+        if region.is_some() || numero.is_some() {
+            return Err("Indique el 'nombre' de la localidad a buscar.".into());
+        }
+        let actual = ejecutar_en_interfaz(|controlador| controlador.localidad_del_clima())?;
+        return Ok(texto(&format!("Localidad del clima del anuncio HTH: {}.", describir_localidad(&actual, "")), false));
+    };
+    // Al aire no se cambia la localidad (fija la hora): ni se busca.
+    ejecutar_en_interfaz(|controlador| controlador.admitida(crate::dominio::OperacionSobreLaSecuencia::CambiarLocalidad))??;
+    // La busqueda sale a la red: se hace en este hilo, sin trabar la interfaz.
+    let encontradas = filtrar_por_region(buscar_localidades(&nombre)?, region.as_deref());
+    let filtro = region.as_deref().map(|region| format!(" en «{region}»")).unwrap_or_default();
+    let elegida = match (encontradas.len(), numero) {
+        (0, _) => return Err(format!("No se encontro «{nombre}»{filtro}. Pruebe con otro nombre, sin abreviaturas, u otra region.")),
+        (cantidad, Some(numero)) if numero as usize > cantidad => {
+            return Err(format!("Hay {cantidad} coincidencia(s) para «{nombre}»{filtro}; 'numero' debe ser de 1 a {cantidad}."));
+        }
+        (_, Some(numero)) => encontradas[numero as usize - 1].clone(),
+        (1, None) => encontradas[0].clone(),
+        (cantidad, None) => {
+            let mut salida = format!("{cantidad} localidad(es) para «{nombre}»{filtro}; no se cambio nada. Elija una con 'numero' o afine con 'region':");
+            for (indice, encontrada) in encontradas.iter().enumerate() {
+                salida.push_str(&format!("\n{}. {}", indice + 1, describir_localidad(&encontrada.localidad, &encontrada.region)));
+            }
+            return Ok(texto(&salida, false));
+        }
+    };
+    let descripcion = describir_localidad(&elegida.localidad, &elegida.region);
+    ejecutar_en_interfaz(move |controlador| {
+        controlador
+            .fijar_localidad_del_clima(elegida)
+            .map(|_| texto(&format!("Localidad del clima del anuncio HTH: {descripcion}. Consultando el clima..."), false))
+    })?
 }
 
 fn numero_de_boton(argumentos: &Map<String, Value>) -> Result<usize, String> {
@@ -1470,17 +1655,36 @@ fn base_hth(argumentos: &Map<String, Value>) -> Result<Value, String> {
 
 fn hojas_de_efectos(argumentos: &Map<String, Value>) -> Result<Value, String> {
     let hoja = hoja_pedida(argumentos)?;
+    let nombre = texto_opcional(argumentos, "nombre")?;
+    if nombre.as_deref().is_some_and(|nombre| nombre.trim().chars().count() > LARGO_MAXIMO_DEL_NOMBRE_DE_HOJA) {
+        return Err(format!("'nombre' puede tener hasta {LARGO_MAXIMO_DEL_NOMBRE_DE_HOJA} caracteres."));
+    }
     let accion = match (texto_opcional(argumentos, "accion")?.as_deref(), hoja) {
         (Some("agregar"), _) => AccionDeHoja::Agregar,
         (Some("ir"), Some(hoja)) => AccionDeHoja::Ir(hoja),
         (Some("quitar"), Some(hoja)) => AccionDeHoja::Quitar(hoja),
+        (Some("renombrar"), hoja) => {
+            let nombre = nombre.clone().ok_or("Indique 'nombre' (vacio vuelve a 'Hoja N').")?;
+            AccionDeHoja::Renombrar(hoja, nombre)
+        }
         (Some("ir" | "quitar"), None) => return Err("Indique 'hoja'.".into()),
         (Some(otra), _) => return Err(format!("Accion desconocida: {otra}.")),
         (None, _) => return Err("Indique 'accion'.".into()),
     };
-    ejecutar_en_interfaz(move |controlador| match controlador.hojas_de_efectos(accion) {
-        Ok(estado) => texto(&estado, false),
-        Err(error) => texto(&error, true),
+    let es_agregar = matches!(accion, AccionDeHoja::Agregar);
+    ejecutar_en_interfaz(move |controlador| {
+        let mut resultado = controlador.hojas_de_efectos(accion);
+        // La hoja agregada queda a la vista: se le pone el nombre pedido.
+        if let (true, Ok(agregada), Some(nombre)) = (es_agregar, &resultado, nombre) {
+            let agregada = agregada.clone();
+            resultado = controlador
+                .hojas_de_efectos(AccionDeHoja::Renombrar(None, nombre))
+                .map(|nombrada| format!("{agregada} {nombrada}"));
+        }
+        match resultado {
+            Ok(estado) => texto(&estado, false),
+            Err(error) => texto(&error, true),
+        }
     })
 }
 
@@ -1588,6 +1792,9 @@ fn quitar_pistas(argumentos: &Map<String, Value>) -> Result<Value, String> {
         }
 
         let posiciones: Vec<usize> = a_quitar.into_iter().collect();
+        if let Err(motivo) = controlador.admitida(crate::dominio::OperacionSobreLaSecuencia::Quitar(posiciones.len())) {
+            return texto(&motivo, true);
+        }
         let quitadas = if posiciones.is_empty() { 0 } else { controlador.quitar_posiciones(&posiciones) };
         let mut salida = format!("Se quitaron {quitadas} pista(s)");
         if !posiciones.is_empty() {
@@ -1727,6 +1934,9 @@ mod pruebas {
         assert!(es_error(ejecutar(DISPARAR_EFECTO, &argumentos(json!({"boton": 1, "hoja": 0})))));
         assert!(es_error(ejecutar(HOJAS, &argumentos(json!({"accion": "ir"})))));
         assert!(es_error(ejecutar(HOJAS, &argumentos(json!({"accion": "borrar_todo"})))));
+        assert!(es_error(ejecutar(HOJAS, &argumentos(json!({"accion": "renombrar", "hoja": 1})))));
+        let largo = "x".repeat(LARGO_MAXIMO_DEL_NOMBRE_DE_HOJA + 1);
+        assert!(es_error(ejecutar(HOJAS, &argumentos(json!({"accion": "renombrar", "nombre": largo})))));
         assert!(es_error(ejecutar(ASIGNAR_EFECTO, &argumentos(json!({"boton": 0, "ruta": "relativa.wav"})))));
         assert!(es_error(ejecutar(DEFINIR_DATOS, &argumentos(json!({"posicion": 1, "ranking": 6})))));
         assert!(es_error(ejecutar(DEFINIR_DATOS, &argumentos(json!({"posicion": 1})))));
@@ -1734,5 +1944,51 @@ mod pruebas {
         let invertida = json!({"posicion": 1, "overlay_inicio": "1:45", "overlay_fin": "1:20"});
         assert!(es_error(ejecutar(DEFINIR_MEZCLA, &argumentos(invertida))));
         assert!(es_error(ejecutar(DEFINIR_MEZCLA, &argumentos(json!({"posicion": 1, "intro": "uno"})))));
+        assert!(es_error(ejecutar(GUARDAR_LISTA, &argumentos(json!({"con_fecha": true})))));
+        assert!(es_error(ejecutar(GUARDAR_LISTA, &argumentos(json!({"nombre": "relativa/lista"})))));
+        assert!(es_error(ejecutar(GUARDAR_LISTA, &argumentos(json!({"nombre": ".."})))));
+        assert!(es_error(ejecutar(GUARDAR_LISTA, &argumentos(json!({"nombre": 5})))));
+        assert!(es_error(ejecutar(LOCALIDAD_DEL_CLIMA, &argumentos(json!({"region": "Entre Rios"})))));
+        assert!(es_error(ejecutar(LOCALIDAD_DEL_CLIMA, &argumentos(json!({"nombre": "Parana", "numero": 0})))));
+        assert!(es_error(ejecutar(LOCALIDAD_DEL_CLIMA, &argumentos(json!({"numero": 2})))));
+    }
+
+    #[test]
+    fn filtra_localidades_por_region_sin_acentos_ni_mayusculas() {
+        let encontrada = |nombre: &str, region: &str| LocalidadEncontrada {
+            localidad: Localidad { nombre: nombre.into(), latitud: -31.73, longitud: -60.52, zona_horaria: None },
+            region: region.into(),
+        };
+        let encontradas = vec![
+            encontrada("Paraná", "Paraná, Entre Ríos, Argentina"),
+            encontrada("Paranaíba", "Mato Grosso do Sul, Brasil"),
+        ];
+        let filtradas = filtrar_por_region(encontradas.clone(), Some("entre RIOS"));
+        assert_eq!(filtradas, vec![encontradas[0].clone()]);
+        assert_eq!(filtrar_por_region(encontradas.clone(), None), encontradas);
+        assert!(filtrar_por_region(encontradas, Some("Cordoba")).is_empty());
+    }
+
+    #[test]
+    fn destino_de_lista_resuelve_nombre_carpeta_y_extension() {
+        let carpeta = std::env::temp_dir().join("listas-de-prueba");
+        let destino = |nombre: &str, prefijo: Option<&str>| destino_de_lista(nombre, prefijo, &carpeta).unwrap();
+        assert_eq!(destino("tarde", None), carpeta.join("tarde.json"));
+        assert_eq!(destino("tarde.m3u8", None), carpeta.join("tarde.m3u8"));
+        assert_eq!(destino("tarde.JSON", None), carpeta.join("tarde.JSON"));
+        assert_eq!(destino("lista 1.5", None), carpeta.join("lista 1.5.json"));
+        assert_eq!(destino("prueba", Some("202611161952_")), carpeta.join("202611161952_prueba.json"));
+        let absoluta = std::env::temp_dir().join("otra").join("noche.m3u");
+        let pedida = absoluta.to_string_lossy().into_owned();
+        assert_eq!(destino(&pedida, Some("X_")), std::env::temp_dir().join("otra").join("X_noche.m3u"));
+        assert!(destino_de_lista("  ", None, &carpeta).is_err());
+    }
+
+    #[test]
+    fn prefijo_de_fecha_tiene_doce_digitos_y_guion_bajo() {
+        let prefijo = prefijo_de_fecha();
+        assert_eq!(prefijo.len(), 13);
+        assert!(prefijo[..12].chars().all(|caracter| caracter.is_ascii_digit()));
+        assert!(prefijo.ends_with('_'));
     }
 }

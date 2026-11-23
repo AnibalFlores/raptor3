@@ -380,6 +380,68 @@ fn hora_corta(momento: DateTime) -> String {
     format!("{:02}:{:02}", momento.hour(), momento.minute())
 }
 
+/// Como se anota la salida de una tanda en el registro y en el origen de sus
+/// avisos: "Mediodia 12:30".
+pub fn etiqueta_de_salida(tanda: &str, salida: DateTime) -> String {
+    format!("{tanda} {}", hora_corta(salida))
+}
+
+/// Un aviso de una orden que ya se entrego a una salida: encolado en su
+/// bloque o emitido. `etiqueta` es la de `etiqueta_de_salida`.
+#[derive(Clone, Debug, PartialEq)]
+pub struct AvisoEntregado {
+    pub etiqueta: String,
+    pub orden: String,
+    pub aviso: PathBuf,
+}
+
+/// Lo que la pauta le asigna a salidas que ya se atendieron (encoladas o
+/// emitidas) y nunca se les entrego: pasa cuando una orden se carga o se
+/// cambia despues de que su tanda ya se encolo. `atendidas` es cada tanda con
+/// su ultima salida atendida. Cada entrega o reposicion cubre una sola
+/// asignacion: primero la de la misma orden y el mismo aviso; si no, la de la
+/// misma orden (cambio la rotacion) o la del mismo aviso (se renombro la orden).
+pub fn avisos_sin_entregar(
+    pauta: &PautaDelDia,
+    atendidas: &[(String, DateTime)],
+    entregados: &[AvisoEntregado],
+    reposiciones: &[Reposicion],
+) -> Vec<Asignacion> {
+    let atendida = |asignacion: &Asignacion| {
+        !asignacion.reposicion
+            && atendidas.iter().any(|(tanda, ultima)| *tanda == asignacion.tanda && asignacion.salida <= *ultima)
+    };
+    let pendientes: Vec<&Asignacion> = pauta.asignaciones.iter().filter(|asignacion| atendida(asignacion)).collect();
+    let mut cubierta = vec![false; pendientes.len()];
+    // Tres pasadas, de la coincidencia mas exacta a la mas floja, para que
+    // una entrega floja no le quite la suya a una exacta.
+    let mut libres: Vec<&AvisoEntregado> = entregados.iter().collect();
+    let mut repuestas: Vec<&Reposicion> = reposiciones.iter().collect();
+    let pasadas: [fn(&Asignacion, &str, &Path) -> bool; 3] = [
+        |asignacion, orden, aviso| asignacion.orden == orden && asignacion.aviso == aviso,
+        |asignacion, orden, _| asignacion.orden == orden,
+        |asignacion, _, aviso| asignacion.aviso == aviso,
+    ];
+    for coincide in pasadas {
+        for (indice, asignacion) in pendientes.iter().enumerate() {
+            if cubierta[indice] {
+                continue;
+            }
+            let etiqueta = etiqueta_de_salida(&asignacion.tanda, asignacion.salida);
+            if let Some(posicion) =
+                libres.iter().position(|entregado| entregado.etiqueta == etiqueta && coincide(asignacion, &entregado.orden, &entregado.aviso))
+            {
+                libres.remove(posicion);
+                cubierta[indice] = true;
+            } else if let Some(posicion) = repuestas.iter().position(|repuesta| coincide(asignacion, &repuesta.orden, &repuesta.aviso)) {
+                repuestas.remove(posicion);
+                cubierta[indice] = true;
+            }
+        }
+    }
+    pendientes.into_iter().zip(cubierta).filter(|(_, cubierta)| !cubierta).map(|(asignacion, _)| asignacion.clone()).collect()
+}
+
 /// Cuantas salidas pide una orden entre esas fechas (inclusive).
 pub fn salidas_contratadas(orden: &OrdenDePublicidad, desde: Date, hasta: Date) -> usize {
     let mut total = 0;
@@ -522,5 +584,48 @@ mod pruebas {
         assert!(sol.admite_tanda("cualquiera"));
         let solo_a = OrdenDePublicidad { tandas: vec!["Tanda A".into()], ..sol };
         assert!(solo_a.admite_tanda("tanda a") && !solo_a.admite_tanda("Tanda B"));
+    }
+
+    #[test]
+    fn lo_que_se_cargo_despues_de_encolar_la_salida_queda_sin_entregar() {
+        let fecha = date(2026, 11, 16);
+        let (a_las_1230, a_las_1300) = (fecha.at(12, 30, 0, 0), fecha.at(13, 0, 0, 0));
+        let asignacion = |orden: &str, aviso: &str, salida: DateTime, reposicion: bool| Asignacion {
+            orden: orden.into(),
+            aviso: PathBuf::from(aviso),
+            tanda: "Mediodia".into(),
+            salida,
+            reposicion,
+        };
+        let entregado = |orden: &str, aviso: &str| AvisoEntregado { etiqueta: "Mediodia 12:30".into(), orden: orden.into(), aviso: PathBuf::from(aviso) };
+        let pauta = PautaDelDia {
+            asignaciones: vec![
+                asignacion("Albion", "albion-1.flac", a_las_1230, false),
+                asignacion("Brahma", "brahma.flac", a_las_1230, false),
+                asignacion("Punto Norte", "punto-1.flac", a_las_1230, false),
+                asignacion("Sol", "sol.flac", a_las_1230, true),
+                asignacion("Albion", "albion-2.flac", a_las_1300, false),
+            ],
+            ..PautaDelDia::default()
+        };
+        let atendidas = [("Mediodia".to_string(), a_las_1230)];
+        // Solo salio la apertura fija: las tres de las 12:30 faltan; la de las
+        // 13:00 todavia no se atendio y una reposicion no se vuelve a reponer.
+        let faltan = avisos_sin_entregar(&pauta, &atendidas, &[], &[]);
+        let ordenes: Vec<&str> = faltan.iter().map(|asignacion| asignacion.orden.as_str()).collect();
+        assert_eq!(ordenes, ["Albion", "Brahma", "Punto Norte"]);
+        // Lo encolado, lo emitido con otro aviso de la rotacion, lo de una
+        // orden renombrada y lo ya repuesto cuentan como entregados.
+        let entregados = [entregado("Albion", "albion-2.flac"), entregado("Brahma (renombrada)", "brahma.flac")];
+        let repuesta = Reposicion { orden: "Punto Norte".into(), aviso: "punto-1.flac".into(), desde: fecha.at(12, 40, 0, 0) };
+        assert!(avisos_sin_entregar(&pauta, &atendidas, &entregados, &[repuesta]).is_empty());
+        // Una entrega cubre una sola asignacion: dos veces Brahma, una entregada.
+        let doble = PautaDelDia {
+            asignaciones: vec![asignacion("Brahma", "brahma.flac", a_las_1230, false), asignacion("Brahma", "brahma.flac", a_las_1230, false)],
+            ..PautaDelDia::default()
+        };
+        assert_eq!(avisos_sin_entregar(&doble, &atendidas, &[entregado("Brahma", "brahma.flac")], &[]).len(), 1);
+        // Sin salidas atendidas no falta nada.
+        assert!(avisos_sin_entregar(&pauta, &[], &[], &[]).is_empty());
     }
 }

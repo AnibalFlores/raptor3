@@ -36,10 +36,12 @@ export component OrdenesDePublicidad inherits Window {
     title: @tr("Ordenes de publicidad - MCP Raptor Player");
     icon: @image-url("iconos/ventana-raptor.svg");
     preferred-width: 1240px;
-    // Entra en Full HD al 125 % (unos 790 px logicos de alto utiles).
-    preferred-height: 780px;
+    // Entra en Full HD al 150 % (unos 650 px logicos de alto utiles entre
+    // la barra de titulo y la de tareas): los botones del final siempre se
+    // ven. Con mas lugar crecen las listas.
+    preferred-height: 640px;
     min-width: 1000px;
-    min-height: 720px;
+    min-height: 600px;
     background: Palette.background;
 
     in property <[FilaDeOrden]> ordenes;
@@ -103,8 +105,8 @@ export component OrdenesDePublicidad inherits Window {
     }
 
     VerticalLayout {
-        padding: 12px;
-        spacing: 8px;
+        padding: 10px;
+        spacing: 6px;
 
         Text {
             text: @tr("Cada orden pide salidas en su franja; se reparten solas en las tandas programadas (Pauta de tandas), sin pasar su duracion maxima ni juntar dos avisos del mismo rubro.");
@@ -125,7 +127,7 @@ export component OrdenesDePublicidad inherits Window {
         }
         Rectangle {
             vertical-stretch: 1;
-            min-height: 90px;
+            min-height: 60px;
             border-width: 1px;
             border-color: Palette.border;
             border-radius: 4px;
@@ -398,8 +400,8 @@ export component OrdenesDePublicidad inherits Window {
             Rectangle { horizontal-stretch: 1; }
         }
         Rectangle {
-            min-height: 70px;
-            preferred-height: 150px;
+            min-height: 40px;
+            preferred-height: 120px;
             vertical-stretch: 1;
             border-width: 1px;
             border-color: Palette.border;
@@ -422,7 +424,8 @@ export component OrdenesDePublicidad inherits Window {
             }
         }
 
-        Text {
+        // Solo ocupa lugar cuando hay algo que avisar.
+        if root.aviso != "": Text {
             text: root.aviso;
             wrap: word-wrap;
             font-size: 12px;
